@@ -1242,6 +1242,10 @@ class OrderViewSet(viewsets.ModelViewSet):
             fields.append('prepared')
         if fields:
             line.save(update_fields=fields)
+        if 'prepared' in request.data:
+            # The order's status follows its lines, so the worker ticking the
+            # last profile is what marks the order ready for delivery.
+            order.refresh_prepared_status()
         order.refresh_from_db()
         return Response(OrderSerializer(order, context={'request': request}).data)
 

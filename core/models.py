@@ -1110,6 +1110,42 @@ class Order(models.Model):
         # A hair of tolerance so rounding never leaves an order 'unfinished'.
         return self.invoiced_total >= (self.total - Decimal('0.01'))
 
+    def refresh_prepared_status(self):
+        """Follow the picking state: every line prepared means ready to send.
+
+        The warehouse marks profiles off one at a time and should never have to
+        also remember to set the order's status -- an order whose every line is
+        picked *is* ready for delivery, and one that loses a line is not, so
+        the status is derived from the lines rather than typed twice.
+
+        Deliberately narrow: it only ever moves confirmed/picking -> ready, or
+        ready -> picking. A delivered, cancelled, draft or already-dispatched
+        order is left alone, so a late correction to one line cannot drag an
+        order backwards out of a state a human put it in.
+
+        Returns True when the status actually changed.
+        """
+        if self.status not in (
+            OrderStatus.CONFIRMED, OrderStatus.PICKING, OrderStatus.READY
+        ):
+            return False
+
+        lines = list(self.lines.all())
+        if not lines:
+            return False
+
+        all_prepared = all(line.prepared for line in lines)
+        if all_prepared and self.status != OrderStatus.READY:
+            new_status = OrderStatus.READY
+        elif not all_prepared and self.status == OrderStatus.READY:
+            new_status = OrderStatus.PICKING
+        else:
+            return False
+
+        self.status = new_status
+        self.save(update_fields=['status'])
+        return True
+
 
 class OrderLine(models.Model):
     """One profile on an order, measured in metres and priced by weight.
