@@ -17,6 +17,11 @@ python-decouple==3.8
 # registers it as MySQLdb. Swap in psycopg2-binary if this ever moves to
 # Postgres -- settings.py already handles either through DATABASE_URL.
 PyMySQL==1.1.1
+# MySQL 8 authenticates with caching_sha2_password, and PyMySQL delegates that
+# handshake to cryptography. Without it the connection dies at login with
+# "'cryptography' package is required for sha256_password or
+# caching_sha2_password auth methods".
+cryptography==50.0.0
 dj-database-url==3.1.2
 
 # Serving
