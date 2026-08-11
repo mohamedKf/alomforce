@@ -10,8 +10,13 @@ djangorestframework-simplejwt==5.5.1
 django-cors-headers==4.9.0
 python-decouple==3.8
 
-# Database
-psycopg2-binary==2.9.12
+# Database.
+#
+# PyMySQL rather than mysqlclient: it is pure Python, so the Railway builder
+# needs no libmysqlclient/pkg-config system packages. backend/__init__.py
+# registers it as MySQLdb. Swap in psycopg2-binary if this ever moves to
+# Postgres -- settings.py already handles either through DATABASE_URL.
+PyMySQL==1.1.1
 dj-database-url==3.1.2
 
 # Serving

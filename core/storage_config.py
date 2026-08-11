@@ -22,17 +22,22 @@ def apply_cloudinary_config():
         return None
 
     if cfg.cloudinary_ready:
+        # setting() resolves env / .env first (Railway), then the DB field, so
+        # this must match how cloudinary_ready decided the creds exist.
+        cloud_name = cfg.setting('cloudinary_cloud_name')
+        api_key = cfg.setting('cloudinary_api_key')
+        api_secret = cfg.setting('cloudinary_api_secret')
         import cloudinary
         cloudinary.config(
-            cloud_name=cfg.cloudinary_cloud_name,
-            api_key=cfg.cloudinary_api_key,
-            api_secret=cfg.cloudinary_api_secret,
+            cloud_name=cloud_name,
+            api_key=api_key,
+            api_secret=api_secret,
             secure=True,
         )
         settings.CLOUDINARY_STORAGE = {
-            'CLOUD_NAME': cfg.cloudinary_cloud_name,
-            'API_KEY': cfg.cloudinary_api_key,
-            'API_SECRET': cfg.cloudinary_api_secret,
+            'CLOUD_NAME': cloud_name,
+            'API_KEY': api_key,
+            'API_SECRET': api_secret,
         }
         backend = 'cloudinary_storage.storage.MediaCloudinaryStorage'
     else:
