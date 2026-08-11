@@ -702,6 +702,63 @@ class OnlineWorkersView(APIView):
         ])
 
 
+class DriversStatusView(APIView):
+    """GET /api/dashboard/drivers/ — the delivery board a manager watches.
+
+    Each active driver with whether they are online (app open) and clocked in,
+    plus how many deliveries they signed today. Deliveries aren't pre-assigned
+    to a driver (the run is shared), so the truck counts are business-wide.
+    """
+
+    permission_classes = BASE + [IsStaff]
+
+    def get(self, request):
+        from core.models import ONLINE_WINDOW, Delivery, OrderStatus, Shift
+
+        now = timezone.now()
+        online_since = now - ONLINE_WINDOW
+        today = timezone.localdate()
+
+        drivers = (
+            User.objects.filter(role=Role.DRIVER, is_active=True)
+            .order_by('first_name', 'last_name')
+        )
+        open_shifts = {
+            s.worker_id: s.clock_in
+            for s in Shift.objects.filter(
+                worker__in=drivers, clock_out__isnull=True)
+        }
+        delivered_today = {
+            row['driver']: row['n']
+            for row in Delivery.objects.filter(
+                driver__in=drivers,
+                status=Delivery.Status.DELIVERED,
+                delivered_at__date=today,
+            ).values('driver').annotate(n=Count('id'))
+        }
+        rows = [
+            {
+                'id': u.id,
+                'full_name': u.full_name,
+                'phone': u.phone or '',
+                'online': bool(u.last_seen and u.last_seen >= online_since),
+                'clocked_in': u.id in open_shifts,
+                'open_since': open_shifts.get(u.id),
+                'delivered_today': delivered_today.get(u.id, 0),
+            }
+            for u in drivers
+        ]
+        # Sort the most "active" drivers to the top: clocked in, then online.
+        rows.sort(key=lambda r: (not r['clocked_in'], not r['online'],
+                                 -r['delivered_today']))
+        return Response({
+            'out_for_delivery': Order.objects.filter(
+                status=OrderStatus.OUT_FOR_DELIVERY).count(),
+            'ready': Order.objects.filter(status=OrderStatus.READY).count(),
+            'drivers': rows,
+        })
+
+
 # ---------------------------------------------------------------------------
 # 5. Shop and map
 # ---------------------------------------------------------------------------
