@@ -1130,11 +1130,16 @@ class Order(models.Model):
         ):
             return False
 
-        lines = list(self.lines.all())
-        if not lines:
+        # Read the lines straight from the model manager rather than through
+        # self.lines.all(). The view fetches the order with prefetch_related,
+        # and a prefetched relation keeps serving its cached rows -- including
+        # the line this very request just saved -- which made the status trail
+        # one tick behind: the order went ready only once a line was *un*-ticked.
+        lines = self.lines.model.objects.filter(order_id=self.pk)
+        if not lines.exists():
             return False
 
-        all_prepared = all(line.prepared for line in lines)
+        all_prepared = not lines.filter(prepared=False).exists()
         if all_prepared and self.status != OrderStatus.READY:
             new_status = OrderStatus.READY
         elif not all_prepared and self.status == OrderStatus.READY:
