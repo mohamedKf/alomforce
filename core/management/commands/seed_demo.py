@@ -236,8 +236,11 @@ class Command(BaseCommand):
         """
         profiles = list(Profile.objects.order_by('number')[:120])
         finishes = ['גלם', 'לבן RAL 9010', 'שחור RAL 9005', 'אנודייז טבעי']
-        items = StockItem.objects.bulk_create([
-            StockItem(
+        # create() in a loop rather than bulk_create(): MySQL does not return
+        # generated primary keys from a bulk insert, so bulk-created items come
+        # back without a pk and the movements below cannot point at them.
+        items = [
+            StockItem.objects.create(
                 profile=profile,
                 location=locations[index % len(locations)],
                 length_mm=self.rng.choice([5000, 6000, 6500]),
@@ -245,7 +248,7 @@ class Command(BaseCommand):
                 minimum_quantity=self.rng.choice([5, 10, 20]),
             )
             for index, profile in enumerate(profiles)
-        ])
+        ]
 
         movements = []
         for item in items:
