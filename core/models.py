@@ -719,18 +719,24 @@ class AppConfig(models.Model):
         return cls.objects.first() or cls.objects.create()
 
     def setting(self, field):
-        """Resolve a config value: a Railway env var wins, else the DB value."""
-        import os
+        """Resolve a config value: an environment variable wins, else the DB.
+
+        Uses decouple's config(), so both a real env var (Railway) and a value
+        in the project's .env (local dev) are picked up.
+        """
+        from decouple import config
         env = self.ENV_MAP.get(field)
-        if env and os.environ.get(env):
-            return os.environ[env].strip()
+        if env:
+            val = config(env, default=None)
+            if val:
+                return str(val).strip()
         return getattr(self, field, '') or ''
 
     def from_env(self, field):
-        """True when this value is supplied by an environment variable."""
-        import os
+        """True when this value is supplied by an environment / .env variable."""
+        from decouple import config
         env = self.ENV_MAP.get(field)
-        return bool(env and os.environ.get(env))
+        return bool(env and config(env, default=None))
 
     @property
     def cloudinary_ready(self):

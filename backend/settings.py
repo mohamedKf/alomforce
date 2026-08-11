@@ -8,6 +8,7 @@ that talk to this project over the REST API.
 
 from pathlib import Path
 
+import dj_database_url
 from decouple import Csv, config
 from django.utils.translation import gettext_lazy as _
 
@@ -16,6 +17,31 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = config('SECRET_KEY', default='django-insecure-dev-only-change-me')
 DEBUG = config('DEBUG', default=True, cast=bool)
 ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost,127.0.0.1', cast=Csv())
+
+# Railway injects the deployment's own hostnames. Appending them here means a
+# deploy works without hand-maintaining ALLOWED_HOSTS every time the domain
+# changes; 'healthcheck.railway.app' is the Host header Railway's own health
+# check sends, and a missing entry there fails the deploy with a bare 400.
+RAILWAY_PUBLIC_DOMAIN = config('RAILWAY_PUBLIC_DOMAIN', default='')
+RAILWAY_PRIVATE_DOMAIN = config('RAILWAY_PRIVATE_DOMAIN', default='')
+
+CSRF_TRUSTED_ORIGINS = []
+
+if RAILWAY_PUBLIC_DOMAIN:
+    ALLOWED_HOSTS += [RAILWAY_PUBLIC_DOMAIN, 'healthcheck.railway.app']
+    CSRF_TRUSTED_ORIGINS.append(f'https://{RAILWAY_PUBLIC_DOMAIN}')
+
+if RAILWAY_PRIVATE_DOMAIN:
+    ALLOWED_HOSTS.append(RAILWAY_PRIVATE_DOMAIN)
+
+# Railway terminates TLS at its edge and forwards over plain HTTP, so Django
+# only sees the request as secure through this header.
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+# Marked secure off DEBUG rather than unconditionally, so local development
+# over plain http://localhost still keeps a session.
+SESSION_COOKIE_SECURE = not DEBUG
+CSRF_COOKIE_SECURE = not DEBUG
 
 
 # Application definition
@@ -45,6 +71,9 @@ INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + CORE_APPS
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    # Serves the collected static files (the admin's CSS above all) directly
+    # from the app. Railway has no separate web server in front to do it.
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.locale.LocaleMiddleware',
@@ -79,8 +108,25 @@ ASGI_APPLICATION = 'backend.asgi.application'
 
 # Database
 # SQLite for local development; point DATABASE_URL at Postgres for anything shared.
+#
+# DATABASE_URL wins when present because that is the single variable Railway's
+# Postgres plugin exposes -- reference it in the service as
+# DATABASE_URL=${{Postgres.DATABASE_URL}} and nothing else needs configuring.
+# The discrete DB_* settings stay for local Postgres, and SQLite is the
+# fallback. Note that SQLite on Railway lives on the container filesystem and
+# is wiped by every redeploy, so it is never the right production choice.
 
-if config('DB_ENGINE', default='sqlite') == 'postgres':
+DATABASE_URL = config('DATABASE_URL', default='')
+
+if DATABASE_URL:
+    DATABASES = {
+        'default': dj_database_url.parse(
+            DATABASE_URL,
+            conn_max_age=600,
+            conn_health_checks=True,
+        )
+    }
+elif config('DB_ENGINE', default='sqlite') == 'postgres':
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql',
@@ -168,7 +214,7 @@ STORAGES = {
         else 'django.core.files.storage.FileSystemStorage',
     },
     'staticfiles': {
-        'BACKEND': 'django.contrib.staticfiles.storage.StaticFilesStorage',
+        'BACKEND': 'whitenoise.storage.CompressedManifestStaticFilesStorage',
     },
 }
 

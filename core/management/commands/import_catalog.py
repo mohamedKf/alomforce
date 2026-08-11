@@ -22,6 +22,28 @@ from core.models import Family, Profile, ProfileRole, Series, SeriesProfile
 # commands/ -> management/ -> core/
 DATA_FILE = Path(__file__).resolve().parents[2] / 'data' / 'klil_catalog_rows.json'
 
+# The catalog data lives outside the code so any deployment imports from the
+# same source. CATALOG_URL (Railway/.env) points at the JSON in Cloudinary; if
+# it isn't set or can't be fetched, we fall back to the bundled DATA_FILE.
+DEFAULT_CATALOG_URL = (
+    'https://res.cloudinary.com/dvhuyctib/raw/upload/catalog/klil_catalog_rows.json'
+)
+
+
+def load_catalog_rows():
+    """Return (rows, source_label). Cloudinary first, local file as fallback."""
+    from decouple import config
+    url = config('CATALOG_URL', default=DEFAULT_CATALOG_URL)
+    if url:
+        try:
+            import urllib.request
+            with urllib.request.urlopen(url, timeout=30) as resp:
+                rows = json.loads(resp.read().decode('utf-8'))
+            return rows, url
+        except Exception as exc:  # noqa: BLE001 - fall back to the bundled file
+            print(f'catalog: could not fetch {url} ({exc}); using local file')
+    return json.loads(DATA_FILE.read_text(encoding='utf-8')), str(DATA_FILE.name)
+
 
 # --- Role detection ---------------------------------------------------------
 #
@@ -170,8 +192,8 @@ class Command(BaseCommand):
         )
 
     def handle(self, *args, **options):
-        rows = json.loads(DATA_FILE.read_text(encoding='utf-8'))
-        self.stdout.write(f'Loaded {len(rows)} rows from {DATA_FILE.name}')
+        rows, source = load_catalog_rows()
+        self.stdout.write(f'Loaded {len(rows)} rows from {source}')
 
         parsed = []
         for row in rows:
@@ -284,6 +306,14 @@ class Command(BaseCommand):
                         'weight_g_per_m': row.get('weight_g_per_m'),
                     },
                 )
+                # The catalog JSON carries the Cloudinary section-image path
+                # (catalog/sections/<number>), so a fresh DB shows photos with
+                # no local image files. Only set it if the profile has none.
+                image = row.get('section_image')
+                prof = profiles[number]
+                if image and not prof.section_image:
+                    prof.section_image = image
+                    prof.save(update_fields=['section_image'])
 
         listings = 0
         for index, row in enumerate(parsed):

@@ -1,1 +1,32 @@
-openpyxl
+# Server dependencies only.
+#
+# The desktop client's packages (PySide6, pymupdf, pytesseract, numpy) are
+# deliberately absent: nothing under backend/ or core/ imports them, and
+# PySide6 alone adds hundreds of MB to every Railway build.
+
+Django==6.0.7
+djangorestframework==3.17.1
+djangorestframework-simplejwt==5.5.1
+django-cors-headers==4.9.0
+python-decouple==3.8
+
+# Database
+psycopg2-binary==2.9.12
+dj-database-url==3.1.2
+
+# Serving
+gunicorn==26.0.0
+whitenoise==6.12.0
+
+# Media storage
+cloudinary==1.45.0
+django-cloudinary-storage==0.3.0
+pillow==12.3.0
+
+# Documents: order PDFs, payslips, QR labels, catalogue exports
+reportlab==5.0.0
+pypdf==6.14.2
+qrcode==8.2
+openpyxl==3.1.5
+arabic-reshaper==3.0.1
+python-bidi==0.6.11
