@@ -6,6 +6,7 @@ package holding the shared models and views; desktop and mobile are clients
 that talk to this project over the REST API.
 """
 
+import sys
 from datetime import timedelta
 from pathlib import Path
 
@@ -43,6 +44,32 @@ SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 # over plain http://localhost still keeps a session.
 SESSION_COOKIE_SECURE = not DEBUG
 CSRF_COOKIE_SECURE = not DEBUG
+
+# Send plain HTTP to HTTPS. Railway's edge already terminates TLS and forwards
+# with X-Forwarded-Proto, which SECURE_PROXY_SSL_HEADER above teaches Django to
+# read -- so ordinary traffic is already https and never redirects. This closes
+# the gap for anything that reaches the container over plain http.
+#
+# Off under the test runner: tests run with DEBUG=False, and Django's test
+# client speaks plain http, so leaving this on turns every request in the
+# suite into a 301 and the whole suite fails for no real reason.
+TESTING = 'test' in sys.argv
+
+SECURE_SSL_REDIRECT = not DEBUG and not TESTING
+
+# HSTS: tell browsers never to try this host over plain http again.
+#
+# Deliberately not permanent-by-default. A browser honours the max-age it was
+# given even after the header stops being sent, so an over-long value on a
+# domain you later want to serve over http is not something you can take back.
+# Thirty days is long enough to be worth having and short enough to escape.
+# Raise it towards a year (31536000) once the domain is settled.
+#
+# No preload, and no includeSubDomains: this currently runs on a shared
+# *.up.railway.app suffix, which is not ours to make promises about.
+SECURE_HSTS_SECONDS = config('SECURE_HSTS_SECONDS', default=0 if DEBUG else 2592000, cast=int)
+SECURE_HSTS_INCLUDE_SUBDOMAINS = False
+SECURE_HSTS_PRELOAD = False
 
 
 # Application definition
@@ -243,6 +270,73 @@ REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 50,
 }
+
+# Logging.
+#
+# Django's default swallows application logging when DEBUG is off, and an
+# unhandled error in a view is reported to the client but never written down.
+# Everything goes to stdout because that is what Railway collects: no files,
+# no rotation, nothing to fill a container's disk.
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'standard': {
+            'format': '{levelname} {asctime} {name} {message}',
+            'style': '{',
+        },
+    },
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+            'formatter': 'standard',
+        },
+    },
+    'root': {
+        'handlers': ['console'],
+        'level': config('LOG_LEVEL', default='INFO'),
+    },
+    'loggers': {
+        # Tracebacks for 500s. Without this an exception in a view is a bare
+        # line in the access log and the cause is gone.
+        'django.request': {
+            'handlers': ['console'],
+            'level': 'ERROR',
+            'propagate': False,
+        },
+        'core': {
+            'handlers': ['console'],
+            'level': config('LOG_LEVEL', default='INFO'),
+            'propagate': False,
+        },
+    },
+}
+
+
+# Error monitoring.
+#
+# Inert until SENTRY_DSN is set, so this costs nothing until someone wants it:
+# add the variable in Railway and errors start arriving, with no code change
+# and no redeploy of anything but the variable. Until then the logging above
+# is what you have, which means reading railway logs after a driver reports
+# "it doesn't work".
+SENTRY_DSN = config('SENTRY_DSN', default='')
+
+if SENTRY_DSN:
+    import sentry_sdk
+
+    sentry_sdk.init(
+        dsn=SENTRY_DSN,
+        environment=config('RAILWAY_ENVIRONMENT_NAME', default='local'),
+        # A share of requests, not all of them: performance data is nice but
+        # not worth the quota on a shop-floor app.
+        traces_sample_rate=config('SENTRY_TRACES_SAMPLE_RATE', default=0.1, cast=float),
+        # Off by default. This system holds ID numbers, phone numbers, wages
+        # and payslips; none of that should leave the server because a request
+        # happened to fail.
+        send_default_pii=config('SENTRY_SEND_PII', default=False, cast=bool),
+    )
+
 
 # JWT lifetimes.
 #
