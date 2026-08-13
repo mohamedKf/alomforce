@@ -1221,3 +1221,107 @@ class RegistrationTests(APITestCase):
     def test_an_unknown_account_kind_is_refused(self):
         r = self.client.post(self.URL, {'account': 'superuser'}, format='json')
         self.assertEqual(r.status_code, 400)
+
+
+class InvoiceScanTests(APITestCase):
+    """Reading an invoice photo, and coping when that is not available."""
+
+    def setUp(self):
+        from django.core.files.uploadedfile import SimpleUploadedFile
+        from core.models import AppConfig
+        self.cfg = AppConfig.get()
+        self.office = User.objects.create_user(
+            id_number=make_id('99999999'), password='Str0ng!Passw0rd',
+            first_name='O', last_name='F', role=Role.OFFICE, phone='050-5556677')
+        self.client.force_authenticate(self.office)
+        self.photo = SimpleUploadedFile('invoice.jpg', b'\xff\xd8\xff\xe0 fake jpeg',
+                                        content_type='image/jpeg')
+
+    def _scan(self, **extra):
+        return self.client.post('/api/invoices/scan/',
+                                {'file': self.photo, **extra}, format='multipart')
+
+    def test_without_a_key_it_says_so_rather_than_failing(self):
+        """The office must be told to type it in, not shown an error."""
+        self.cfg.openai_api_key = ''
+        self.cfg.save(update_fields=['openai_api_key'])
+        with mock.patch.dict(os.environ, {'OPENAI_API_KEY': ''}):
+            r = self._scan()
+        self.assertEqual(r.status_code, 200)
+        self.assertFalse(r.data['available'])
+
+    def test_a_photo_is_required(self):
+        self.cfg.openai_api_key = 'sk-test'
+        self.cfg.save(update_fields=['openai_api_key'])
+        r = self.client.post('/api/invoices/scan/', {}, format='multipart')
+        self.assertEqual(r.status_code, 400)
+
+    def test_fields_come_back_from_the_model(self):
+        self.cfg.openai_api_key = 'sk-test'
+        self.cfg.save(update_fields=['openai_api_key'])
+        with mock.patch('core.invoice_scan.extract') as extract:
+            extract.return_value = {
+                'number': 'A-1234', 'issued_at': '2026-08-01',
+                'party_name': 'חברת החשמל', 'party_tax_id': '500100200',
+                'subtotal': '1000.00', 'vat': '180.00', 'total': '1180.00',
+                'category': 'electricity',
+            }
+            r = self._scan()
+        self.assertEqual(r.status_code, 200)
+        self.assertTrue(r.data['ok'])
+        self.assertEqual(r.data['fields']['total'], '1180.00')
+
+    def test_a_failed_read_still_leaves_manual_entry_open(self):
+        from core.invoice_scan import ScanFailed
+        self.cfg.openai_api_key = 'sk-test'
+        self.cfg.save(update_fields=['openai_api_key'])
+        with mock.patch('core.invoice_scan.extract',
+                        side_effect=ScanFailed('blurry')):
+            r = self._scan()
+        self.assertEqual(r.status_code, 200)   # not an error the user can fix
+        self.assertTrue(r.data['available'])
+        self.assertFalse(r.data['ok'])
+        self.assertIn('blurry', r.data['detail'])
+
+    def test_scanning_saves_nothing_by_itself(self):
+        """The reply is a suggestion; the invoice exists only once confirmed."""
+        from core.models import Invoice
+        self.cfg.openai_api_key = 'sk-test'
+        self.cfg.save(update_fields=['openai_api_key'])
+        before = Invoice.objects.count()
+        with mock.patch('core.invoice_scan.extract', return_value={'total': '10'}):
+            self._scan()
+        self.assertEqual(Invoice.objects.count(), before)
+
+
+class InvoiceScanParsingTests(TestCase):
+    """The cleaning that happens before anything reaches the form."""
+
+    def test_derives_a_missing_subtotal(self):
+        from core.invoice_scan import _clean
+        out = _clean({'total': '1180.00', 'vat': '180.00'})
+        self.assertEqual(out['subtotal'], '1000.00')
+
+    def test_derives_a_missing_total(self):
+        from core.invoice_scan import _clean
+        out = _clean({'subtotal': '1000', 'vat': '180'})
+        self.assertEqual(out['total'], '1180')
+
+    def test_strips_separators_and_keeps_nulls(self):
+        from core.invoice_scan import _clean
+        out = _clean({'total': '1,180.00', 'number': ' A-1 ', 'vat': None})
+        self.assertEqual(out['total'], '1180.00')
+        self.assertEqual(out['number'], 'A-1')
+        self.assertIsNone(out['vat'])
+
+    def test_ignores_fields_we_did_not_ask_for(self):
+        from core.invoice_scan import _clean
+        out = _clean({'total': '10', 'is_staff': True, 'role': 'manager'})
+        self.assertNotIn('is_staff', out)
+        self.assertNotIn('role', out)
+
+    def test_a_pdf_is_refused_with_a_useful_message(self):
+        from core.invoice_scan import ScanFailed, extract
+        with self.assertRaises(ScanFailed) as caught:
+            extract(b'%PDF-1.4', 'application/pdf', 'sk-test')
+        self.assertIn('photograph', str(caught.exception))

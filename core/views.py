@@ -1413,6 +1413,53 @@ class InvoiceViewSet(viewsets.ModelViewSet):
             seq = 1
         return Response({'number': f'{prefix}{seq:04d}'})
 
+    @action(detail=False, methods=['post'],
+            parser_classes=[MultiPartParser, FormParser])
+    def scan(self, request):
+        """POST /api/invoices/scan/ — read an invoice photo, return the fields.
+
+        Nothing is saved. The reply is a suggestion the office confirms in the
+        form before creating the invoice, because a model misreading a total by
+        one digit is a plausible failure and an unreviewed one would land
+        straight in the books.
+
+        A missing API key is not an error the user can fix, so it comes back as
+        `available: false` with a 200 and the app quietly offers manual entry
+        instead of showing a failure.
+        """
+        from core import invoice_scan
+        from core.models import AppConfig
+
+        upload = request.FILES.get('file')
+        if upload is None:
+            return Response({'file': [_('Attach a photo of the invoice.')]},
+                            status=status.HTTP_400_BAD_REQUEST)
+
+        api_key = AppConfig.get().setting('openai_api_key')
+        if not api_key:
+            return Response({
+                'available': False,
+                'detail': _('Invoice scanning is not switched on. Enter the '
+                            'invoice by hand.'),
+            })
+
+        try:
+            fields = invoice_scan.extract(
+                upload.read(), upload.content_type or 'image/jpeg', api_key)
+        except invoice_scan.ScanUnavailable:
+            return Response({
+                'available': False,
+                'detail': _('Invoice scanning is not switched on. Enter the '
+                            'invoice by hand.'),
+            })
+        except invoice_scan.ScanFailed as exc:
+            # The scan is a convenience; failing it must still leave the office
+            # able to type the invoice in.
+            return Response({'available': True, 'ok': False,
+                             'detail': str(exc), 'fields': {}})
+
+        return Response({'available': True, 'ok': True, 'fields': fields})
+
     @action(detail=True, methods=['post'])
     def send_email(self, request, pk=None):
         """POST /api/invoices/<id>/send_email/ — email the invoice + its file.
