@@ -717,6 +717,19 @@ class StockMovementCreateSerializer(serializers.Serializer):
                 raise serializers.ValidationError(
                     {'quantity': _('Enter a quantity greater than zero.')})
             attrs['signed'] = -abs(qty) if mtype in self._NEGATIVE else abs(qty)
+
+        # A shelf cannot hold less than nothing. Without this, a mistyped pick
+        # -- 999 instead of 9 -- was accepted and the ledger recorded a
+        # negative amount, which then fed the shortage flags on order picking
+        # and stayed wrong until a human noticed. Refusing costs a worker one
+        # correction; accepting costs the stock count its meaning.
+        item = self.context.get('stock_item')
+        if item is not None and attrs['signed'] < 0:
+            available = item.quantity
+            if available + attrs['signed'] < 0:
+                raise serializers.ValidationError({'quantity': _(
+                    'Only %(available)s in stock at this location.'
+                ) % {'available': available}})
         return attrs
 
 

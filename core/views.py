@@ -1027,7 +1027,10 @@ class StockItemViewSet(viewsets.ModelViewSet):
         movement type. Returns the row with its refreshed amount.
         """
         item = self.get_object()
-        serializer = StockMovementCreateSerializer(data=request.data)
+        # The serializer needs the item to refuse a movement that would take
+        # the shelf below zero.
+        serializer = StockMovementCreateSerializer(
+            data=request.data, context={'stock_item': item})
         serializer.is_valid(raise_exception=True)
         StockMovement.objects.create(
             stock_item=item,

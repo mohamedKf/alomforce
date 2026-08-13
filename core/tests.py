@@ -1009,3 +1009,50 @@ class TranslationTests(APITestCase):
         # And genuinely different from each other and from English.
         self.assertNotEqual(hebrew, arabic)
         self.assertNotIn('Unknown', hebrew)
+
+
+class StockCannotGoNegativeTests(APITestCase):
+    """A shelf cannot hold less than nothing.
+
+    Found by testing the app: picking 999 from a shelf holding 6 was accepted
+    and left the ledger at -993, which then fed the shortage flags on order
+    picking.
+    """
+
+    def setUp(self):
+        from core.models import Location, Profile, StockItem, Warehouse
+        self.staff = User.objects.create_user(
+            id_number=make_id('77777777'), password='Str0ng!Passw0rd',
+            first_name='S', last_name='K', role=Role.WAREHOUSE, phone='050-3334455')
+        self.client.force_authenticate(self.staff)
+        warehouse = Warehouse.objects.create(name='Test WH')
+        location = Location.objects.create(warehouse=warehouse, code='T-1')
+        self.item = StockItem.objects.create(
+            profile=Profile.objects.first(), location=location, length_mm=6000)
+
+    def _move(self, mtype, qty):
+        return self.client.post(f'/api/stock/{self.item.id}/move/',
+                                {'movement_type': mtype, 'quantity': qty},
+                                format='json')
+
+    def test_picking_more_than_is_there_is_refused(self):
+        self._move('receipt', 6)
+        r = self._move('pick', 999)
+        self.assertEqual(r.status_code, 400, r.data)
+        self.assertIn('6', str(r.data['quantity'][0]))   # tells them what is there
+        self.assertEqual(self.item.quantity, 6)          # and nothing moved
+
+    def test_picking_exactly_what_is_there_is_allowed(self):
+        self._move('receipt', 6)
+        self.assertEqual(self._move('pick', 6).status_code, 200)
+        self.assertEqual(self.item.quantity, 0)
+
+    def test_an_adjustment_cannot_go_below_zero_either(self):
+        self._move('receipt', 3)
+        r = self._move('adjustment', -10)
+        self.assertEqual(r.status_code, 400)
+        self.assertEqual(self.item.quantity, 3)
+
+    def test_receiving_is_never_blocked(self):
+        self.assertEqual(self._move('receipt', 500).status_code, 200)
+        self.assertEqual(self.item.quantity, 500)
