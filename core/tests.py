@@ -6,6 +6,9 @@ from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
 
+import os
+from unittest import mock
+
 from core import maplinks
 from core.models import Client, Role, User, normalise_phone, validate_israeli_id
 
@@ -875,3 +878,44 @@ class DeliverySignatureTests(APITestCase):
         r = self._sign()
         self.assertEqual(r.status_code, 200, r.data)
         self.assertEqual(r.data['recipient_phone'], '')
+
+
+class MapboxTokenTests(APITestCase):
+    """The token can come from Settings or the environment; env wins."""
+
+    def setUp(self):
+        from core.models import AppConfig
+        self.cfg = AppConfig.get()
+        self.manager = User.objects.create_user(
+            id_number=make_id('44444444'), password='Str0ng!Passw0rd',
+            first_name='M', last_name='G', role=Role.MANAGER, phone='050-1010101')
+        self.client.force_authenticate(self.manager)
+
+    def test_token_saved_in_settings_reaches_the_map(self):
+        r = self.client.patch('/api/settings/',
+                              {'mapbox_token': 'pk.from_settings'}, format='json')
+        self.assertEqual(r.status_code, 200, r.data)
+        # Blank the environment: this developer's .env carries a real token,
+        # and an env value legitimately outranks Settings, which would mask
+        # whether the saved value works at all.
+        with mock.patch.dict(os.environ, {'MAPBOX_TOKEN': ''}):
+            # /api/config/ is what the apps read to draw the map.
+            self.assertEqual(self.client.get('/api/config/').data['mapbox_token'],
+                             'pk.from_settings')
+
+    def test_environment_overrides_the_saved_value(self):
+        self.cfg.mapbox_token = 'pk.from_settings'
+        self.cfg.save(update_fields=['mapbox_token'])
+        with mock.patch.dict(os.environ, {'MAPBOX_TOKEN': 'pk.from_railway'}):
+            self.assertEqual(self.client.get('/api/config/').data['mapbox_token'],
+                             'pk.from_railway')
+            data = self.client.get('/api/settings/').data
+            # The page must say the value is managed outside the app, and show
+            # which token is actually in force.
+            self.assertTrue(data['mapbox_from_env'])
+            self.assertEqual(data['mapbox_effective'], 'pk.from_railway')
+
+    def test_without_either_the_token_is_empty_not_an_error(self):
+        with mock.patch.dict(os.environ, {'MAPBOX_TOKEN': ''}):
+            self.assertEqual(
+                self.client.get('/api/config/').data['mapbox_token'], '')

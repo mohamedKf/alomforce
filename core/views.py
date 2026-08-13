@@ -776,8 +776,14 @@ class ConfigView(APIView):
     allows_pending_password = True
 
     def get(self, request):
-        from django.conf import settings
-        return Response({'mapbox_token': settings.MAPBOX_TOKEN})
+        from core.models import AppConfig
+
+        # AppConfig.setting() resolves this the same way every other key is
+        # resolved: a MAPBOX_TOKEN environment variable wins, otherwise the
+        # value saved in Settings. Reading settings.MAPBOX_TOKEN directly, as
+        # this used to, saw only the environment -- so a token typed into
+        # Settings was stored and then ignored, and the map stayed blank.
+        return Response({'mapbox_token': AppConfig.get().setting('mapbox_token')})
 
 
 class ShopView(APIView):

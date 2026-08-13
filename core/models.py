@@ -690,6 +690,16 @@ class AppConfig(models.Model):
     greeninvoice_api_secret = models.CharField(
         _('Green Invoice API secret'), max_length=200, blank=True)
 
+    # Mapbox — the desktop map. A public (pk.) token is meant to be embedded in
+    # client code, so it is not treated as a secret: it is readable in Settings
+    # rather than masked. Editable here so the map can be fixed without a
+    # deploy, and still overridable by MAPBOX_TOKEN in the environment.
+    mapbox_token = models.CharField(
+        _('Mapbox token'), max_length=255, blank=True,
+        help_text=_('Public token (pk.…) for the map. A MAPBOX_TOKEN '
+                    'environment variable overrides this.'),
+    )
+
     class Meta:
         verbose_name = _('app configuration')
         verbose_name_plural = _('app configuration')
@@ -712,6 +722,7 @@ class AppConfig(models.Model):
         'cloudinary_cloud_name': 'CLOUDINARY_CLOUD_NAME',
         'cloudinary_api_key': 'CLOUDINARY_API_KEY',
         'cloudinary_api_secret': 'CLOUDINARY_API_SECRET',
+        'mapbox_token': 'MAPBOX_TOKEN',
     }
 
     @classmethod

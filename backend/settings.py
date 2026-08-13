@@ -251,6 +251,10 @@ MEDIA_ROOT = BASE_DIR / 'media'
 
 # Mapbox public token for the desktop map. A public (pk.) token is meant to be
 # embedded in client code; kept here so it lives in one place and out of source.
+# Read through AppConfig.setting('mapbox_token') rather than from here, so the
+# environment variable and the value saved in Settings resolve by the same rule
+# as every other key (environment wins). Kept defined only so anything still
+# importing it gets the environment value rather than an AttributeError.
 MAPBOX_TOKEN = config('MAPBOX_TOKEN', default='')
 
 

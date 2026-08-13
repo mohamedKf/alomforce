@@ -518,6 +518,10 @@ class SettingsSerializer(serializers.ModelSerializer):
     openai_from_env = serializers.SerializerMethodField()
     smtp_from_env = serializers.SerializerMethodField()
     greeninvoice_from_env = serializers.SerializerMethodField()
+    mapbox_from_env = serializers.SerializerMethodField()
+    # The value actually in force, environment included -- so the page shows
+    # the token the map will really use, not just the row in the database.
+    mapbox_effective = serializers.SerializerMethodField()
 
     class Meta:
         model = AppConfig
@@ -534,6 +538,7 @@ class SettingsSerializer(serializers.ModelSerializer):
             'greeninvoice_api_key', 'greeninvoice_api_secret',
             'greeninvoice_secret_set', 'greeninvoice_ready',
             'greeninvoice_from_env',
+            'mapbox_token', 'mapbox_from_env', 'mapbox_effective',
         ]
         read_only_fields = ['id']
 
@@ -557,6 +562,14 @@ class SettingsSerializer(serializers.ModelSerializer):
 
     def get_greeninvoice_from_env(self, obj):
         return obj.from_env('greeninvoice_api_key')
+
+    def get_mapbox_from_env(self, obj):
+        return obj.from_env('mapbox_token')
+
+    def get_mapbox_effective(self, obj):
+        # Not a secret: a Mapbox pk. token is designed to ship inside client
+        # code, so showing it is how the page proves which one is in force.
+        return obj.setting('mapbox_token')
 
     def get_storage_backend(self, obj):
         return 'cloudinary' if obj.cloudinary_ready else 'local'
