@@ -1427,6 +1427,14 @@ class Delivery(models.Model):
 
     address = models.TextField(_('delivery address'), blank=True)
     recipient_name = models.CharField(_('received by'), max_length=150, blank=True)
+    # Stored, not just used once: the signed note gets sent to whoever actually
+    # took the goods, and "send it again" a week later has to reach the same
+    # person. Held only on the delivery, because the man on the gate today is
+    # not necessarily the client's contact and must not overwrite them.
+    recipient_phone = models.CharField(
+        _("recipient's phone"), max_length=32, blank=True,
+        help_text=_('The person who signed, for sending them the delivery note.'),
+    )
     signature = models.ImageField(
         _('signature'), upload_to='deliveries/signatures/', blank=True, null=True
     )

@@ -807,3 +807,71 @@ class ClientLocationLinkTests(APITestCase):
         self.assertEqual(r.status_code, 200, r.data)
         self.assertIsNone(r.data['latitude'])
         self.assertIsNone(r.data['longitude'])
+
+
+class DeliverySignatureTests(APITestCase):
+    """Who signed, and how the note reaches them afterwards."""
+
+    def setUp(self):
+        self.driver = User.objects.create_user(
+            id_number=make_id('22222222'), password='Str0ng!Passw0rd',
+            first_name='D', last_name='R', role=Role.DRIVER, phone='050-4445566')
+        self.office = User.objects.create_user(
+            id_number=make_id('33333333'), password='Str0ng!Passw0rd',
+            first_name='O', last_name='F', role=Role.OFFICE, phone='050-7778899')
+        self.customer = Client.objects.create(
+            name='Gate client', contact_name='Owner Person', phone='04-9001122')
+        from core.models import Order, OrderStatus
+        self.order = Order.objects.create(
+            number='ORD-TEST-0001', client=self.customer,
+            status=OrderStatus.OUT_FOR_DELIVERY, created_by=self.office)
+
+    def _sign(self, **extra):
+        from django.core.files.uploadedfile import SimpleUploadedFile
+        # A 1x1 PNG is enough; the image itself is not what is under test.
+        png = SimpleUploadedFile(
+            'sig.png',
+            b'\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x01\x00\x00\x00'
+            b'\x01\x08\x06\x00\x00\x00\x1f\x15\xc4\x89\x00\x00\x00\nIDATx\x9cc'
+            b'\x00\x01\x00\x00\x05\x00\x01\r\n-\xb4\x00\x00\x00\x00IEND\xaeB`\x82',
+            content_type='image/png')
+        self.client.force_authenticate(self.driver)
+        payload = {'recipient_name': 'Gate Man', 'signature': png}
+        payload.update(extra)
+        return self.client.post(
+            f'/api/orders/{self.order.id}/sign_delivery/',
+            payload, format='multipart')
+
+    def test_signing_stores_the_recipients_phone(self):
+        r = self._sign(recipient_phone='052-1234567')
+        self.assertEqual(r.status_code, 200, r.data)
+        from core.models import Delivery
+        delivery = Delivery.objects.get(order=self.order)
+        self.assertEqual(delivery.recipient_name, 'Gate Man')
+        self.assertEqual(delivery.recipient_phone, '052-1234567')
+
+    def test_sign_response_carries_both_recipients(self):
+        r = self._sign(recipient_phone='052-1234567')
+        # The person who signed...
+        self.assertEqual(r.data['recipient_phone'], '052-1234567')
+        self.assertEqual(r.data['recipient_name'], 'Gate Man')
+        # ...and the client's own contact, so the app can offer both sends.
+        self.assertEqual(r.data['client_phone'], '04-9001122')
+        self.assertEqual(r.data['client_contact_name'], 'Owner Person')
+        self.assertTrue(r.data['public_url'].endswith('/'))
+
+    def test_recipient_survives_for_a_later_resend(self):
+        """The driver must be able to re-send days later, from a fresh app."""
+        self._sign(recipient_phone='052-1234567')
+        self.client.force_authenticate(self.driver)
+        rows = self.client.get('/api/orders/deliveries/?done=true').data
+        rows = rows.get('results', rows) if isinstance(rows, dict) else rows
+        row = next(r for r in rows if r['id'] == self.order.id)
+        self.assertEqual(row['recipient_phone'], '052-1234567')
+        self.assertEqual(row['recipient_name'], 'Gate Man')
+
+    def test_signing_without_a_phone_is_still_allowed(self):
+        # A signature with no phone must not block the delivery being recorded.
+        r = self._sign()
+        self.assertEqual(r.status_code, 200, r.data)
+        self.assertEqual(r.data['recipient_phone'], '')

@@ -1123,6 +1123,15 @@ class OrderViewSet(viewsets.ModelViewSet):
         data = [self._delivery_row(o, request) for o in orders]
         return Response(data)
 
+    @staticmethod
+    def _recipient_of(o):
+        """The signer's name and phone from the order's latest delivery."""
+        delivery = o.deliveries.order_by('-delivered_at', '-id').first()
+        return {
+            'recipient_name': delivery.recipient_name if delivery else '',
+            'recipient_phone': delivery.recipient_phone if delivery else '',
+        }
+
     def _delivery_row(self, o, request):
         c = o.client
         return {
@@ -1139,6 +1148,10 @@ class OrderViewSet(viewsets.ModelViewSet):
             'signed': bool(o.delivery_signed_at),
             'signed_at': (o.delivery_signed_at.isoformat()
                           if o.delivery_signed_at else None),
+            # Who signed, and how to reach them. Sent with every row so the
+            # driver can re-send the note days later from a restarted app,
+            # rather than only in the moment the signature was captured.
+            **self._recipient_of(o),
             'public_url': (request.build_absolute_uri(f'/d/{o.public_token}/')
                            if o.public_token else None),
             'required_by': o.required_by.isoformat() if o.required_by else None,
@@ -1158,19 +1171,26 @@ class OrderViewSet(viewsets.ModelViewSet):
     def sign_delivery(self, request, pk=None):
         """POST /api/orders/<id>/sign_delivery/ — the client signs on delivery.
 
-        Multipart: `signature` (image), `recipient_name`, optional `notes` and
-        `photo`. Records the Delivery, stamps delivery_signed_at, marks the order
-        delivered, and refreshes the stored (now signed) delivery-note PDF.
+        Multipart: `signature` (image), `recipient_name`, `recipient_phone`,
+        optional `notes` and `photo`. Records the Delivery, stamps
+        delivery_signed_at, marks the order delivered, and refreshes the stored
+        (now signed) delivery-note PDF.
+
+        The recipient's phone is stored rather than used once and forgotten:
+        the signed note is sent to the person who actually took the goods, and
+        re-sending it later has to reach that same person.
         """
         from core.models import Delivery, OrderStatus
         order = self.get_object()
         recipient = (request.data.get('recipient_name') or '').strip()
+        recipient_phone = (request.data.get('recipient_phone') or '').strip()
         signature = request.FILES.get('signature')
         photo = request.FILES.get('photo')
         delivery = Delivery.objects.create(
             order=order, driver=request.user,
             status=Delivery.Status.DELIVERED, delivered_at=timezone.now(),
-            recipient_name=recipient, notes=request.data.get('notes', ''),
+            recipient_name=recipient, recipient_phone=recipient_phone,
+            notes=request.data.get('notes', ''),
             address=((order.client.delivery_address or order.client.address)
                      if order.client else ''))
         if signature:
@@ -1194,6 +1214,13 @@ class OrderViewSet(viewsets.ModelViewSet):
             pass
         result = OrderSerializer(order, context={'request': request}).data
         result['public_url'] = request.build_absolute_uri(f'/d/{order.public_token}/')
+        # Both people the note goes to, so the app can offer to send it to the
+        # person who signed and to the client's own contact without refetching.
+        result['recipient_name'] = delivery.recipient_name
+        result['recipient_phone'] = delivery.recipient_phone
+        result['client_phone'] = (order.client.phone if order.client else '') or ''
+        result['client_contact_name'] = (
+            (order.client.contact_name if order.client else '') or '')
         return Response(result)
 
     @action(detail=True, methods=['post'])
