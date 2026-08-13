@@ -273,6 +273,12 @@ REST_FRAMEWORK = {
     ],
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 50,
+    # Registration is the only endpoint that mints an account for an anonymous
+    # caller, which also makes it the only one worth grinding the manager code
+    # against. Ten attempts an hour per IP leaves a fat-fingered code harmless
+    # and a brute force pointless.
+    'DEFAULT_THROTTLE_CLASSES': ['rest_framework.throttling.ScopedRateThrottle'],
+    'DEFAULT_THROTTLE_RATES': {'register': '10/hour'},
 }
 
 # Logging.

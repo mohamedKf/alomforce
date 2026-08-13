@@ -148,16 +148,44 @@ class LoginTests(APITestCase):
         self.assertEqual(self.user.role, Role.WAREHOUSE)
 
 
-class PublicSignupRemovedTests(APITestCase):
-    """Accounts are created by managers only; no public route may exist."""
+class PublicSignupSurfaceTests(APITestCase):
+    """What the public sign-up route may and may not do.
 
-    def test_no_public_signup_routes(self):
-        for path in ('/api/auth/register/', '/api/auth/register-client/'):
-            self.assertEqual(
-                self.client.post(path, {}).status_code,
-                status.HTTP_404_NOT_FOUND,
-                f'{path} should not exist',
-            )
+    This class used to assert that no public route existed at all. Client
+    self-registration was then asked for, so the rule is no longer "nothing is
+    public" but "only these two things are, and neither can grant staff
+    access". Registration itself is covered in RegistrationTests; this is the
+    boundary that must not quietly widen.
+    """
+
+    def test_only_the_one_registration_route_is_public(self):
+        # An older, separate client route must not reappear alongside it.
+        self.assertEqual(
+            self.client.post('/api/auth/register-client/', {}).status_code,
+            status.HTTP_404_NOT_FOUND)
+
+    def test_registration_cannot_grant_staff_roles(self):
+        """Every staff role must be unreachable from the public endpoint.
+
+        A client account sees only its own data; office, warehouse and driver
+        accounts see the business. Managers are reachable only with the code,
+        which RegistrationTests covers separately.
+        """
+        for role in (Role.OFFICE, Role.WAREHOUSE, Role.DRIVER):
+            r = self.client.post('/api/auth/register/', {
+                'account': 'client',
+                'business_name': f'Sneaky {role}',
+                'first_name': 'A', 'last_name': 'B',
+                'phone': f'052-100{list(Role).index(role)}000',
+                'password': 'Str0ng!Passw0rd',
+                'role': role, 'is_staff': True, 'is_superuser': True,
+            }, format='json')
+            if r.status_code == 201:
+                user = User.objects.get(pk=r.data['user']['id'])
+                self.assertEqual(user.role, Role.CLIENT,
+                                 f'{role} was granted through registration')
+                self.assertFalse(user.is_staff)
+                self.assertFalse(user.is_superuser)
 
 
 # ---------------------------------------------------------------------------
@@ -1056,3 +1084,140 @@ class StockCannotGoNegativeTests(APITestCase):
     def test_receiving_is_never_blocked(self):
         self.assertEqual(self._move('receipt', 500).status_code, 200)
         self.assertEqual(self.item.quantity, 500)
+
+
+class RegistrationTests(APITestCase):
+    """The only endpoint that creates an account for an anonymous caller."""
+
+    URL = '/api/auth/register/'
+
+    def setUp(self):
+        from django.core.cache import cache
+        from core.models import AppConfig
+        # The endpoint is throttled per IP, and the whole suite shares one.
+        # Without this the later tests fail as 429 and hide what they were
+        # actually checking.
+        cache.clear()
+        self.cfg = AppConfig.get()
+        self.cfg.register_code = 'let-me-in-2026'
+        self.cfg.save(update_fields=['register_code'])
+
+    # -- clients ---------------------------------------------------------
+
+    def _client_payload(self, **over):
+        data = {
+            'account': 'client',
+            'business_name': 'Signup Aluminium',
+            'first_name': 'שם', 'last_name': 'משפחה',
+            'phone': '052-9990001',
+            'password': 'Str0ng!Passw0rd',
+        }
+        data.update(over)
+        return data
+
+    def test_a_client_can_register_and_is_signed_in(self):
+        r = self.client.post(self.URL, self._client_payload(), format='json')
+        self.assertEqual(r.status_code, 201, r.data)
+        self.assertIn('access', r.data)
+        self.assertEqual(r.data['user']['role'], Role.CLIENT)
+
+    def test_registering_creates_the_company_and_links_it(self):
+        r = self.client.post(self.URL, self._client_payload(), format='json')
+        user = User.objects.get(pk=r.data['user']['id'])
+        self.assertIsNotNone(user.client, 'a client user with no company is invalid')
+        self.assertEqual(user.client.name, 'Signup Aluminium')
+
+    def test_the_new_client_can_sign_in_with_their_phone(self):
+        self.client.post(self.URL, self._client_payload(), format='json')
+        r = self.client.post('/api/auth/login/',
+                             {'identifier': '052-9990001',
+                              'password': 'Str0ng!Passw0rd'}, format='json')
+        self.assertEqual(r.status_code, 200, r.data)
+
+    def test_a_taken_phone_is_refused_in_any_format(self):
+        self.client.post(self.URL, self._client_payload(), format='json')
+        # Same number, written differently: the login lookup normalises, so
+        # this must collide rather than create a second account.
+        r = self.client.post(self.URL,
+                             self._client_payload(phone='0529990001'),
+                             format='json')
+        self.assertEqual(r.status_code, 400)
+        self.assertIn('phone', r.data)
+
+    def test_a_weak_password_is_refused(self):
+        r = self.client.post(self.URL, self._client_payload(password='1234'),
+                             format='json')
+        self.assertEqual(r.status_code, 400)
+        self.assertIn('password', r.data)
+
+    def test_registering_cannot_make_itself_a_manager(self):
+        """The role is not a field the caller gets to choose."""
+        r = self.client.post(self.URL,
+                             self._client_payload(role='manager', is_staff=True),
+                             format='json')
+        self.assertEqual(r.status_code, 201, r.data)
+        user = User.objects.get(pk=r.data['user']['id'])
+        self.assertEqual(user.role, Role.CLIENT)
+        self.assertFalse(user.is_staff)
+        self.assertFalse(user.is_superuser)
+
+    # -- managers --------------------------------------------------------
+
+    def _manager_payload(self, **over):
+        data = {
+            'account': 'manager',
+            'register_code': 'let-me-in-2026',
+            'id_number': make_id('88888888'),
+            'first_name': 'מנהל', 'last_name': 'חדש',
+            'phone': '052-9990002',
+            'password': 'Str0ng!Passw0rd',
+        }
+        data.update(over)
+        return data
+
+    def test_the_right_code_creates_a_manager(self):
+        r = self.client.post(self.URL, self._manager_payload(), format='json')
+        self.assertEqual(r.status_code, 201, r.data)
+        user = User.objects.get(pk=r.data['user']['id'])
+        self.assertEqual(user.role, Role.MANAGER)
+        self.assertTrue(user.is_staff)
+        self.assertFalse(user.must_change_password)
+
+    def test_a_wrong_code_is_refused(self):
+        r = self.client.post(self.URL,
+                             self._manager_payload(register_code='guess'),
+                             format='json')
+        self.assertEqual(r.status_code, 400)
+        self.assertIn('register_code', r.data)
+        self.assertFalse(User.objects.filter(role=Role.MANAGER).exists())
+
+    def test_with_no_code_configured_manager_registration_is_off(self):
+        self.cfg.register_code = ''
+        self.cfg.save(update_fields=['register_code'])
+        r = self.client.post(self.URL, self._manager_payload(register_code='x'),
+                             format='json')
+        self.assertEqual(r.status_code, 400)
+        self.assertFalse(User.objects.filter(role=Role.MANAGER).exists())
+
+    def test_an_environment_code_overrides_the_stored_one(self):
+        with mock.patch.dict(os.environ, {'REGISTER_CODE': 'from-railway'}):
+            stored = self.client.post(
+                self.URL, self._manager_payload(register_code='let-me-in-2026'),
+                format='json')
+            self.assertEqual(stored.status_code, 400,
+                             'the database code must not work once the '
+                             'environment sets one')
+            env = self.client.post(
+                self.URL, self._manager_payload(register_code='from-railway'),
+                format='json')
+            self.assertEqual(env.status_code, 201, env.data)
+
+    def test_a_manager_id_must_be_a_real_israeli_id(self):
+        r = self.client.post(self.URL,
+                             self._manager_payload(id_number='123456789'),
+                             format='json')
+        self.assertEqual(r.status_code, 400)
+
+    def test_an_unknown_account_kind_is_refused(self):
+        r = self.client.post(self.URL, {'account': 'superuser'}, format='json')
+        self.assertEqual(r.status_code, 400)

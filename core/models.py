@@ -700,6 +700,19 @@ class AppConfig(models.Model):
                     'environment variable overrides this.'),
     )
 
+    # The shared secret that lets someone register themselves as a manager.
+    # This is the one credential in the system that hands out full access, so
+    # it is deliberately blank by default: manager registration is off until
+    # somebody sets a code, rather than open until somebody remembers to close
+    # it. Set REGISTER_CODE in the environment to keep it out of the database
+    # entirely.
+    register_code = models.CharField(
+        _('manager register code'), max_length=128, blank=True,
+        help_text=_('Anyone with this code can create a manager account. '
+                    'Leave empty to switch manager registration off. A '
+                    'REGISTER_CODE environment variable overrides this.'),
+    )
+
     class Meta:
         verbose_name = _('app configuration')
         verbose_name_plural = _('app configuration')
@@ -723,6 +736,7 @@ class AppConfig(models.Model):
         'cloudinary_api_key': 'CLOUDINARY_API_KEY',
         'cloudinary_api_secret': 'CLOUDINARY_API_SECRET',
         'mapbox_token': 'MAPBOX_TOKEN',
+        'register_code': 'REGISTER_CODE',
     }
 
     @classmethod

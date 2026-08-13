@@ -15,6 +15,7 @@ from django.contrib.auth.password_validation import (
 )
 from django.core.exceptions import ValidationError as DjangoValidationError
 from django.db import transaction
+from django.utils.crypto import constant_time_compare
 from django.utils.translation import gettext_lazy as _
 from rest_framework import serializers
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
@@ -42,6 +43,7 @@ from core.models import (
     StockItem,
     StockMovement,
     Warehouse,
+    normalise_phone,
     validate_israeli_id,
 )
 
@@ -130,6 +132,105 @@ class ClientSerializer(serializers.ModelSerializer):
             'price_tier', 'credit_limit', 'is_active', 'created_at',
         ]
         read_only_fields = ['id', 'price_tier', 'credit_limit', 'is_active', 'created_at']
+
+
+class ClientRegistrationSerializer(PasswordRulesMixin, serializers.ModelSerializer):
+    """A client company registering itself.
+
+    Creates the company and its first contact in one step: someone signing up
+    has no company to be attached to yet, and a contact with no client is a
+    state the model rejects. They sign in with their phone, like every other
+    client user.
+
+    No approval gate. A client account can only ever see its own orders and
+    documents, so the worst a stranger gets is an empty account -- unlike the
+    manager path below, which is why that one needs a code.
+    """
+
+    business_name = serializers.CharField(max_length=200, write_only=True)
+    password = serializers.CharField(write_only=True, style={'input_type': 'password'})
+
+    class Meta:
+        model = User
+        fields = ['id', 'first_name', 'last_name', 'email', 'phone',
+                  'language', 'business_name', 'password']
+
+    def validate_phone(self, value):
+        """Reject a taken number here rather than at the database.
+
+        normalise_phone is what the login lookup uses, so 052-1234567 and
+        0521234567 are the same person and must collide.
+        """
+        normalised = normalise_phone(value)
+        if not normalised:
+            raise serializers.ValidationError(_('Enter a valid phone number.'))
+        if User.objects.filter(phone_normalised=normalised).exists():
+            raise serializers.ValidationError(
+                _('An account already exists for this phone number.'))
+        return value
+
+    @transaction.atomic
+    def create(self, validated_data):
+        business = validated_data.pop('business_name').strip()
+        password = validated_data.pop('password')
+        client = Client.objects.create(
+            name=business,
+            contact_name=f"{validated_data.get('first_name', '')} "
+                         f"{validated_data.get('last_name', '')}".strip(),
+            phone=validated_data.get('phone', ''),
+            email=validated_data.get('email', ''),
+        )
+        return User.objects.create_client_user(
+            phone=validated_data.pop('phone'),
+            password=password,
+            client=client,
+            **validated_data,
+        )
+
+
+class ManagerRegistrationSerializer(PasswordRulesMixin, serializers.ModelSerializer):
+    """Registering a manager with the shared code.
+
+    This is how the first manager gets in on a fresh deployment, so it cannot
+    require a manager to already exist. The code is the only thing standing
+    between a stranger and full access to wages, pricing and stock -- it is
+    checked against AppConfig.setting('register_code'), so an environment
+    variable on Railway beats anything stored in the database, and manager
+    registration stays off entirely until a code is set.
+    """
+
+    register_code = serializers.CharField(write_only=True)
+    password = serializers.CharField(write_only=True, style={'input_type': 'password'})
+
+    class Meta:
+        model = User
+        fields = ['id', 'id_number', 'first_name', 'last_name', 'email',
+                  'phone', 'language', 'register_code', 'password']
+
+    def validate_register_code(self, value):
+        expected = (AppConfig.get().setting('register_code') or '').strip()
+        if not expected:
+            raise serializers.ValidationError(
+                _('Manager registration is not enabled.'))
+        # constant_time_compare so a wrong code cannot be found by timing.
+        if not constant_time_compare(value.strip(), expected):
+            raise serializers.ValidationError(_('That code is not correct.'))
+        return value
+
+    @transaction.atomic
+    def create(self, validated_data):
+        validated_data.pop('register_code')
+        password = validated_data.pop('password')
+        return User.objects.create_user(
+            id_number=validated_data.pop('id_number'),
+            password=password,
+            role=Role.MANAGER,
+            # A manager registering themselves chose their own password, so
+            # there is nothing to force them to replace.
+            must_change_password=False,
+            is_staff=True,
+            **validated_data,
+        )
 
 
 class LoginSerializer(TokenObtainPairSerializer):
@@ -501,7 +602,8 @@ class SettingsSerializer(serializers.ModelSerializer):
     # Secrets are write-only; reads report only whether each is set, never the
     # value. An omitted secret keeps the stored one (see update()).
     SECRET_FIELDS = ['cloudinary_api_secret', 'openai_api_key',
-                     'smtp_password', 'greeninvoice_api_secret']
+                     'smtp_password', 'greeninvoice_api_secret',
+                     'register_code']
 
     cloudinary_api_secret = serializers.CharField(
         write_only=True, required=False, allow_blank=True)
@@ -510,6 +612,10 @@ class SettingsSerializer(serializers.ModelSerializer):
     smtp_password = serializers.CharField(
         write_only=True, required=False, allow_blank=True)
     greeninvoice_api_secret = serializers.CharField(
+        write_only=True, required=False, allow_blank=True)
+    # Write-only like the other secrets: this one hands out manager access, so
+    # reads report only whether it is set, never the code itself.
+    register_code = serializers.CharField(
         write_only=True, required=False, allow_blank=True)
 
     cloudinary_secret_set = serializers.SerializerMethodField()
@@ -529,6 +635,8 @@ class SettingsSerializer(serializers.ModelSerializer):
     smtp_from_env = serializers.SerializerMethodField()
     greeninvoice_from_env = serializers.SerializerMethodField()
     mapbox_from_env = serializers.SerializerMethodField()
+    register_code_set = serializers.SerializerMethodField()
+    register_code_from_env = serializers.SerializerMethodField()
     # The value actually in force, environment included -- so the page shows
     # the token the map will really use, not just the row in the database.
     mapbox_effective = serializers.SerializerMethodField()
@@ -549,6 +657,7 @@ class SettingsSerializer(serializers.ModelSerializer):
             'greeninvoice_secret_set', 'greeninvoice_ready',
             'greeninvoice_from_env',
             'mapbox_token', 'mapbox_from_env', 'mapbox_effective',
+            'register_code', 'register_code_set', 'register_code_from_env',
         ]
         read_only_fields = ['id']
 
@@ -572,6 +681,12 @@ class SettingsSerializer(serializers.ModelSerializer):
 
     def get_greeninvoice_from_env(self, obj):
         return obj.from_env('greeninvoice_api_key')
+
+    def get_register_code_set(self, obj):
+        return bool(obj.setting('register_code'))
+
+    def get_register_code_from_env(self, obj):
+        return obj.from_env('register_code')
 
     def get_mapbox_from_env(self, obj):
         return obj.from_env('mapbox_token')

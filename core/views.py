@@ -13,6 +13,7 @@ from datetime import timedelta
 from decimal import Decimal, InvalidOperation
 
 from django.contrib.auth import get_user_model
+from django.core.exceptions import ValidationError as DjangoValidationError
 from django.db.models import Count, F, Q, Sum
 from django.db.models.functions import Coalesce
 from django.utils import timezone
@@ -23,6 +24,7 @@ from rest_framework.decorators import action
 from rest_framework.parsers import FormParser, JSONParser, MultiPartParser
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenObtainPairView
 
 from core.permissions import PasswordChangeRequired
@@ -69,6 +71,7 @@ from core.serializers import (
     StockItemSerializer,
     StockMovementCreateSerializer,
     UserSerializer,
+    as_drf_error,
     WarehouseSerializer,
 )
 
@@ -783,7 +786,66 @@ class ConfigView(APIView):
         # value saved in Settings. Reading settings.MAPBOX_TOKEN directly, as
         # this used to, saw only the environment -- so a token typed into
         # Settings was stored and then ignored, and the map stayed blank.
-        return Response({'mapbox_token': AppConfig.get().setting('mapbox_token')})
+        cfg = AppConfig.get()
+        return Response({
+            'mapbox_token': cfg.setting('mapbox_token'),
+            # Whether the apps should offer the manager option on the sign-up
+            # form. The code itself is never sent; only whether one exists.
+            'manager_registration': bool(cfg.setting('register_code')),
+        })
+
+
+class RegisterView(APIView):
+    """POST /api/auth/register/ — create an account without being signed in.
+
+    Two shapes behind one endpoint, chosen by `account`:
+
+      client  — a company registers itself, and gets a login that can only see
+                its own orders and documents.
+      manager — needs `register_code`, which is how the first manager gets into
+                a fresh deployment. The code lives in Railway's variables (or
+                Settings), and manager registration is off until one is set.
+
+    Deliberately throttled: this is the only endpoint that will create an
+    account for an anonymous caller, so it is also the only one worth grinding
+    codes against.
+    """
+
+    permission_classes = [permissions.AllowAny]
+    authentication_classes = []
+    throttle_scope = 'register'
+    allows_pending_password = True
+
+    def post(self, request):
+        from core.serializers import (
+            ClientRegistrationSerializer,
+            ManagerRegistrationSerializer,
+        )
+
+        kind = (request.data.get('account') or 'client').strip().lower()
+        if kind not in ('client', 'manager'):
+            return Response(
+                {'account': [_('Choose client or manager.')]},
+                status=status.HTTP_400_BAD_REQUEST)
+
+        serializer_class = (ClientRegistrationSerializer if kind == 'client'
+                            else ManagerRegistrationSerializer)
+        serializer = serializer_class(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        try:
+            user = serializer.save()
+        except DjangoValidationError as exc:
+            # create_user runs full_clean, whose errors are not DRF-shaped.
+            raise as_drf_error(exc)
+
+        # Sign them straight in: making somebody register and then immediately
+        # type the same details again is friction with no security value.
+        refresh = RefreshToken.for_user(user)
+        return Response({
+            'access': str(refresh.access_token),
+            'refresh': str(refresh),
+            'user': UserSerializer(user).data,
+        }, status=status.HTTP_201_CREATED)
 
 
 class ShopView(APIView):

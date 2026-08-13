@@ -22,6 +22,7 @@ from core.views import (
     LoginView,
     MapView,
     MeView,
+    RegisterView,
     OrderViewSet,
     PayslipViewSet,
     ProfileViewSet,
@@ -60,6 +61,7 @@ auth_patterns = [
     path('verify/', TokenVerifyView.as_view(), name='token-verify'),
     path('me/', MeView.as_view(), name='me'),
     path('change-password/', ChangePasswordView.as_view(), name='change-password'),
+    path('register/', RegisterView.as_view(), name='register'),
 ]
 
 urlpatterns = [
