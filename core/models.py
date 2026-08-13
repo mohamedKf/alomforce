@@ -973,8 +973,19 @@ class Client(models.Model):
         _('delivery address'), blank=True,
         help_text=_('Only if deliveries go somewhere other than the billing address.'),
     )
-    # Map coordinates. Filled by geocoding the address, then adjustable by
-    # dragging the pin -- so a wrong or vague address can still be placed right.
+    # A link shared from any map app -- Google Maps, Waze, Apple Maps. Saving
+    # one sets latitude/longitude from the point it refers to, because nobody
+    # types coordinates but everyone can hit share in the app they already use.
+    # Kept alongside the coordinates so the original is still there to re-open
+    # or re-parse if the parsing ever needs correcting.
+    location_url = models.URLField(
+        _('map link'), max_length=500, blank=True,
+        help_text=_('Paste a link from Google Maps, Waze or Apple Maps. The '
+                    'delivery point is taken from it.'),
+    )
+    # Map coordinates. Filled from the map link above, or by geocoding the
+    # address, then adjustable by dragging the pin -- so a wrong or vague
+    # address can still be placed right.
     latitude = models.DecimalField(
         _('latitude'), max_digits=9, decimal_places=6, null=True, blank=True
     )

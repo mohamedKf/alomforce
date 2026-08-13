@@ -6,6 +6,7 @@ from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
 
+from core import maplinks
 from core.models import Client, Role, User, normalise_phone, validate_israeli_id
 
 
@@ -692,3 +693,117 @@ class PayslipTests(APITestCase):
         rows = self.client.get('/api/payslips/').data
         results = rows.get('results', rows) if isinstance(rows, dict) else rows
         self.assertEqual(len(results), 1)  # only w1's finalised slip
+
+
+class MapLinkTests(TestCase):
+    """Coordinates out of links people actually share.
+
+    Every case is a real URL shape from Google Maps, Waze, Apple Maps or OSM.
+    resolve=False throughout: these must parse without touching the network,
+    and only genuinely short links should ever need a redirect.
+    """
+
+    def assertPoint(self, url, lat, lng):
+        point = maplinks.extract_coordinates(url, resolve=False)
+        self.assertIsNotNone(point, f'no coordinate found in {url}')
+        self.assertAlmostEqual(float(point[0]), lat, places=4, msg=url)
+        self.assertAlmostEqual(float(point[1]), lng, places=4, msg=url)
+
+    def test_google_place_pin_beats_viewport(self):
+        # !3d/!4d is the pin; @ is where the camera sat. They differ, and the
+        # pin is the one a driver wants.
+        self.assertPoint(
+            'https://www.google.com/maps/place/X/@32.0800,34.7800,17z/'
+            'data=!3m1!4b1!4m5!3m4!1s0x0:0x0!8m2!3d32.0853!4d34.7818',
+            32.0853, 34.7818)
+
+    def test_google_viewport_only(self):
+        self.assertPoint('https://www.google.com/maps/@32.0853,34.7818,15z',
+                         32.0853, 34.7818)
+
+    def test_google_query_forms(self):
+        self.assertPoint('https://maps.google.com/?q=32.0853,34.7818',
+                         32.0853, 34.7818)
+        self.assertPoint('https://www.google.com/maps?q=loc:32.0853,34.7818',
+                         32.0853, 34.7818)
+
+    def test_waze(self):
+        self.assertPoint('https://waze.com/ul?ll=32.0853,34.7818&navigate=yes',
+                         32.0853, 34.7818)
+        self.assertPoint(
+            'https://www.waze.com/live-map/directions?to=ll.32.0853%2C34.7818',
+            32.0853, 34.7818)
+
+    def test_apple(self):
+        self.assertPoint('https://maps.apple.com/?ll=32.0853,34.7818',
+                         32.0853, 34.7818)
+        self.assertPoint('https://maps.apple.com/?daddr=32.0853,34.7818',
+                         32.0853, 34.7818)
+
+    def test_openstreetmap_and_geo_uri(self):
+        self.assertPoint(
+            'https://www.openstreetmap.org/?mlat=32.0853&mlon=34.7818#map=19/32/34',
+            32.0853, 34.7818)
+        self.assertPoint('geo:32.0853,34.7818', 32.0853, 34.7818)
+
+    def test_negative_and_southern_coordinates(self):
+        self.assertPoint('https://maps.google.com/?q=-33.8688,151.2093',
+                         -33.8688, 151.2093)
+
+    def test_rejects_links_without_a_location(self):
+        for url in ('https://example.com/', 'not a url', '',
+                    'https://www.google.com/maps/search/aluminium'):
+            self.assertIsNone(maplinks.extract_coordinates(url, resolve=False),
+                              f'should not have found a point in {url!r}')
+
+    def test_rejects_null_island_and_out_of_range(self):
+        # 0,0 means a parse went wrong, not a delivery in the Atlantic.
+        self.assertIsNone(
+            maplinks.extract_coordinates('https://maps.google.com/?q=0,0',
+                                         resolve=False))
+        self.assertIsNone(
+            maplinks.extract_coordinates('https://maps.google.com/?q=99.5,200.1',
+                                         resolve=False))
+
+    def test_short_links_are_recognised_as_needing_expansion(self):
+        self.assertTrue(maplinks._is_short('https://maps.app.goo.gl/abc123'))
+        self.assertTrue(maplinks._is_short('https://waze.com/ul/hsv8v8xyz'))
+        # Already carries the point, so no network call is needed.
+        self.assertFalse(maplinks._is_short('https://waze.com/ul?ll=32.08,34.78'))
+
+
+class ClientLocationLinkTests(APITestCase):
+    """The link is what the office pastes; coordinates are what it produces."""
+
+    def setUp(self):
+        self.office = User.objects.create_user(
+            id_number=make_id('11111111'), password='Str0ng!Passw0rd',
+            first_name='O', last_name='F', role=Role.OFFICE, phone='050-1112233')
+        self.client.force_authenticate(self.office)
+
+    def test_pasting_a_link_sets_the_delivery_point(self):
+        r = self.client.post('/api/clients/', {
+            'name': 'Yard client',
+            'location_url': 'https://maps.google.com/?q=32.0853,34.7818',
+        }, format='json')
+        self.assertEqual(r.status_code, 201, r.data)
+        self.assertAlmostEqual(float(r.data['latitude']), 32.0853, places=4)
+        self.assertAlmostEqual(float(r.data['longitude']), 34.7818, places=4)
+
+    def test_a_link_with_no_location_is_refused(self):
+        r = self.client.post('/api/clients/', {
+            'name': 'Bad link', 'location_url': 'https://example.com/hello',
+        }, format='json')
+        self.assertEqual(r.status_code, 400)
+        self.assertIn('location_url', r.data)
+
+    def test_clearing_the_link_clears_the_point(self):
+        created = self.client.post('/api/clients/', {
+            'name': 'Clearable',
+            'location_url': 'https://waze.com/ul?ll=32.0853,34.7818',
+        }, format='json').data
+        r = self.client.patch(f"/api/clients/{created['id']}/",
+                              {'location_url': ''}, format='json')
+        self.assertEqual(r.status_code, 200, r.data)
+        self.assertIsNone(r.data['latitude'])
+        self.assertIsNone(r.data['longitude'])

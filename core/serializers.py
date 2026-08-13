@@ -19,6 +19,7 @@ from django.utils.translation import gettext_lazy as _
 from rest_framework import serializers
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
+from core import maplinks
 from core.models import (
     AppConfig,
     Client,
@@ -396,7 +397,12 @@ class ClientContactCreateSerializer(PasswordRulesMixin, serializers.ModelSeriali
 
 
 class ClientAdminSerializer(serializers.ModelSerializer):
-    """Full client record, editable by office and managers."""
+    """Full client record, editable by office and managers.
+
+    A pasted map link sets the coordinates. The driver's Waze button navigates
+    to the coordinate rather than the text address, so a link is the difference
+    between arriving at the yard gate and arriving at the street.
+    """
 
     business_type_display = serializers.CharField(
         source='get_business_type_display', read_only=True
@@ -413,11 +419,42 @@ class ClientAdminSerializer(serializers.ModelSerializer):
             'tax_id', 'business_number',
             'contact_name', 'phone', 'email', 'website',
             'address', 'city', 'postal_code', 'delivery_address', 'notes',
-            'latitude', 'longitude',
+            'location_url', 'latitude', 'longitude',
             'price_tier', 'tier_discount_percent', 'credit_limit',
             'is_active', 'created_at', 'contact_count',
         ]
         read_only_fields = ['id', 'created_at', 'contact_count']
+
+    def validate(self, attrs):
+        """Turn a pasted map link into coordinates, or say why it cannot.
+
+        A link that parses to nothing is rejected rather than stored quietly:
+        silently keeping it would leave the office believing the delivery point
+        was set while the driver still gets sent to the street address.
+        """
+        if 'location_url' not in attrs:
+            return attrs
+
+        link = (attrs.get('location_url') or '').strip()
+        if not link:
+            # Clearing the link clears the point it set; a coordinate typed in
+            # the same request still wins, so the pin stays draggable.
+            attrs['location_url'] = ''
+            if 'latitude' not in attrs:
+                attrs['latitude'] = None
+            if 'longitude' not in attrs:
+                attrs['longitude'] = None
+            return attrs
+
+        point = maplinks.extract_coordinates(link)
+        if point is None:
+            raise serializers.ValidationError({'location_url': _(
+                'That link does not contain a location. Open the place in '
+                'Google Maps, Waze or Apple Maps, share it, and paste the '
+                'link that gives you.'
+            )})
+        attrs['latitude'], attrs['longitude'] = point
+        return attrs
 
 
 class ShopSerializer(serializers.ModelSerializer):
