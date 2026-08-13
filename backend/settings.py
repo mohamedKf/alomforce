@@ -6,6 +6,7 @@ package holding the shared models and views; desktop and mobile are clients
 that talk to this project over the REST API.
 """
 
+from datetime import timedelta
 from pathlib import Path
 
 import dj_database_url
@@ -242,6 +243,20 @@ REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 50,
 }
+
+# JWT lifetimes.
+#
+# SimpleJWT's defaults are 5 minutes and 1 day. One day is wrong for this
+# workload: a warehouse tablet or a driver's phone is signed in once and used
+# for months, and an expired refresh token logs the worker out mid-shift with
+# no way to tell it apart from a real fault. Thirty days matches how the
+# devices are actually used, and the hour-long access token keeps the refresh
+# traffic down on a phone that spends the day on patchy shop-floor Wi-Fi.
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(hours=1),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=30),
+}
+
 
 CORS_ALLOWED_ORIGINS = config(
     'CORS_ALLOWED_ORIGINS',
