@@ -246,11 +246,31 @@ class ClientCompanyTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertTrue(Client.objects.filter(tax_id='514213456').exists())
 
-    def test_warehouse_cannot_see_clients(self):
+    def test_warehouse_may_look_up_clients_but_not_change_them(self):
+        """The counter case: a warehouse worker taking an order needs to find
+        the client and can add a missing one, but must not be able to edit or
+        delete an existing company. This replaces an older test that asserted
+        warehouse workers were locked out of clients entirely -- the view was
+        deliberately opened up for the counter, and the test was left behind
+        asserting a policy the code no longer had."""
+        company = Client.objects.create(name='Counter co', tax_id='514213456')
         worker = make_user(role=Role.WAREHOUSE)
         self.client.force_authenticate(user=worker)
-        response = self.client.get(reverse('client-list'))
-        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+        self.assertEqual(self.client.get(reverse('client-list')).status_code,
+                         status.HTTP_200_OK)
+        self.assertEqual(
+            self.client.post(reverse('client-list'), {'name': 'New at counter'}).status_code,
+            status.HTTP_201_CREATED)
+
+        # ...but the company's own record stays office-only.
+        self.assertEqual(
+            self.client.patch(reverse('client-detail', args=[company.pk]),
+                              {'name': 'Renamed'}).status_code,
+            status.HTTP_403_FORBIDDEN)
+        self.assertEqual(
+            self.client.delete(reverse('client-detail', args=[company.pk])).status_code,
+            status.HTTP_403_FORBIDDEN)
 
     def test_delete_deactivates_client(self):
         company = Client.objects.create(name='Mizrahi', tax_id='514213456')
@@ -919,3 +939,73 @@ class MapboxTokenTests(APITestCase):
         with mock.patch.dict(os.environ, {'MAPBOX_TOKEN': ''}):
             self.assertEqual(
                 self.client.get('/api/config/').data['mapbox_token'], '')
+
+
+class ClientPinVersusLinkTests(APITestCase):
+    """A pasted link and a dragged pin must not fight each other."""
+
+    def setUp(self):
+        self.office = User.objects.create_user(
+            id_number=make_id('55555555'), password='Str0ng!Passw0rd',
+            first_name='O', last_name='F', role=Role.OFFICE, phone='050-2223344')
+        self.client.force_authenticate(self.office)
+        self.created = self.client.post('/api/clients/', {
+            'name': 'Pin client',
+            'location_url': 'https://maps.google.com/?q=32.0853,34.7818',
+        }, format='json').data
+
+    def test_dragging_the_pin_survives_a_save_that_resends_the_same_link(self):
+        # The desktop posts the whole form back, link included, after a drag.
+        r = self.client.patch(f"/api/clients/{self.created['id']}/", {
+            'location_url': self.created['location_url'],
+            'latitude': '32.100000', 'longitude': '34.800000',
+        }, format='json')
+        self.assertEqual(r.status_code, 200, r.data)
+        self.assertAlmostEqual(float(r.data['latitude']), 32.1, places=4)
+        self.assertAlmostEqual(float(r.data['longitude']), 34.8, places=4)
+
+    def test_a_new_link_moves_the_pin(self):
+        r = self.client.patch(f"/api/clients/{self.created['id']}/", {
+            'location_url': 'https://maps.google.com/?q=31.7683,35.2137',
+        }, format='json')
+        self.assertEqual(r.status_code, 200, r.data)
+        self.assertAlmostEqual(float(r.data['latitude']), 31.7683, places=4)
+        self.assertAlmostEqual(float(r.data['longitude']), 35.2137, places=4)
+
+
+class TranslationTests(APITestCase):
+    """API messages come back in the caller's language.
+
+    The catalogue is deliberately partial -- the messages a user is shown are
+    translated, field labels are not -- so this pins the part that matters and
+    would catch the .mo files going missing from a deploy.
+    """
+
+    def setUp(self):
+        self.worker = User.objects.create_user(
+            id_number=make_id('66666666'), password='Str0ng!Passw0rd',
+            first_name='W', last_name='H', role=Role.WAREHOUSE, phone='050-9998877')
+        self.client.force_authenticate(self.worker)
+        from core.models import Order, OrderStatus
+        self.order = Order.objects.create(
+            number='ORD-L10N-0001', client=Client.objects.create(name='L10n co'),
+            status=OrderStatus.READY, created_by=self.worker)
+
+    def _error_in(self, language):
+        r = self.client.post(f'/api/orders/{self.order.id}/line_action/',
+                             {'line_id': 999999}, format='json',
+                             HTTP_ACCEPT_LANGUAGE=language)
+        self.assertEqual(r.status_code, 400)
+        return str(r.data['line_id'][0])
+
+    def test_english_is_the_source_text(self):
+        self.assertEqual(self._error_in('en'), 'Unknown line.')
+
+    def test_hebrew_and_arabic_are_translated(self):
+        hebrew = self._error_in('he')
+        arabic = self._error_in('ar')
+        self.assertEqual(hebrew, 'שורה לא מוכרת.')
+        self.assertEqual(arabic, 'سطر غير معروف.')
+        # And genuinely different from each other and from English.
+        self.assertNotEqual(hebrew, arabic)
+        self.assertNotIn('Unknown', hebrew)

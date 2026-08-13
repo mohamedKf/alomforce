@@ -453,7 +453,17 @@ class ClientAdminSerializer(serializers.ModelSerializer):
                 'Google Maps, Waze or Apple Maps, share it, and paste the '
                 'link that gives you.'
             )})
-        attrs['latitude'], attrs['longitude'] = point
+
+        # Only move the pin when the link itself changed. The desktop sends the
+        # unchanged link back with every save, and it also has a draggable pin:
+        # re-deriving each time would silently undo a drag, so the newest edit
+        # -- a fresh link, or a nudged pin -- is the one that wins.
+        unchanged = (
+            self.instance is not None
+            and (self.instance.location_url or '').strip() == link
+        )
+        if not unchanged:
+            attrs['latitude'], attrs['longitude'] = point
         return attrs
 
 

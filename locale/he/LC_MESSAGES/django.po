@@ -1,0 +1,1357 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-08-13 21:38+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=3; plural=(n == 1 && n % 1 == 0) ? 0 : (n == 2 && n % "
+"1 == 0) ? 1: 2;\n"
+#: backend/settings.py:213 core/models.py:230
+msgid "English"
+msgstr ""
+
+#: backend/settings.py:214 core/models.py:230
+msgid "Hebrew"
+msgstr ""
+
+#: backend/settings.py:215 core/models.py:230
+msgid "Arabic"
+msgstr ""
+
+#: core/admin.py:19
+msgid "Personal"
+msgstr ""
+
+#: core/admin.py:23
+msgid "Employment"
+msgstr ""
+
+#: core/admin.py:26
+msgid "Client access"
+msgstr ""
+
+#: core/admin.py:27
+msgid "Permissions"
+msgstr ""
+
+#: core/models.py:54
+msgid "ID number must contain digits only."
+msgstr "מספר זהות חייב להכיל ספרות בלבד."
+
+#: core/models.py:56
+msgid "ID number cannot be longer than 9 digits."
+msgstr "מספר זהות לא יכול להיות ארוך מ-9 ספרות."
+
+#: core/models.py:68
+#, python-format
+msgid "%(value)s is not a valid ID number."
+msgstr "%(value)s אינו מספר זהות תקין."
+
+#: core/models.py:86
+msgid "Office"
+msgstr ""
+
+#: core/models.py:87
+msgid "Warehouse worker"
+msgstr ""
+
+#: core/models.py:88
+msgid "Delivery driver"
+msgstr ""
+
+#: core/models.py:89
+msgid "Client"
+msgstr ""
+
+#: core/models.py:90
+msgid "Manager"
+msgstr ""
+
+#: core/models.py:96
+msgid "By hour"
+msgstr ""
+
+#: core/models.py:97
+msgid "By day"
+msgstr ""
+
+#: core/models.py:98
+msgid "Monthly salary"
+msgstr ""
+
+#: core/models.py:130
+msgid "An ID number is required for staff accounts."
+msgstr "נדרש מספר זהות לחשבונות עובדים."
+
+#: core/models.py:136
+msgid "A phone number is required for client accounts."
+msgstr "נדרש מספר טלפון לחשבונות לקוחות."
+
+#: core/models.py:168
+msgid "Superuser must have is_staff=True."
+msgstr ""
+
+#: core/models.py:170
+msgid "Superuser must have is_superuser=True."
+msgstr ""
+
+#: core/models.py:187
+msgid "ID number"
+msgstr ""
+
+#: core/models.py:194
+msgid "9-digit ID number (תעודת זהות). Staff sign in with this."
+msgstr ""
+
+#: core/models.py:197
+msgid "first name"
+msgstr ""
+
+#: core/models.py:198
+msgid "last name"
+msgstr ""
+
+#: core/models.py:199 core/models.py:634 core/models.py:977
+msgid "email"
+msgstr ""
+
+#: core/models.py:201 core/models.py:633 core/models.py:976
+msgid "phone"
+msgstr ""
+
+#: core/models.py:206
+msgid "Enter a valid phone number."
+msgstr "הזינו מספר טלפון תקין."
+
+#: core/models.py:213
+msgid "phone (normalised)"
+msgstr ""
+
+#: core/models.py:221
+msgid "date of birth"
+msgstr ""
+
+#: core/models.py:222 core/models.py:631 core/models.py:774
+msgid "address"
+msgstr ""
+
+#: core/models.py:225 core/models.py:539
+msgid "role"
+msgstr ""
+
+#: core/models.py:228
+msgid "language"
+msgstr ""
+
+#: core/models.py:235
+msgid "hired on"
+msgstr ""
+
+#: core/models.py:236
+msgid "emergency contact"
+msgstr ""
+
+#: core/models.py:237
+msgid "emergency phone"
+msgstr ""
+
+#: core/models.py:243 core/models.py:1591
+msgid "pay basis"
+msgstr ""
+
+#: core/models.py:246 core/models.py:1604
+msgid "hourly rate"
+msgstr ""
+
+#: core/models.py:248
+msgid "daily rate"
+msgstr ""
+
+#: core/models.py:250
+msgid "monthly salary"
+msgstr ""
+
+#: core/models.py:251
+msgid "pay overtime"
+msgstr ""
+
+#: core/models.py:253
+msgid "regular hours per day"
+msgstr ""
+
+#: core/models.py:255
+msgid "Hours before overtime starts; 8 for a 6-day week, 8.6 for 5-day."
+msgstr ""
+
+#: core/models.py:260 core/models.py:1019 core/models.py:1043
+#: core/models.py:1291 core/models.py:1350
+msgid "client"
+msgstr ""
+
+#: core/models.py:267 core/models.py:428 core/models.py:474 core/models.py:782
+#: core/models.py:1015
+msgid "active"
+msgstr ""
+
+#: core/models.py:269
+msgid "admin access"
+msgstr ""
+
+#: core/models.py:269
+msgid "Can sign into Django admin."
+msgstr ""
+
+#: core/models.py:271
+msgid "date joined"
+msgstr ""
+
+#: core/models.py:276
+msgid "last seen"
+msgstr ""
+
+#: core/models.py:282
+msgid "must change password"
+msgstr ""
+
+#: core/models.py:283
+msgid "Blocks all other API access until the password is changed."
+msgstr ""
+
+#: core/models.py:286 core/models.py:1061 core/models.py:1390
+#: core/models.py:1613
+msgid "created by"
+msgstr ""
+
+#: core/models.py:296
+msgid "user"
+msgstr ""
+
+#: core/models.py:297
+msgid "users"
+msgstr ""
+
+#: core/models.py:313
+msgid "Client users must be linked to a client."
+msgstr "משתמשי לקוח חייבים להיות משויכים ללקוח."
+
+#: core/models.py:315
+msgid "Only client users can be linked to a client."
+msgstr "רק משתמשי לקוח יכולים להיות משויכים ללקוח."
+
+#: core/models.py:320
+msgid "Client users sign in with their phone number."
+msgstr "לקוחות מתחברים עם מספר הטלפון שלהם."
+
+#: core/models.py:322
+msgid "Staff users sign in with their ID number."
+msgstr "עובדים מתחברים עם מספר זהות."
+
+#: core/models.py:366
+msgid "Frame"
+msgstr ""
+
+#: core/models.py:367
+msgid "Sash"
+msgstr ""
+
+#: core/models.py:368
+msgid "Track"
+msgstr ""
+
+#: core/models.py:369
+msgid "Mullion"
+msgstr ""
+
+#: core/models.py:370
+msgid "Glazing bead"
+msgstr ""
+
+#: core/models.py:371
+msgid "Shutter"
+msgstr ""
+
+#: core/models.py:372
+msgid "Trim"
+msgstr ""
+
+#: core/models.py:373
+msgid "Adapter"
+msgstr ""
+
+#: core/models.py:374
+msgid "Accessory"
+msgstr ""
+
+#: core/models.py:378
+msgid "Post"
+msgstr ""
+
+#: core/models.py:379
+msgid "Beam"
+msgstr ""
+
+#: core/models.py:380
+msgid "Seal / gasket"
+msgstr ""
+
+#: core/models.py:381
+msgid "Railing"
+msgstr ""
+
+#: core/models.py:382
+msgid "Insect screen"
+msgstr ""
+
+#: core/models.py:383
+msgid "Panel"
+msgstr ""
+
+#: core/models.py:384 core/models.py:948
+msgid "Other"
+msgstr ""
+
+#: core/models.py:390 core/models.py:408 core/models.py:623 core/models.py:773
+#: core/models.py:927
+msgid "name"
+msgstr ""
+
+#: core/models.py:391 core/models.py:409
+msgid "name (English)"
+msgstr ""
+
+#: core/models.py:392
+msgid "slug"
+msgstr ""
+
+#: core/models.py:393 core/models.py:450 core/models.py:801
+msgid "description"
+msgstr ""
+
+#: core/models.py:396 core/models.py:412
+msgid "family"
+msgstr ""
+
+#: core/models.py:397
+msgid "families"
+msgstr ""
+
+#: core/models.py:407 core/models.py:799
+msgid "code"
+msgstr ""
+
+#: core/models.py:418
+msgid "manufacturer"
+msgstr ""
+
+#: core/models.py:419 core/models.py:555
+msgid "catalog page"
+msgstr ""
+
+#: core/models.py:425 core/models.py:1221
+msgid "price per kg"
+msgstr ""
+
+#: core/models.py:426
+msgid "Metal price per kilogram for this series. Drives catalog pricing."
+msgstr ""
+
+#: core/models.py:431 core/models.py:432 core/models.py:469 core/models.py:508
+#: core/models.py:1196
+msgid "series"
+msgstr ""
+
+#: core/models.py:449
+msgid "profile number"
+msgstr ""
+
+#: core/models.py:451
+msgid "description (English)"
+msgstr ""
+
+#: core/models.py:454
+msgid "weight (g/m)"
+msgstr ""
+
+#: core/models.py:458
+msgid "Grams per metre, as printed in the catalog."
+msgstr ""
+
+#: core/models.py:464
+msgid "cross-section drawing"
+msgstr ""
+
+#: core/models.py:475 core/models.py:907 core/models.py:1016
+#: core/models.py:1392 core/models.py:1486 core/models.py:1546
+#: core/models.py:1615
+msgid "created at"
+msgstr ""
+
+#: core/models.py:476
+msgid "updated at"
+msgstr ""
+
+#: core/models.py:479 core/models.py:512 core/models.py:825 core/models.py:1192
+msgid "profile"
+msgstr ""
+
+#: core/models.py:480
+msgid "profiles"
+msgstr ""
+
+#: core/models.py:517
+msgid "catalog group"
+msgstr ""
+
+#: core/models.py:518
+msgid "Sub-heading this row sits under, e.g. כנפיים – זיגוג עד 8 מ\"מ"
+msgstr ""
+
+#: core/models.py:525
+msgid "description as listed"
+msgstr ""
+
+#: core/models.py:526
+msgid "Only set when it differs from the profile description."
+msgstr ""
+
+#: core/models.py:534
+msgid "weight as listed (g/m)"
+msgstr ""
+
+#: core/models.py:545
+msgid "glass min (mm)"
+msgstr ""
+
+#: core/models.py:548
+msgid "glass max (mm)"
+msgstr ""
+
+#: core/models.py:551
+msgid "tracks"
+msgstr ""
+
+#: core/models.py:552
+msgid "For rails: 1–5 נתיבים."
+msgstr ""
+
+#: core/models.py:556
+msgid "position"
+msgstr ""
+
+#: core/models.py:559
+msgid "series profile"
+msgstr ""
+
+#: core/models.py:560
+msgid "series profiles"
+msgstr ""
+
+#: core/models.py:624 core/models.py:960
+msgid "registered legal name"
+msgstr ""
+
+#: core/models.py:626 core/models.py:968
+msgid "tax ID"
+msgstr ""
+
+#: core/models.py:627
+msgid "ח.פ. / ע.מ. — appears on order and delivery documents."
+msgstr ""
+
+#: core/models.py:630
+msgid "logo"
+msgstr ""
+
+#: core/models.py:632 core/models.py:775 core/models.py:981
+msgid "city"
+msgstr ""
+
+#: core/models.py:636 core/models.py:777 core/models.py:1001
+msgid "latitude"
+msgstr ""
+
+#: core/models.py:639 core/models.py:780 core/models.py:1004
+msgid "longitude"
+msgstr ""
+
+#: core/models.py:643 core/models.py:644
+msgid "shop"
+msgstr ""
+
+#: core/models.py:664
+msgid "Cloudinary cloud name"
+msgstr ""
+
+#: core/models.py:666
+msgid "Cloudinary API key"
+msgstr ""
+
+#: core/models.py:668
+msgid "Cloudinary API secret"
+msgstr ""
+
+#: core/models.py:672
+msgid "OpenAI API key"
+msgstr ""
+
+#: core/models.py:675
+msgid "SMTP host"
+msgstr ""
+
+#: core/models.py:676
+msgid "SMTP port"
+msgstr ""
+
+#: core/models.py:677
+msgid "SMTP username"
+msgstr ""
+
+#: core/models.py:678
+msgid "SMTP password"
+msgstr ""
+
+#: core/models.py:679
+msgid "SMTP from address"
+msgstr ""
+
+#: core/models.py:680
+msgid "SMTP use TLS"
+msgstr ""
+
+#: core/models.py:683
+msgid "accountant name"
+msgstr ""
+
+#: core/models.py:684
+msgid "accountant email"
+msgstr ""
+
+#: core/models.py:685
+msgid "accountant phone"
+msgstr ""
+
+#: core/models.py:689
+msgid "Green Invoice API key"
+msgstr ""
+
+#: core/models.py:691
+msgid "Green Invoice API secret"
+msgstr ""
+
+#: core/models.py:698
+msgid "Mapbox token"
+msgstr ""
+
+#: core/models.py:699
+msgid ""
+"Public token (pk.…) for the map. A MAPBOX_TOKEN environment variable "
+"overrides this."
+msgstr ""
+
+#: core/models.py:704 core/models.py:705
+msgid "app configuration"
+msgstr ""
+
+#: core/models.py:785 core/models.py:796
+msgid "warehouse"
+msgstr ""
+
+#: core/models.py:786
+msgid "warehouses"
+msgstr ""
+
+#: core/models.py:800
+msgid "barcode"
+msgstr ""
+
+#: core/models.py:804 core/models.py:829
+msgid "location"
+msgstr ""
+
+#: core/models.py:805
+msgid "locations"
+msgstr ""
+
+#: core/models.py:833 core/models.py:1204
+msgid "bar length (mm)"
+msgstr ""
+
+#: core/models.py:836
+msgid "finish"
+msgstr ""
+
+#: core/models.py:837
+msgid "Anodised, powder-coated RAL code, mill finish, etc."
+msgstr ""
+
+#: core/models.py:841
+msgid "reorder level"
+msgstr ""
+
+#: core/models.py:842
+msgid "Alert the office when quantity on hand drops below this."
+msgstr ""
+
+#: core/models.py:846 core/models.py:888
+msgid "stock item"
+msgstr ""
+
+#: core/models.py:847
+msgid "stock items"
+msgstr ""
+
+#: core/models.py:869
+msgid "Goods received"
+msgstr ""
+
+#: core/models.py:870
+msgid "Picked for order"
+msgstr ""
+
+#: core/models.py:871
+msgid "Returned"
+msgstr ""
+
+#: core/models.py:873
+msgid "Stock count adjustment"
+msgstr ""
+
+#: core/models.py:874
+msgid "Transferred in"
+msgstr ""
+
+#: core/models.py:875
+msgid "Transferred out"
+msgstr ""
+
+#: core/models.py:876
+msgid "Scrapped"
+msgstr ""
+
+#: core/models.py:892
+msgid "type"
+msgstr ""
+
+#: core/models.py:895 core/models.py:1207
+msgid "bars"
+msgstr ""
+
+#: core/models.py:895
+msgid "Negative for outgoing movements."
+msgstr ""
+
+#: core/models.py:899 core/models.py:1235
+msgid "order line"
+msgstr ""
+
+#: core/models.py:903
+msgid "performed by"
+msgstr ""
+
+#: core/models.py:906 core/models.py:1485 core/models.py:1610
+msgid "note"
+msgstr ""
+
+#: core/models.py:910
+msgid "stock movement"
+msgstr ""
+
+#: core/models.py:911
+msgid "stock movements"
+msgstr ""
+
+#: core/models.py:929 core/models.py:1056
+msgid "discount %"
+msgstr ""
+
+#: core/models.py:933 core/models.py:1009
+msgid "price tier"
+msgstr ""
+
+#: core/models.py:934
+msgid "price tiers"
+msgstr ""
+
+#: core/models.py:943
+msgid "Osek Patur (עוסק פטור)"
+msgstr ""
+
+#: core/models.py:944
+msgid "Osek Murshe (עוסק מורשה)"
+msgstr ""
+
+#: core/models.py:945
+msgid "Company (חברה בע\"מ)"
+msgstr ""
+
+#: core/models.py:946
+msgid "Partnership (שותפות)"
+msgstr ""
+
+#: core/models.py:947
+msgid "Non-profit (עמותה)"
+msgstr ""
+
+#: core/models.py:958
+msgid "business name"
+msgstr ""
+
+#: core/models.py:961
+msgid "If it differs from the trading name."
+msgstr ""
+
+#: core/models.py:964
+msgid "business type"
+msgstr ""
+
+#: core/models.py:969
+msgid "ח.פ. / ע.מ. — appears on every invoice."
+msgstr ""
+
+#: core/models.py:972
+msgid "company registration number"
+msgstr ""
+
+#: core/models.py:975
+msgid "contact name"
+msgstr ""
+
+#: core/models.py:978
+msgid "website"
+msgstr ""
+
+#: core/models.py:980
+msgid "billing address"
+msgstr ""
+
+#: core/models.py:982
+msgid "postal code"
+msgstr ""
+
+#: core/models.py:984 core/models.py:1439
+msgid "delivery address"
+msgstr ""
+
+#: core/models.py:985
+msgid "Only if deliveries go somewhere other than the billing address."
+msgstr ""
+
+#: core/models.py:993
+msgid "map link"
+msgstr ""
+
+#: core/models.py:994
+msgid ""
+"Paste a link from Google Maps, Waze or Apple Maps. The delivery point is "
+"taken from it."
+msgstr ""
+
+#: core/models.py:1006 core/models.py:1050 core/models.py:1387
+#: core/models.py:1455
+msgid "notes"
+msgstr ""
+
+#: core/models.py:1013
+msgid "credit limit"
+msgstr ""
+
+#: core/models.py:1020
+msgid "clients"
+msgstr ""
+
+#: core/models.py:1028 core/models.py:1571
+msgid "Draft"
+msgstr ""
+
+#: core/models.py:1029
+msgid "Submitted"
+msgstr ""
+
+#: core/models.py:1030
+msgid "Confirmed"
+msgstr ""
+
+#: core/models.py:1031
+msgid "Picking"
+msgstr ""
+
+#: core/models.py:1032
+msgid "Ready for delivery"
+msgstr ""
+
+#: core/models.py:1033
+msgid "Out for delivery"
+msgstr ""
+
+#: core/models.py:1034 core/models.py:1423
+msgid "Delivered"
+msgstr ""
+
+#: core/models.py:1035
+msgid "Cancelled"
+msgstr ""
+
+#: core/models.py:1041
+msgid "order number"
+msgstr ""
+
+#: core/models.py:1046 core/models.py:1377 core/models.py:1434
+#: core/models.py:1539 core/models.py:1585
+msgid "status"
+msgstr ""
+
+#: core/models.py:1048
+msgid "ordered at"
+msgstr ""
+
+#: core/models.py:1049
+msgid "required by"
+msgstr ""
+
+#: core/models.py:1058
+msgid "VAT %"
+msgstr ""
+
+#: core/models.py:1069
+msgid "order note PDF"
+msgstr ""
+
+#: core/models.py:1071
+msgid "delivery note PDF"
+msgstr ""
+
+#: core/models.py:1075
+msgid "delivery signed at"
+msgstr ""
+
+#: core/models.py:1079
+msgid "public token"
+msgstr ""
+
+#: core/models.py:1082 core/models.py:1189 core/models.py:1294
+#: core/models.py:1355 core/models.py:1427
+msgid "order"
+msgstr ""
+
+#: core/models.py:1083
+msgid "orders"
+msgstr ""
+
+#: core/models.py:1198
+msgid "Which series this line was ordered for; a profile can serve several."
+msgstr ""
+
+#: core/models.py:1209
+msgid "total length (m)"
+msgstr ""
+
+#: core/models.py:1216
+msgid "weight override (kg)"
+msgstr ""
+
+#: core/models.py:1226
+msgid "prepared"
+msgstr ""
+
+#: core/models.py:1227
+msgid "shortage note"
+msgstr ""
+
+#: core/models.py:1231
+msgid "delivered length (m)"
+msgstr ""
+
+#: core/models.py:1236
+msgid "order lines"
+msgstr ""
+
+#: core/models.py:1283
+msgid "Invoice"
+msgstr ""
+
+#: core/models.py:1284 core/views.py:362
+msgid "Delivery note"
+msgstr ""
+
+#: core/models.py:1285
+msgid "Quote"
+msgstr ""
+
+#: core/models.py:1286
+msgid "Credit note"
+msgstr ""
+
+#: core/models.py:1288
+msgid "kind"
+msgstr ""
+
+#: core/models.py:1289
+msgid "document number"
+msgstr ""
+
+#: core/models.py:1298 core/models.py:1360
+msgid "issued at"
+msgstr ""
+
+#: core/models.py:1299
+msgid "due at"
+msgstr ""
+
+#: core/models.py:1300 core/models.py:1368
+msgid "total"
+msgstr ""
+
+#: core/models.py:1302 core/models.py:1366
+msgid "VAT"
+msgstr ""
+
+#: core/models.py:1304
+msgid "paid"
+msgstr ""
+
+#: core/models.py:1306 core/models.py:1611
+msgid "PDF"
+msgstr ""
+
+#: core/models.py:1309
+msgid "document"
+msgstr ""
+
+#: core/models.py:1310
+msgid "documents"
+msgstr ""
+
+#: core/models.py:1331
+msgid "Income"
+msgstr ""
+
+#: core/models.py:1332
+msgid "Expense"
+msgstr ""
+
+#: core/models.py:1335 core/models.py:1576
+msgid "Manual"
+msgstr ""
+
+#: core/models.py:1336 core/models.py:1575
+msgid "Generated"
+msgstr ""
+
+#: core/models.py:1337
+msgid "Scanned"
+msgstr ""
+
+#: core/models.py:1340
+msgid "Unpaid"
+msgstr ""
+
+#: core/models.py:1341
+msgid "Paid"
+msgstr ""
+
+#: core/models.py:1344
+msgid "direction"
+msgstr ""
+
+#: core/models.py:1345
+msgid "invoice number"
+msgstr ""
+
+#: core/models.py:1357
+msgid "party name"
+msgstr ""
+
+#: core/models.py:1358
+msgid "party tax ID"
+msgstr ""
+
+#: core/models.py:1361
+msgid "category"
+msgstr ""
+
+#: core/models.py:1364
+msgid "subtotal"
+msgstr ""
+
+#: core/models.py:1372
+msgid "amount paid"
+msgstr ""
+
+#: core/models.py:1375 core/models.py:1587
+msgid "source"
+msgstr ""
+
+#: core/models.py:1382
+msgid "allocation number"
+msgstr ""
+
+#: core/models.py:1383
+msgid "external id"
+msgstr ""
+
+#: core/models.py:1386
+msgid "file"
+msgstr ""
+
+#: core/models.py:1395
+msgid "invoice"
+msgstr ""
+
+#: core/models.py:1396
+msgid "invoices"
+msgstr ""
+
+#: core/models.py:1420 core/models.py:1522
+msgid "Pending"
+msgstr ""
+
+#: core/models.py:1421
+msgid "Loaded"
+msgstr ""
+
+#: core/models.py:1422
+msgid "En route"
+msgstr ""
+
+#: core/models.py:1424
+msgid "Failed"
+msgstr ""
+
+#: core/models.py:1430
+msgid "driver"
+msgstr ""
+
+#: core/models.py:1436
+msgid "scheduled for"
+msgstr ""
+
+#: core/models.py:1437
+msgid "delivered at"
+msgstr ""
+
+#: core/models.py:1440
+msgid "received by"
+msgstr ""
+
+#: core/models.py:1446
+msgid "recipient's phone"
+msgstr ""
+
+#: core/models.py:1447
+msgid "The person who signed, for sending them the delivery note."
+msgstr ""
+
+#: core/models.py:1450
+msgid "signature"
+msgstr ""
+
+#: core/models.py:1453
+msgid "proof photo"
+msgstr ""
+
+#: core/models.py:1458
+msgid "delivery"
+msgstr ""
+
+#: core/models.py:1459
+msgid "deliveries"
+msgstr ""
+
+#: core/models.py:1480 core/models.py:1527 core/models.py:1579
+msgid "worker"
+msgstr ""
+
+#: core/models.py:1483
+msgid "clock in"
+msgstr ""
+
+#: core/models.py:1484
+msgid "clock out"
+msgstr ""
+
+#: core/models.py:1489 core/models.py:1530
+msgid "shift"
+msgstr ""
+
+#: core/models.py:1490
+msgid "shifts"
+msgstr ""
+
+#: core/models.py:1523
+msgid "Approved"
+msgstr ""
+
+#: core/models.py:1524
+msgid "Rejected"
+msgstr ""
+
+#: core/models.py:1533
+msgid "work date"
+msgstr ""
+
+#: core/models.py:1534
+msgid "requested clock in"
+msgstr ""
+
+#: core/models.py:1535
+msgid "requested clock out"
+msgstr ""
+
+#: core/models.py:1536
+msgid "reason"
+msgstr ""
+
+#: core/models.py:1541
+msgid "reviewed by"
+msgstr ""
+
+#: core/models.py:1543
+msgid "reviewed at"
+msgstr ""
+
+#: core/models.py:1544
+msgid "review note"
+msgstr ""
+
+#: core/models.py:1549
+msgid "shift correction request"
+msgstr ""
+
+#: core/models.py:1550
+msgid "shift correction requests"
+msgstr ""
+
+#: core/models.py:1572
+msgid "Finalised"
+msgstr ""
+
+#: core/models.py:1581
+msgid "year"
+msgstr ""
+
+#: core/models.py:1582
+msgid "month"
+msgstr ""
+
+#: core/models.py:1592
+msgid "overtime paid"
+msgstr ""
+
+#: core/models.py:1595
+msgid "days worked"
+msgstr ""
+
+#: core/models.py:1597
+msgid "regular hours"
+msgstr ""
+
+#: core/models.py:1599
+msgid "overtime 125% hours"
+msgstr ""
+
+#: core/models.py:1601
+msgid "overtime 150% hours"
+msgstr ""
+
+#: core/models.py:1606
+msgid "base pay"
+msgstr ""
+
+#: core/models.py:1608
+msgid "overtime pay"
+msgstr ""
+
+#: core/models.py:1616
+msgid "finalised at"
+msgstr ""
+
+#: core/models.py:1619 core/models.py:1653
+msgid "payslip"
+msgstr ""
+
+#: core/models.py:1620
+msgid "payslips"
+msgstr ""
+
+#: core/models.py:1655
+msgid "label"
+msgstr ""
+
+#: core/models.py:1657
+msgid "amount"
+msgstr ""
+
+#: core/models.py:1658
+msgid "Positive to add (bonus, travel), negative to deduct (advance)."
+msgstr ""
+
+#: core/models.py:1661
+msgid "payslip adjustment"
+msgstr ""
+
+#: core/models.py:1662
+msgid "payslip adjustments"
+msgstr ""
+
+#: core/serializers.py:66 core/serializers.py:378
+msgid "An account already exists for this phone number."
+msgstr "כבר קיים חשבון עם מספר הטלפון הזה."
+
+#: core/serializers.py:160
+msgid "Enter your ID number or phone number."
+msgstr "הזינו מספר זהות או מספר טלפון."
+
+#: core/serializers.py:190
+msgid "Current password is incorrect."
+msgstr ""
+
+#: core/serializers.py:452
+msgid ""
+"That link does not contain a location. Open the place in Google Maps, Waze "
+"or Apple Maps, share it, and paste the link that gives you."
+msgstr ""
+
+#: core/serializers.py:718
+msgid "Enter a quantity greater than zero."
+msgstr "הזינו כמות גדולה מאפס."
+
+#: core/serializers.py:819
+msgid "Enter a total length, or bars and a bar length."
+msgstr "הזינו אורך כולל, או מספר מוטות ואורך מוט."
+
+#: core/serializers.py:963
+msgid "Give a new clock-in or clock-out time."
+msgstr ""
+
+#: core/serializers.py:1018
+msgid "This payslip is finalised. Reopen it to edit."
+msgstr "תלוש השכר סופי. יש לפתוח אותו מחדש כדי לערוך."
+
+#: core/views.py:358
+msgid "Order note"
+msgstr ""
+
+#: core/views.py:434
+msgid "Enter a valid price."
+msgstr "הזינו מחיר תקין."
+
+#: core/views.py:439
+msgid "Price cannot be negative."
+msgstr ""
+
+#: core/views.py:494
+msgid "No image file was provided."
+msgstr "לא סופק קובץ תמונה."
+
+#: core/views.py:595
+msgid "No profiles match these filters."
+msgstr "אין פרופילים התואמים את הסינון."
+
+#: core/views.py:804 core/views.py:815 core/views.py:830
+msgid "Office access only."
+msgstr ""
+
+#: core/views.py:819
+msgid "No image was uploaded."
+msgstr "לא הועלתה תמונה."
+
+#: core/views.py:1245
+msgid "Unknown line."
+msgstr "שורה לא מוכרת."
+
+#: core/views.py:1256
+msgid "Enter a valid weight."
+msgstr "הזינו משקל תקין."
+
+#: core/views.py:1270
+msgid "Enter a valid length."
+msgstr "הזינו אורך תקין."
+
+#: core/views.py:1294
+msgid "Unknown status."
+msgstr "סטטוס לא מוכר."
+
+#: core/views.py:1366
+msgid "No recipient email address."
+msgstr "אין כתובת דואר אלקטרוני של נמען."
+
+#: core/views.py:1371 core/views.py:1436
+msgid "Email is not configured in Settings."
+msgstr "הדואר האלקטרוני אינו מוגדר בהגדרות."
+
+#: core/views.py:1383
+#, python-format
+msgid "Please find the attached invoice %(label)s."
+msgstr "מצורפת חשבונית %(label)s."
+
+#: core/views.py:1410
+msgid "Use ?year=&month=."
+msgstr ""
+
+#: core/views.py:1428
+msgid "Give a year and month."
+msgstr ""
+
+#: core/views.py:1433
+msgid "No accountant email in Settings."
+msgstr "אין כתובת דואר אלקטרוני של רואה החשבון בהגדרות."
+
+#: core/views.py:1445
+#, python-format
+msgid "Invoices & salary %(m)s"
+msgstr ""
+
+#: core/views.py:1446
+#, python-format
+msgid ""
+"Attached: %(inc)d income and %(exp)d expense invoices plus the salary sheet "
+"for %(m)s."
+msgstr ""
+
+#: core/views.py:1546
+msgid "You are already clocked in."
+msgstr ""
+
+#: core/views.py:1552
+msgid "You have already clocked in today."
+msgstr ""
+
+#: core/views.py:1565
+msgid "You are not clocked in."
+msgstr ""
+
+#: core/views.py:1589 core/views.py:1655 core/views.py:1831
+msgid "Unknown worker."
+msgstr "עובד לא מוכר."
+
+#: core/views.py:1598 core/views.py:1665
+msgid "Use the format YYYY-MM."
+msgstr ""
+
+#: core/views.py:1747 core/views.py:1769
+msgid "Already reviewed."
+msgstr ""
+
+#: core/views.py:1827
+msgid "year and month are required."
+msgstr ""
+
+#: core/views.py:1835
+msgid "A payslip for that month already exists."
+msgstr "כבר קיים תלוש שכר לחודש הזה."
+
+#: core/views.py:1876
+msgid "Only managers can reopen a payslip."
+msgstr "רק מנהלים יכולים לפתוח מחדש תלוש שכר."
