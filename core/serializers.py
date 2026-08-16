@@ -741,6 +741,65 @@ class InvoiceSerializer(serializers.ModelSerializer):
         ]
         extra_kwargs = {'file': {'write_only': True, 'required': False}}
 
+    def validate(self, attrs):
+        """Refuse an invoice number that is already on the books.
+
+        Scoped, not global. An expense invoice carries the *supplier's* number,
+        and two suppliers both numbering an invoice 001 is ordinary -- blocking
+        that would stop real invoices being entered. What is a genuine error is
+        the same supplier's number twice: that is the same document entered
+        twice, and it double-counts the VAT.
+
+        Income invoices are numbered by this business, so those are unique on
+        their own.
+        """
+        number = (attrs.get('number')
+                  if 'number' in attrs
+                  else getattr(self.instance, 'number', '')) or ''
+        number = number.strip()
+        if not number:
+            # Blank is allowed: an expense may arrive with no number printed.
+            return attrs
+
+        def current(field):
+            if field in attrs:
+                return attrs[field]
+            return getattr(self.instance, field, None)
+
+        direction = current('direction')
+        clash = Invoice.objects.filter(number=number, direction=direction)
+
+        if direction == 'expense':
+            # Same supplier, identified by tax id where there is one and by
+            # name otherwise -- a scanned invoice often has one but not both.
+            tax_id = (current('party_tax_id') or '').strip()
+            party = (current('party_name') or '').strip()
+            if tax_id:
+                clash = clash.filter(party_tax_id=tax_id)
+            elif party:
+                clash = clash.filter(party_name=party)
+            else:
+                # Nothing identifies the supplier, so nothing can be said about
+                # whether this is a duplicate.
+                return attrs
+
+        if self.instance is not None:
+            clash = clash.exclude(pk=self.instance.pk)
+
+        existing = clash.first()
+        if existing is not None:
+            raise serializers.ValidationError({'number': _(
+                'Invoice %(number)s from %(party)s is already recorded '
+                '(%(date)s, %(total)s).'
+            ) % {
+                'number': number,
+                'party': existing.party_name or (
+                    existing.client.name if existing.client else ''),
+                'date': existing.issued_at,
+                'total': existing.total,
+            }})
+        return attrs
+
     def get_file_url(self, obj):
         if not obj.file:
             return None

@@ -1325,3 +1325,74 @@ class InvoiceScanParsingTests(TestCase):
         with self.assertRaises(ScanFailed) as caught:
             extract(b'%PDF-1.4', 'application/pdf', 'sk-test')
         self.assertIn('photograph', str(caught.exception))
+
+
+class InvoiceNumberUniquenessTests(APITestCase):
+    """The same invoice must not be entered twice -- but different suppliers
+    numbering their invoices identically is ordinary and must still work."""
+
+    def setUp(self):
+        self.office = User.objects.create_user(
+            id_number=make_id('12121212'), password='Str0ng!Passw0rd',
+            first_name='O', last_name='F', role=Role.OFFICE, phone='050-1212121')
+        self.client.force_authenticate(self.office)
+
+    def _expense(self, **over):
+        data = {'direction': 'expense', 'number': '001',
+                'party_name': 'Electra', 'party_tax_id': '514289377',
+                'issued_at': '2026-08-01', 'subtotal': '100.00',
+                'vat': '18.00', 'total': '118.00', 'source': 'manual'}
+        data.update(over)
+        return self.client.post('/api/invoices/', data, format='json')
+
+    def test_the_same_supplier_and_number_is_refused(self):
+        self.assertEqual(self._expense().status_code, 201)
+        again = self._expense()
+        self.assertEqual(again.status_code, 400)
+        self.assertIn('number', again.data)
+        # The message must identify the invoice already on the books.
+        self.assertIn('Electra', str(again.data['number'][0]))
+
+    def test_a_different_supplier_may_use_the_same_number(self):
+        self.assertEqual(self._expense().status_code, 201)
+        other = self._expense(party_name='Paz Fuel', party_tax_id='510000111')
+        self.assertEqual(other.status_code, 201, other.data)
+
+    def test_a_supplier_with_no_tax_id_is_matched_on_name(self):
+        self.assertEqual(self._expense(party_tax_id='').status_code, 201)
+        again = self._expense(party_tax_id='')
+        self.assertEqual(again.status_code, 400)
+
+    def test_a_blank_number_is_allowed_more_than_once(self):
+        """Small expense invoices often carry no printed number."""
+        self.assertEqual(self._expense(number='').status_code, 201)
+        self.assertEqual(self._expense(number='').status_code, 201)
+
+    def test_income_numbers_are_unique_on_their_own(self):
+        from core.models import Client as Co
+        company = Co.objects.create(name='A client')
+        payload = {'direction': 'income', 'number': 'INV-2026-9001',
+                   'client': company.id, 'issued_at': '2026-08-01',
+                   'subtotal': '100.00', 'vat': '18.00', 'total': '118.00',
+                   'source': 'manual'}
+        self.assertEqual(
+            self.client.post('/api/invoices/', payload, format='json').status_code, 201)
+        again = self.client.post('/api/invoices/', payload, format='json')
+        self.assertEqual(again.status_code, 400)
+
+    def test_editing_an_invoice_does_not_clash_with_itself(self):
+        made = self._expense().data
+        r = self.client.patch(f"/api/invoices/{made['id']}/",
+                              {'category': 'electricity'}, format='json')
+        self.assertEqual(r.status_code, 200, r.data)
+
+    def test_an_expense_and_an_income_may_share_a_number(self):
+        """They are different documents in different books."""
+        from core.models import Client as Co
+        self.assertEqual(self._expense(number='77').status_code, 201)
+        company = Co.objects.create(name='B client')
+        r = self.client.post('/api/invoices/', {
+            'direction': 'income', 'number': '77', 'client': company.id,
+            'issued_at': '2026-08-01', 'subtotal': '1.00', 'vat': '0.18',
+            'total': '1.18', 'source': 'manual'}, format='json')
+        self.assertEqual(r.status_code, 201, r.data)
