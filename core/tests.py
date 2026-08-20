@@ -1721,3 +1721,72 @@ class NotificationRecordingTests(TestCase):
         with override_settings(FIREBASE_CREDENTIALS=''):
             push.send_to_roles([Role.MANAGER], 'To all', 'Body')
         self.assertEqual(Notification.objects.filter(title='To all').count(), 2)
+
+
+class OrderPeriodFilterTests(APITestCase):
+    """Narrowing the order list by year, month and client."""
+
+    def setUp(self):
+        from core.models import Client as Co, Order, OrderStatus
+        self.office = User.objects.create_user(
+            id_number=make_id('26262626'), password='Str0ng!Passw0rd',
+            first_name='O', last_name='P', role=Role.OFFICE, phone='050-2626262')
+        self.alpha = Co.objects.create(name='Alpha Glass')
+        self.beta = Co.objects.create(name='Beta Frames')
+        # ordered_at is auto_now_add, so it has to be written after the fact.
+        self.old = self._order('ORD-OLD-1', self.alpha, '2025-03-14')
+        self.spring = self._order('ORD-NEW-1', self.alpha, '2026-03-02')
+        self.summer = self._order('ORD-NEW-2', self.beta, '2026-08-19')
+        self.client.force_authenticate(self.office)
+
+    def _order(self, number, client, when):
+        from django.utils.dateparse import parse_datetime
+        from core.models import Order, OrderStatus
+        order = Order.objects.create(
+            number=number, client=client, status=OrderStatus.CONFIRMED,
+            created_by=self.office)
+        Order.objects.filter(pk=order.pk).update(
+            ordered_at=parse_datetime(f'{when}T09:00:00+00:00'))
+        return order
+
+    def _numbers(self, query=''):
+        rows = self.client.get(f'/api/orders/{query}').data
+        rows = rows.get('results', rows) if isinstance(rows, dict) else rows
+        return {r['number'] for r in rows}
+
+    def test_year_narrows_the_list(self):
+        self.assertEqual(self._numbers('?year=2026'),
+                         {'ORD-NEW-1', 'ORD-NEW-2'})
+        self.assertEqual(self._numbers('?year=2025'), {'ORD-OLD-1'})
+
+    def test_month_narrows_within_a_year(self):
+        self.assertEqual(self._numbers('?year=2026&month=8'), {'ORD-NEW-2'})
+
+    def test_month_alone_crosses_years(self):
+        """March in any year -- the month filter does not imply a year."""
+        self.assertEqual(self._numbers('?month=3'), {'ORD-OLD-1', 'ORD-NEW-1'})
+
+    def test_client_narrows_the_list(self):
+        self.assertEqual(self._numbers(f'?client={self.beta.id}'),
+                         {'ORD-NEW-2'})
+
+    def test_filters_combine(self):
+        self.assertEqual(
+            self._numbers(f'?year=2026&client={self.alpha.id}'), {'ORD-NEW-1'})
+
+    def test_a_nonsense_year_narrows_nothing(self):
+        """A stale or hand-edited URL shows everything rather than failing."""
+        r = self.client.get('/api/orders/?year=all&month=')
+        self.assertEqual(r.status_code, 200)
+        self.assertEqual(self._numbers('?year=all&month='),
+                         {'ORD-OLD-1', 'ORD-NEW-1', 'ORD-NEW-2'})
+
+    def test_years_lists_only_years_that_have_orders(self):
+        r = self.client.get('/api/orders/years/')
+        self.assertEqual(r.status_code, 200, r.data)
+        self.assertEqual(r.data['years'], [2026, 2025])
+
+    def test_years_is_not_narrowed_by_the_year_filter(self):
+        """Otherwise the picker would offer only the year already chosen."""
+        r = self.client.get('/api/orders/years/?year=2026')
+        self.assertEqual(r.data['years'], [2026, 2025])

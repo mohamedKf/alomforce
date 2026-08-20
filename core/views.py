@@ -115,6 +115,18 @@ def store_pdf(instance, field_name, filename, data):
     instance.save(update_fields=[field_name])
 
 
+def _as_int(value):
+    """A query parameter as an int, or None if it is absent or not a number.
+
+    Filters use this so that a hand-edited or stale URL narrows nothing
+    instead of raising -- ?year=all should show every year, not a 500.
+    """
+    try:
+        return int(value)
+    except (TypeError, ValueError):
+        return None
+
+
 # DRF's permission_classes REPLACES DEFAULT_PERMISSION_CLASSES rather than
 # adding to it, so any view declaring its own permissions would silently skip
 # the password gate. Every view builds its list from this one instead.
@@ -1222,10 +1234,30 @@ class OrderViewSet(viewsets.ModelViewSet):
             qs = qs.filter(client_id=client)
         if status_f := params.get('status'):
             qs = qs.filter(status=status_f)
+        # Ignored rather than rejected when it is not a number: a filter is a
+        # view of a list, and a bad one should show everything, not a 500.
+        if (year := _as_int(params.get('year'))) is not None:
+            qs = qs.filter(ordered_at__year=year)
+        if (month := _as_int(params.get('month'))) is not None:
+            qs = qs.filter(ordered_at__month=month)
         if search := params.get('search'):
             qs = qs.filter(
                 Q(number__icontains=search) | Q(client__name__icontains=search))
         return qs.order_by('-ordered_at')
+
+    @action(detail=False, methods=['get'])
+    def years(self, request):
+        """GET /api/orders/years/ — the years that actually have orders.
+
+        So the year picker offers what exists rather than a fixed range that
+        is half empty at the start and wrong once the business outlives it.
+        """
+        # Deliberately not get_queryset(): that applies the year filter, so the
+        # picker would offer only the year already chosen.
+        years = sorted({d.year for d in Order.objects
+                        .values_list('ordered_at', flat=True) if d},
+                       reverse=True)
+        return Response({'years': years})
 
     def _pdf_response(self, order, kind):
         from django.http import HttpResponse
