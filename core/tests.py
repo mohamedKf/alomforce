@@ -9,7 +9,7 @@ from rest_framework.test import APITestCase
 import os
 from unittest import mock
 
-from core import maplinks
+from core import maplinks, notify
 from core.models import Client, Role, User, normalise_phone, validate_israeli_id
 
 
@@ -1790,3 +1790,73 @@ class OrderPeriodFilterTests(APITestCase):
         """Otherwise the picker would offer only the year already chosen."""
         r = self.client.get('/api/orders/years/?year=2026')
         self.assertEqual(r.data['years'], [2026, 2025])
+
+
+class RetranslateNotificationsTests(TestCase):
+    """Rebuilding old English notifications in the reader's language."""
+
+    def setUp(self):
+        from core.models import Client as Co, Notification, Order, OrderStatus
+        self.reader = User.objects.create_user(
+            id_number=make_id('27272727'), password='Str0ng!Passw0rd',
+            first_name='O', last_name='R', role=Role.OFFICE,
+            phone='050-2727272', language='he')
+        self.buyer = Co.objects.create(name='ויטרינות פלוס')
+        self.order = Order.objects.create(
+            number='ORD-2026-0050', client=self.buyer,
+            status=OrderStatus.CONFIRMED, created_by=self.reader)
+        # A row exactly as the old code wrote it: English, for a Hebrew reader.
+        self.note = Notification.objects.create(
+            user=self.reader, title='New order',
+            body=f'{self.order.number} for {self.buyer.name}.',
+            kind='order_created',
+            data={'kind': 'order_created', 'order_id': str(self.order.id)})
+
+    def _run(self, **opts):
+        from django.core.management import call_command
+        from io import StringIO
+        out = StringIO()
+        call_command('retranslate_notifications', stdout=out, **opts)
+        return out.getvalue()
+
+    def test_it_rewrites_in_the_readers_language(self):
+        self._run()
+        self.note.refresh_from_db()
+        self.assertEqual(self.note.title, 'הזמנה חדשה')
+        self.assertIn('עבור', self.note.body)
+        self.assertIn('ORD-2026-0050', self.note.body)
+
+    def test_dry_run_changes_nothing(self):
+        output = self._run(dry_run=True)
+        self.note.refresh_from_db()
+        self.assertEqual(self.note.title, 'New order')
+        self.assertIn('would rewrite 1', output)
+
+    def test_it_matches_what_a_new_notification_says(self):
+        """The rebuilt text must equal a freshly sent one, not merely be Hebrew."""
+        from core.models import Notification
+        self._run()
+        self.note.refresh_from_db()
+        Notification.objects.exclude(pk=self.note.pk).delete()
+        with mock.patch('core.push._credentials', return_value=None):
+            notify.order_created(self.order)
+        fresh = Notification.objects.exclude(pk=self.note.pk).get(user=self.reader)
+        self.assertEqual((self.note.title, self.note.body),
+                         (fresh.title, fresh.body))
+
+    def test_a_row_whose_order_is_gone_is_left_alone(self):
+        self.note.data = {'kind': 'order_created', 'order_id': '999999'}
+        self.note.save(update_fields=['data'])
+        self._run()
+        self.note.refresh_from_db()
+        self.assertEqual(self.note.title, 'New order')
+
+    def test_a_kind_it_cannot_rebuild_is_left_alone(self):
+        """clock_out carries hours that the row never stored."""
+        self.note.kind = 'clock_out'
+        self.note.title = 'Clocked out'
+        self.note.save(update_fields=['kind', 'title'])
+        output = self._run()
+        self.note.refresh_from_db()
+        self.assertEqual(self.note.title, 'Clocked out')
+        self.assertIn('clock_out', output)
