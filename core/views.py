@@ -27,7 +27,7 @@ from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenObtainPairView
 
-from core import push
+from core import notify, push
 from core.permissions import PasswordChangeRequired
 from core.models import (
     Client,
@@ -1166,6 +1166,12 @@ class OrderViewSet(viewsets.ModelViewSet):
             return [p() for p in BASE + [IsStockStaff]]
         return [p() for p in BASE + [IsOffice]]
 
+    def perform_create(self, serializer):
+        order = serializer.save()
+        # A new order is work for the warehouse; the person typing it in does
+        # not need telling about it.
+        notify.order_created(order, by=self.request.user)
+
     def get_queryset(self):
         qs = (Order.objects.select_related('client', 'created_by')
               .prefetch_related('lines__profile', 'lines__series'))
@@ -1268,8 +1274,12 @@ class OrderViewSet(viewsets.ModelViewSet):
         """POST /api/orders/<id>/start_delivery/ — loaded on the truck."""
         from core.models import OrderStatus
         order = self.get_object()
+        was = order.status
         order.status = OrderStatus.OUT_FOR_DELIVERY
         order.save(update_fields=['status'])
+        if was != OrderStatus.OUT_FOR_DELIVERY:
+            notify.order_step(order, OrderStatus.OUT_FOR_DELIVERY,
+                              by=request.user)
         return Response(self._delivery_row(order, request))
 
     @action(detail=True, methods=['post'],
@@ -1330,16 +1340,7 @@ class OrderViewSet(viewsets.ModelViewSet):
 
         # The office is not on the road and has no other way of knowing the
         # goods arrived; the driver who signed it plainly does.
-        push.send_to_roles(
-            [Role.OFFICE, Role.MANAGER],
-            _('Delivery signed'),
-            _('%(number)s was received by %(person)s.') % {
-                'number': order.number,
-                'person': delivery.recipient_name or _('the client'),
-            },
-            {'order_id': order.id, 'kind': 'delivery_signed'},
-            exclude=request.user,
-        )
+        notify.delivery_signed(order, delivery, by=request.user)
         return Response(result)
 
     @action(detail=True, methods=['post'])
@@ -1391,18 +1392,10 @@ class OrderViewSet(viewsets.ModelViewSet):
         if 'prepared' in request.data:
             # The order's status follows its lines, so the worker ticking the
             # last profile is what marks the order ready for delivery.
-            if order.refresh_prepared_status() and order.status == OrderStatus.READY:
+            if order.refresh_prepared_status():
                 # Only on the transition, not on every tick: a driver does not
                 # want six notifications for a six-line order.
-                push.send_to_roles(
-                    [Role.DRIVER],
-                    _('Order ready'),
-                    _('%(number)s for %(client)s is ready to load.') % {
-                        'number': order.number,
-                        'client': order.client.name if order.client else '',
-                    },
-                    {'order_id': order.id, 'kind': 'order_ready'},
-                )
+                notify.order_step(order, order.status, by=request.user)
         order.refresh_from_db()
         return Response(OrderSerializer(order, context={'request': request}).data)
 
@@ -1417,8 +1410,13 @@ class OrderViewSet(viewsets.ModelViewSet):
         if new_status not in valid:
             return Response({'status': [_('Unknown status.')]},
                             status=status.HTTP_400_BAD_REQUEST)
+        was = order.status
         order.status = new_status
         order.save(update_fields=['status'])
+        if was != new_status:
+            # Only the transition. Re-saving the same status is a no-op to the
+            # people watching, and should be silent to their phones too.
+            notify.order_step(order, new_status, by=request.user)
         return Response(OrderSerializer(order, context={'request': request}).data)
 
 
@@ -1725,6 +1723,7 @@ class AttendanceViewSet(viewsets.ReadOnlyModelViewSet):
         shift = Shift.objects.create(
             worker=request.user, clock_in=timezone.now(),
             note=str(request.data.get('note') or '')[:255])
+        notify.worker_clocked_in(request.user)
         return Response(ShiftSerializer(shift).data, status=status.HTTP_201_CREATED)
 
     @action(detail=False, methods=['post'])
@@ -1739,6 +1738,8 @@ class AttendanceViewSet(viewsets.ReadOnlyModelViewSet):
         if request.data.get('note'):
             shift.note = str(request.data['note'])[:255]
         shift.save(update_fields=['clock_out', 'note'])
+        notify.worker_clocked_out(
+            request.user, round(shift.duration_minutes / 60, 1))
         return Response(ShiftSerializer(shift).data)
 
     @action(detail=False, methods=['get'])

@@ -1504,3 +1504,128 @@ class PushSendingTests(TestCase):
                 push.send_to_roles([Role.DRIVER], 'x', 'y', exclude=self.user)
         addressed = sent.call_args[0][0]
         self.assertNotIn(self.user, addressed)
+
+
+class NotificationEventTests(APITestCase):
+    """Which events notify whom, and who is spared their own actions."""
+
+    def setUp(self):
+        from core.models import Client as Co, Order, OrderStatus
+        self.manager = User.objects.create_user(
+            id_number=make_id('16161616'), password='Str0ng!Passw0rd',
+            first_name='M', last_name='G', role=Role.MANAGER, phone='050-1616161')
+        self.office = User.objects.create_user(
+            id_number=make_id('17171717'), password='Str0ng!Passw0rd',
+            first_name='O', last_name='F', role=Role.OFFICE, phone='050-1717171')
+        self.worker = User.objects.create_user(
+            id_number=make_id('18181818'), password='Str0ng!Passw0rd',
+            first_name='W', last_name='H', role=Role.WAREHOUSE, phone='050-1818181')
+        self.driver = User.objects.create_user(
+            id_number=make_id('19191919'), password='Str0ng!Passw0rd',
+            first_name='D', last_name='R', role=Role.DRIVER, phone='050-1919191')
+        self.customer = Co.objects.create(name='Notify co')
+        self.order = Order.objects.create(
+            number='ORD-NOTIFY-1', client=self.customer,
+            status=OrderStatus.CONFIRMED, created_by=self.office)
+
+    def _roles_notified(self, sent):
+        """The roles addressed across every send in this interaction."""
+        roles = set()
+        for call in sent.call_args_list:
+            for user in call[0][0]:
+                roles.add(user.role)
+        return roles
+
+    def _users_notified(self, sent):
+        return {u for call in sent.call_args_list for u in call[0][0]}
+
+    # -- attendance ------------------------------------------------------
+
+    def test_clocking_in_tells_the_office_not_the_worker(self):
+        self.client.force_authenticate(self.worker)
+        with mock.patch('core.push.send_to_users', return_value=0) as sent:
+            r = self.client.post('/api/attendance/clock_in/', {}, format='json')
+        self.assertEqual(r.status_code, 201, r.data)
+        self.assertEqual(self._roles_notified(sent), {Role.OFFICE, Role.MANAGER})
+        self.assertNotIn(self.worker, self._users_notified(sent))
+
+    def test_clocking_out_reports_the_hours(self):
+        self.client.force_authenticate(self.worker)
+        self.client.post('/api/attendance/clock_in/', {}, format='json')
+        with mock.patch('core.push.send_to_users', return_value=0) as sent:
+            r = self.client.post('/api/attendance/clock_out/', {}, format='json')
+        self.assertEqual(r.status_code, 200, r.data)
+        body = sent.call_args[0][2]
+        self.assertIn('h)', body)
+
+    # -- orders ----------------------------------------------------------
+
+    def test_a_new_order_tells_the_warehouse(self):
+        from core.models import Profile
+        self.client.force_authenticate(self.office)
+        profile = Profile.objects.first()
+        with mock.patch('core.push.send_to_users', return_value=0) as sent:
+            r = self.client.post('/api/orders/', {
+                'client': self.customer.id, 'status': 'confirmed',
+                'lines': [{'profile': profile.number, 'total_length_m': '10'}],
+            }, format='json')
+        self.assertEqual(r.status_code, 201, r.data)
+        self.assertIn(Role.WAREHOUSE, self._roles_notified(sent))
+        self.assertNotIn(self.office, self._users_notified(sent))
+
+    def test_each_delivery_step_notifies(self):
+        """loading, loaded, on the way, arrived -- each one announced once."""
+        from core.models import OrderStatus
+        self.client.force_authenticate(self.office)
+        for step in (OrderStatus.PICKING, OrderStatus.READY,
+                     OrderStatus.OUT_FOR_DELIVERY, OrderStatus.DELIVERED):
+            with mock.patch('core.push.send_to_users', return_value=0) as sent:
+                r = self.client.post(f'/api/orders/{self.order.id}/set_status/',
+                                     {'status': step}, format='json')
+            self.assertEqual(r.status_code, 200, r.data)
+            self.assertTrue(sent.called, f'{step} notified nobody')
+
+    def test_loaded_reaches_the_drivers(self):
+        from core.models import OrderStatus
+        self.client.force_authenticate(self.office)
+        with mock.patch('core.push.send_to_users', return_value=0) as sent:
+            self.client.post(f'/api/orders/{self.order.id}/set_status/',
+                             {'status': OrderStatus.READY}, format='json')
+        self.assertIn(Role.DRIVER, self._roles_notified(sent))
+
+    def test_setting_the_same_status_again_says_nothing(self):
+        """Re-saving is a no-op to people watching; it should be silent too."""
+        from core.models import OrderStatus
+        self.client.force_authenticate(self.office)
+        self.client.post(f'/api/orders/{self.order.id}/set_status/',
+                         {'status': OrderStatus.PICKING}, format='json')
+        with mock.patch('core.push.send_to_users', return_value=0) as sent:
+            self.client.post(f'/api/orders/{self.order.id}/set_status/',
+                             {'status': OrderStatus.PICKING}, format='json')
+        self.assertFalse(sent.called)
+
+    def test_office_paperwork_statuses_stay_quiet(self):
+        from core.models import OrderStatus
+        self.client.force_authenticate(self.office)
+        for quiet in (OrderStatus.DRAFT, OrderStatus.SUBMITTED,
+                      OrderStatus.CONFIRMED):
+            self.order.status = OrderStatus.PICKING
+            self.order.save(update_fields=['status'])
+            with mock.patch('core.push.send_to_users', return_value=0) as sent:
+                self.client.post(f'/api/orders/{self.order.id}/set_status/',
+                                 {'status': quiet}, format='json')
+            self.assertFalse(sent.called, f'{quiet} should not notify anyone')
+
+    def test_a_push_failure_does_not_fail_the_status_change(self):
+        from core.models import OrderStatus
+        self.client.force_authenticate(self.office)
+        with mock.patch('core.push.send_to_users',
+                        side_effect=RuntimeError('firebase down')):
+            with self.assertRaises(RuntimeError):
+                # send_to_users is where failures are swallowed in production;
+                # this proves notify calls it rather than reimplementing it.
+                self.client.post(f'/api/orders/{self.order.id}/set_status/',
+                                 {'status': OrderStatus.READY}, format='json')
+        self.order.refresh_from_db()
+        self.assertEqual(self.order.status, OrderStatus.READY,
+                         'the status must be saved before anything is sent')
