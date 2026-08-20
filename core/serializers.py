@@ -29,6 +29,7 @@ from core.models import (
     Invoice,
     Location,
     MovementType,
+    Notification,
     Payslip,
     PayslipAdjustment,
     Order,
@@ -232,6 +233,15 @@ class ManagerRegistrationSerializer(PasswordRulesMixin, serializers.ModelSeriali
             is_staff=True,
             **validated_data,
         )
+
+
+class NotificationSerializer(serializers.ModelSerializer):
+    """One row for the bell."""
+
+    class Meta:
+        model = Notification
+        fields = ['id', 'title', 'body', 'kind', 'data', 'read_at', 'created_at']
+        read_only_fields = fields
 
 
 class DeviceTokenSerializer(serializers.ModelSerializer):

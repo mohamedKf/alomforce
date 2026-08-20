@@ -72,6 +72,7 @@ from core.serializers import (
     StockItemCreateSerializer,
     StockItemSerializer,
     StockMovementCreateSerializer,
+    NotificationSerializer,
     UserSerializer,
     as_drf_error,
     WarehouseSerializer,
@@ -848,6 +849,47 @@ class RegisterView(APIView):
             'refresh': str(refresh),
             'user': UserSerializer(user).data,
         }, status=status.HTTP_201_CREATED)
+
+
+class NotificationViewSet(viewsets.ReadOnlyModelViewSet):
+    """GET /api/notifications/ — what this person has been told.
+
+    Everyone sees only their own; there is no view of anyone else's, because a
+    notification is addressed to a person rather than to a role.
+    """
+
+    serializer_class = NotificationSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    allows_pending_password = True
+
+    def get_queryset(self):
+        from core.models import Notification
+
+        qs = Notification.objects.filter(user=self.request.user)
+        if self.request.query_params.get('unread') == 'true':
+            qs = qs.filter(read_at__isnull=True)
+        return qs
+
+    @action(detail=False, methods=['get'])
+    def unread_count(self, request):
+        """The number on the bell. Deliberately its own endpoint: the desktop
+        polls this on a timer, and it must stay cheap."""
+        from core.models import Notification
+
+        return Response({'unread': Notification.objects.filter(
+            user=request.user, read_at__isnull=True).count()})
+
+    @action(detail=False, methods=['post'])
+    def mark_read(self, request):
+        """Mark some or all as read. {ids: [...]} or nothing for all."""
+        from core.models import Notification
+
+        qs = Notification.objects.filter(user=request.user, read_at__isnull=True)
+        ids = request.data.get('ids')
+        if ids:
+            qs = qs.filter(id__in=ids)
+        marked = qs.update(read_at=timezone.now())
+        return Response({'marked': marked})
 
 
 class DeviceView(APIView):

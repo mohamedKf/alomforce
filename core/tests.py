@@ -1629,3 +1629,87 @@ class NotificationEventTests(APITestCase):
         self.order.refresh_from_db()
         self.assertEqual(self.order.status, OrderStatus.READY,
                          'the status must be saved before anything is sent')
+
+
+class NotificationFeedTests(APITestCase):
+    """The bell: what it shows, whose it is, and how it clears."""
+
+    def setUp(self):
+        from core.models import Notification
+        self.worker = User.objects.create_user(
+            id_number=make_id('21212121'), password='Str0ng!Passw0rd',
+            first_name='W', last_name='H', role=Role.WAREHOUSE, phone='050-2121212')
+        self.other = User.objects.create_user(
+            id_number=make_id('23232323'), password='Str0ng!Passw0rd',
+            first_name='O', last_name='T', role=Role.DRIVER, phone='050-2323232')
+        for i in range(3):
+            Notification.objects.create(user=self.worker, title=f'n{i}', body='b')
+        Notification.objects.create(user=self.other, title='not yours', body='b')
+        self.client.force_authenticate(self.worker)
+
+    def test_a_person_sees_only_their_own(self):
+        rows = self.client.get('/api/notifications/').data
+        rows = rows.get('results', rows)
+        self.assertEqual(len(rows), 3)
+        self.assertNotIn('not yours', [r['title'] for r in rows])
+
+    def test_unread_count_is_its_own_cheap_endpoint(self):
+        r = self.client.get('/api/notifications/unread_count/')
+        self.assertEqual(r.data['unread'], 3)
+
+    def test_marking_all_read_clears_the_badge(self):
+        self.client.post('/api/notifications/mark_read/', {}, format='json')
+        self.assertEqual(
+            self.client.get('/api/notifications/unread_count/').data['unread'], 0)
+
+    def test_marking_one_read_leaves_the_rest(self):
+        rows = self.client.get('/api/notifications/').data
+        rows = rows.get('results', rows)
+        self.client.post('/api/notifications/mark_read/',
+                         {'ids': [rows[0]['id']]}, format='json')
+        self.assertEqual(
+            self.client.get('/api/notifications/unread_count/').data['unread'], 2)
+
+    def test_marking_read_cannot_touch_another_persons(self):
+        from core.models import Notification
+        self.client.post('/api/notifications/mark_read/', {}, format='json')
+        theirs = Notification.objects.get(user=self.other)
+        self.assertIsNone(theirs.read_at)
+
+    def test_newest_first(self):
+        rows = self.client.get('/api/notifications/').data
+        rows = rows.get('results', rows)
+        self.assertEqual([r['title'] for r in rows], ['n2', 'n1', 'n0'])
+
+
+class NotificationRecordingTests(TestCase):
+    """An event is written down even when no push can be delivered."""
+
+    def setUp(self):
+        self.manager = User.objects.create_user(
+            id_number=make_id('24242424'), password='Str0ng!Passw0rd',
+            first_name='M', last_name='G', role=Role.MANAGER, phone='050-2424242')
+
+    def test_recorded_with_firebase_switched_off(self):
+        """The desktop has no push channel at all; the row is what it reads."""
+        from core import push
+        from core.models import Notification
+
+        with override_settings(FIREBASE_CREDENTIALS=''):
+            push.send_to_users([self.manager], 'Title', 'Body',
+                               {'kind': 'order_step', 'order_id': 7})
+        note = Notification.objects.get(user=self.manager)
+        self.assertEqual(note.title, 'Title')
+        self.assertEqual(note.kind, 'order_step')
+        self.assertEqual(note.data['order_id'], '7')
+
+    def test_a_role_broadcast_records_one_row_per_person(self):
+        from core import push
+        from core.models import Notification
+
+        User.objects.create_user(
+            id_number=make_id('25252525'), password='Str0ng!Passw0rd',
+            first_name='M2', last_name='G', role=Role.MANAGER, phone='050-2525252')
+        with override_settings(FIREBASE_CREDENTIALS=''):
+            push.send_to_roles([Role.MANAGER], 'To all', 'Body')
+        self.assertEqual(Notification.objects.filter(title='To all').count(), 2)

@@ -918,6 +918,44 @@ class DeviceToken(models.Model):
         return f'{self.user} — {self.get_platform_display()}'
 
 
+class Notification(models.Model):
+    """One thing a person was told, kept so they can look at it later.
+
+    Push is a delivery channel, not a record: a phone that was off missed the
+    message entirely, and the desktop has no push channel at all. Writing every
+    notification down means the bell in the corner can show what happened while
+    somebody was away from their screen, on either app.
+    """
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL, verbose_name=_('user'),
+        on_delete=models.CASCADE, related_name='notifications',
+    )
+    title = models.CharField(_('title'), max_length=150)
+    body = models.TextField(_('body'), blank=True)
+    # 'order_step', 'clock_in' and so on -- what happened, for an app that
+    # wants to route a tap somewhere useful.
+    kind = models.CharField(_('kind'), max_length=40, blank=True)
+    # Whatever the event carried: an order id, a worker id. Kept as JSON so a
+    # new event does not need a migration to bring its own fields along.
+    data = models.JSONField(_('data'), default=dict, blank=True)
+    read_at = models.DateTimeField(_('read at'), null=True, blank=True)
+    created_at = models.DateTimeField(_('created at'), auto_now_add=True)
+
+    class Meta:
+        verbose_name = _('notification')
+        verbose_name_plural = _('notifications')
+        ordering = ['-created_at']
+        indexes = [
+            # The bell asks the same question on a timer: what is unread for
+            # this person, newest first.
+            models.Index(fields=['user', 'read_at', '-created_at']),
+        ]
+
+    def __str__(self):
+        return f'{self.user} — {self.title}'
+
+
 class MovementType(models.TextChoices):
     RECEIPT = 'receipt', _('Goods received')
     PICK = 'pick', _('Picked for order')

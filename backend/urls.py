@@ -23,6 +23,7 @@ from core.views import (
     LoginView,
     MapView,
     MeView,
+    NotificationViewSet,
     RegisterView,
     OrderViewSet,
     PayslipViewSet,
@@ -49,6 +50,7 @@ router.register('invoices', InvoiceViewSet, basename='invoice')
 router.register('attendance', AttendanceViewSet, basename='attendance')
 router.register('corrections', ShiftCorrectionRequestViewSet, basename='correction')
 router.register('payslips', PayslipViewSet, basename='payslip')
+router.register('notifications', NotificationViewSet, basename='notification')
 
 catalog_router = DefaultRouter()
 catalog_router.register('families', FamilyViewSet, basename='family')

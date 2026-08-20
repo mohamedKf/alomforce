@@ -85,19 +85,45 @@ def _send_one(project_id, access_token, token, title, body, data):
         return json.loads(response.read().decode('utf-8'))
 
 
+def _record(user_ids, title, body, data):
+    """Write the notification down for the bell to read.
+
+    Failing to record must not stop the push: the nudge is still worth
+    delivering even if the history could not be written.
+    """
+    from core.models import Notification
+
+    try:
+        Notification.objects.bulk_create([
+            Notification(user_id=uid, title=str(title), body=str(body),
+                         kind=str((data or {}).get('kind', '')),
+                         data={k: str(v) for k, v in (data or {}).items()})
+            for uid in user_ids
+        ])
+    except Exception:                                     # noqa: BLE001
+        logger.exception('Could not record notifications.')
+
+
 def send_to_users(users, title, body, data=None):
-    """Notify every device belonging to `users`. Returns how many were sent.
+    """Notify `users`: record it, then push to their devices.
+
+    The record comes first and happens regardless of Firebase. A phone that
+    was off missed the push entirely, and the desktop has no push channel at
+    all -- the row is what both apps' notification bells read, so it must
+    exist even when nothing can be delivered.
 
     Never raises. A push that fails is a nudge that did not arrive, and the
-    delivery, order or approval it referred to has already been recorded.
+    delivery, order or approval it referred to has already been saved.
     """
     from core.models import DeviceToken
+
+    user_ids = [u.id if hasattr(u, 'id') else u for u in users]
+    _record(user_ids, title, body, data)
 
     info = _credentials()
     if info is None:
         return 0
 
-    user_ids = [u.id if hasattr(u, 'id') else u for u in users]
     tokens = list(DeviceToken.objects.filter(user_id__in=user_ids)
                   .values_list('token', flat=True))
     if not tokens:
