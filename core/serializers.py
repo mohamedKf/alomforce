@@ -24,6 +24,7 @@ from core import maplinks
 from core.models import (
     AppConfig,
     Client,
+    DeviceToken,
     Family,
     Invoice,
     Location,
@@ -231,6 +232,40 @@ class ManagerRegistrationSerializer(PasswordRulesMixin, serializers.ModelSeriali
             is_staff=True,
             **validated_data,
         )
+
+
+class DeviceTokenSerializer(serializers.ModelSerializer):
+    """A device registering itself for push."""
+
+    class Meta:
+        model = DeviceToken
+        fields = ['id', 'token', 'platform']
+        extra_kwargs = {
+            # The model's unique=True would otherwise add a UniqueValidator,
+            # which rejects the request before create() runs -- so a device
+            # handed to another worker could never be re-registered, and it
+            # would keep notifying the person who gave it away.
+            'token': {'validators': []},
+        }
+
+    def create(self, validated_data):
+        """Claim the token for this user, wherever it was before.
+
+        A device handed from one worker to the next keeps its Firebase token,
+        so registering has to move it rather than fail on the unique column --
+        otherwise the new user gets no notifications and the old one keeps
+        receiving them.
+        """
+        user = self.context['request'].user
+        token, _created = DeviceToken.objects.update_or_create(
+            token=validated_data['token'],
+            defaults={
+                'user': user,
+                'platform': validated_data.get(
+                    'platform', DeviceToken.Platform.ANDROID),
+            },
+        )
+        return token
 
 
 class LoginSerializer(TokenObtainPairSerializer):

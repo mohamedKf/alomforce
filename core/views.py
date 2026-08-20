@@ -27,6 +27,7 @@ from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenObtainPairView
 
+from core import push
 from core.permissions import PasswordChangeRequired
 from core.models import (
     Client,
@@ -35,6 +36,7 @@ from core.models import (
     Location,
     MovementType,
     Order,
+    OrderStatus,
     Payslip,
     Profile,
     ProfileRole,
@@ -848,6 +850,39 @@ class RegisterView(APIView):
         }, status=status.HTTP_201_CREATED)
 
 
+class DeviceView(APIView):
+    """POST/DELETE /api/devices/ — this device's push registration.
+
+    POST with {token, platform} after the app obtains a Firebase token; DELETE
+    with {token} on sign-out, so a shared phone stops notifying the person who
+    handed it over.
+    """
+
+    permission_classes = [permissions.IsAuthenticated]
+    # A worker who still has to change their password should still be
+    # registered: the token is about the device, not about what they may see.
+    allows_pending_password = True
+
+    def post(self, request):
+        from core.serializers import DeviceTokenSerializer
+
+        serializer = DeviceTokenSerializer(
+            data=request.data, context={'request': request})
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    def delete(self, request):
+        from core.models import DeviceToken
+
+        token = (request.data.get('token') or '').strip()
+        if not token:
+            return Response({'token': [_('Which device?')]},
+                            status=status.HTTP_400_BAD_REQUEST)
+        DeviceToken.objects.filter(token=token, user=request.user).delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
 class ShopView(APIView):
     """GET/PATCH /api/shop/ — the owner's own business, a single row.
 
@@ -1292,6 +1327,19 @@ class OrderViewSet(viewsets.ModelViewSet):
         result['client_phone'] = (order.client.phone if order.client else '') or ''
         result['client_contact_name'] = (
             (order.client.contact_name if order.client else '') or '')
+
+        # The office is not on the road and has no other way of knowing the
+        # goods arrived; the driver who signed it plainly does.
+        push.send_to_roles(
+            [Role.OFFICE, Role.MANAGER],
+            _('Delivery signed'),
+            _('%(number)s was received by %(person)s.') % {
+                'number': order.number,
+                'person': delivery.recipient_name or _('the client'),
+            },
+            {'order_id': order.id, 'kind': 'delivery_signed'},
+            exclude=request.user,
+        )
         return Response(result)
 
     @action(detail=True, methods=['post'])
@@ -1343,7 +1391,18 @@ class OrderViewSet(viewsets.ModelViewSet):
         if 'prepared' in request.data:
             # The order's status follows its lines, so the worker ticking the
             # last profile is what marks the order ready for delivery.
-            order.refresh_prepared_status()
+            if order.refresh_prepared_status() and order.status == OrderStatus.READY:
+                # Only on the transition, not on every tick: a driver does not
+                # want six notifications for a six-line order.
+                push.send_to_roles(
+                    [Role.DRIVER],
+                    _('Order ready'),
+                    _('%(number)s for %(client)s is ready to load.') % {
+                        'number': order.number,
+                        'client': order.client.name if order.client else '',
+                    },
+                    {'order_id': order.id, 'kind': 'order_ready'},
+                )
         order.refresh_from_db()
         return Response(OrderSerializer(order, context={'request': request}).data)
 

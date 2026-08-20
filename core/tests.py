@@ -1396,3 +1396,111 @@ class InvoiceNumberUniquenessTests(APITestCase):
             'issued_at': '2026-08-01', 'subtotal': '1.00', 'vat': '0.18',
             'total': '1.18', 'source': 'manual'}, format='json')
         self.assertEqual(r.status_code, 201, r.data)
+
+
+class PushRegistrationTests(APITestCase):
+    """Devices registering and unregistering for notifications."""
+
+    def setUp(self):
+        self.driver = User.objects.create_user(
+            id_number=make_id('13131313'), password='Str0ng!Passw0rd',
+            first_name='D', last_name='R', role=Role.DRIVER, phone='050-1313131')
+        self.other = User.objects.create_user(
+            id_number=make_id('14141414'), password='Str0ng!Passw0rd',
+            first_name='W', last_name='H', role=Role.WAREHOUSE, phone='050-1414141')
+        self.client.force_authenticate(self.driver)
+
+    def test_a_device_registers(self):
+        from core.models import DeviceToken
+        r = self.client.post('/api/devices/',
+                             {'token': 'tok-1', 'platform': 'ios'}, format='json')
+        self.assertEqual(r.status_code, 201, r.data)
+        self.assertEqual(DeviceToken.objects.get(token='tok-1').user, self.driver)
+
+    def test_registering_twice_does_not_duplicate(self):
+        from core.models import DeviceToken
+        for _ in range(3):
+            self.client.post('/api/devices/', {'token': 'tok-1'}, format='json')
+        self.assertEqual(DeviceToken.objects.filter(token='tok-1').count(), 1)
+
+    def test_a_handed_over_device_moves_to_the_new_user(self):
+        """A shared phone must stop notifying whoever held it before."""
+        from core.models import DeviceToken
+        self.client.post('/api/devices/', {'token': 'shared'}, format='json')
+        self.client.force_authenticate(self.other)
+        self.client.post('/api/devices/', {'token': 'shared'}, format='json')
+        self.assertEqual(DeviceToken.objects.get(token='shared').user, self.other)
+        self.assertEqual(DeviceToken.objects.filter(token='shared').count(), 1)
+
+    def test_signing_out_removes_the_device(self):
+        from core.models import DeviceToken
+        self.client.post('/api/devices/', {'token': 'tok-2'}, format='json')
+        r = self.client.delete('/api/devices/', {'token': 'tok-2'}, format='json')
+        self.assertEqual(r.status_code, 204)
+        self.assertFalse(DeviceToken.objects.filter(token='tok-2').exists())
+
+    def test_one_user_cannot_unregister_anothers_device(self):
+        from core.models import DeviceToken
+        self.client.post('/api/devices/', {'token': 'mine'}, format='json')
+        self.client.force_authenticate(self.other)
+        self.client.delete('/api/devices/', {'token': 'mine'}, format='json')
+        self.assertTrue(DeviceToken.objects.filter(token='mine').exists())
+
+    def test_registering_needs_a_signed_in_user(self):
+        self.client.force_authenticate(None)
+        r = self.client.post('/api/devices/', {'token': 'anon'}, format='json')
+        self.assertEqual(r.status_code, 401)
+
+
+class PushSendingTests(TestCase):
+    """Sending, and what happens when it goes wrong."""
+
+    def setUp(self):
+        from core.models import DeviceToken
+        self.user = User.objects.create_user(
+            id_number=make_id('15151515'), password='Str0ng!Passw0rd',
+            first_name='P', last_name='U', role=Role.DRIVER, phone='050-1515151')
+        DeviceToken.objects.create(user=self.user, token='tok', platform='ios')
+
+    def test_without_credentials_nothing_is_sent_and_nothing_breaks(self):
+        from core import push
+        with override_settings(FIREBASE_CREDENTIALS=''):
+            self.assertFalse(push.is_configured())
+            self.assertEqual(push.send_to_users([self.user], 'x', 'y'), 0)
+
+    def test_malformed_credentials_do_not_raise(self):
+        from core import push
+        with override_settings(FIREBASE_CREDENTIALS='not json'):
+            self.assertEqual(push.send_to_users([self.user], 'x', 'y'), 0)
+
+    def test_a_send_failure_is_swallowed(self):
+        """A phone being off must never fail the work that triggered it."""
+        from core import push
+        creds = '{"project_id": "demo", "client_email": "x@y.z"}'
+        with override_settings(FIREBASE_CREDENTIALS=creds), \
+                mock.patch('core.push._access_token', return_value='t'), \
+                mock.patch('core.push._send_one', side_effect=OSError('down')):
+            self.assertEqual(push.send_to_users([self.user], 'x', 'y'), 0)
+
+    def test_a_dead_token_is_removed(self):
+        from urllib.error import HTTPError
+        from io import BytesIO
+        from core import push
+        from core.models import DeviceToken
+
+        dead = HTTPError('u', 404, 'NOT_FOUND', {},
+                         BytesIO(b'{"error":{"status":"UNREGISTERED"}}'))
+        creds = '{"project_id": "demo", "client_email": "x@y.z"}'
+        with override_settings(FIREBASE_CREDENTIALS=creds), \
+                mock.patch('core.push._access_token', return_value='t'), \
+                mock.patch('core.push._send_one', side_effect=dead):
+            push.send_to_users([self.user], 'x', 'y')
+        self.assertFalse(DeviceToken.objects.filter(token='tok').exists())
+
+    def test_send_to_roles_can_exclude_the_person_who_acted(self):
+        from core import push
+        with mock.patch('core.push.send_to_users', return_value=0) as sent:
+            with override_settings(FIREBASE_CREDENTIALS=''):
+                push.send_to_roles([Role.DRIVER], 'x', 'y', exclude=self.user)
+        addressed = sent.call_args[0][0]
+        self.assertNotIn(self.user, addressed)

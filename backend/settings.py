@@ -348,6 +348,18 @@ if SENTRY_DSN:
     )
 
 
+# Push notifications.
+#
+# The whole service account JSON, pasted into one Railway variable. Firebase
+# hands it over as a file; keeping it as a variable means no secret is ever
+# committed and nothing has to be mounted into the container.
+#
+# Empty until a Firebase project exists, and core/push.py is a no-op while it
+# is -- so the notification calls already wired into the order and delivery
+# flow cost nothing and start working the day this is filled in.
+FIREBASE_CREDENTIALS = config('FIREBASE_CREDENTIALS', default='')
+
+
 # JWT lifetimes.
 #
 # SimpleJWT's defaults are 5 minutes and 1 day. One day is wrong for this

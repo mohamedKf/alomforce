@@ -879,6 +879,45 @@ class StockItem(models.Model):
         return self.quantity < self.minimum_quantity
 
 
+class DeviceToken(models.Model):
+    """A push token for one signed-in device.
+
+    Per device, not per user: a driver may carry a phone and a tablet, and the
+    office may share a machine between shifts. The token is what Firebase
+    addresses, so it is the natural key -- and it moves between users when a
+    device is handed over, which is why saving one detaches it from whoever
+    held it before.
+    """
+
+    class Platform(models.TextChoices):
+        ANDROID = 'android', _('Android')
+        IOS = 'ios', _('iOS')
+        WEB = 'web', _('Web')
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL, verbose_name=_('user'),
+        on_delete=models.CASCADE, related_name='device_tokens',
+    )
+    token = models.CharField(_('push token'), max_length=255, unique=True)
+    platform = models.CharField(
+        _('platform'), max_length=10, choices=Platform.choices,
+        default=Platform.ANDROID)
+    # Stale tokens are the normal case, not an error: an app reinstall issues a
+    # new one and Firebase rejects the old. Firebase tells us when that happens
+    # and the row is deleted, so this is mostly for spotting devices that have
+    # quietly stopped checking in.
+    last_seen = models.DateTimeField(_('last seen'), auto_now=True)
+    created_at = models.DateTimeField(_('created at'), auto_now_add=True)
+
+    class Meta:
+        verbose_name = _('device token')
+        verbose_name_plural = _('device tokens')
+        ordering = ['-last_seen']
+
+    def __str__(self):
+        return f'{self.user} — {self.get_platform_display()}'
+
+
 class MovementType(models.TextChoices):
     RECEIPT = 'receipt', _('Goods received')
     PICK = 'pick', _('Picked for order')

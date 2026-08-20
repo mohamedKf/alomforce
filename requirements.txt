@@ -32,6 +32,11 @@ whitenoise==6.12.0
 # until someone turns it on -- see the SENTRY_DSN block in settings.
 sentry-sdk[django]==2.68.0
 
+# Push notifications. Only used to mint an OAuth2 token for Firebase's HTTP v1
+# API, which is the only one left since the legacy server-key endpoint closed.
+# Dormant until FIREBASE_CREDENTIALS is set.
+google-auth==2.56.3
+
 # Media storage
 cloudinary==1.45.0
 django-cloudinary-storage==0.3.0

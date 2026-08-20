@@ -12,6 +12,7 @@ from core.views import (
     CatalogListingViewSet,
     ConfigView,
     DashboardView,
+    DeviceView,
     DriversStatusView,
     OnlineWorkersView,
     ChangePasswordView,
@@ -74,6 +75,7 @@ urlpatterns = [
     path('api/settings/', SettingsView.as_view(), name='settings'),
     path('api/map/', MapView.as_view(), name='map'),
     path('api/auth/', include(auth_patterns)),
+    path('api/devices/', DeviceView.as_view(), name='devices'),
     path('api/catalog/', include(catalog_router.urls)),
     path('api/', include(router.urls)),
     # Public, login-free signed delivery note (the WhatsApp link target).
