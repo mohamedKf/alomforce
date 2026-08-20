@@ -3,48 +3,47 @@
 # This file is distributed under the same license as the PACKAGE package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 #
-#, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-13 21:38+0300\n"
+"POT-Creation-Date: 2026-08-20 20:19+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
-"Language: \n"
+"Language: he\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=3; plural=(n == 1 && n % 1 == 0) ? 0 : (n == 2 && n % "
-"1 == 0) ? 1: 2;\n"
+"Plural-Forms: nplurals=3; plural=(n == 1 && n % 1 == 0) ? 0 : (n == 2 && n % 1 == 0) ? 1: 2;\n"
+
 #: backend/settings.py:213 core/models.py:230
 msgid "English"
-msgstr ""
+msgstr "אנגלית"
 
 #: backend/settings.py:214 core/models.py:230
 msgid "Hebrew"
-msgstr ""
+msgstr "עברית"
 
 #: backend/settings.py:215 core/models.py:230
 msgid "Arabic"
-msgstr ""
+msgstr "ערבית"
 
 #: core/admin.py:19
 msgid "Personal"
-msgstr ""
+msgstr "פרטים אישיים"
 
 #: core/admin.py:23
 msgid "Employment"
-msgstr ""
+msgstr "העסקה"
 
 #: core/admin.py:26
 msgid "Client access"
-msgstr ""
+msgstr "גישת לקוח"
 
 #: core/admin.py:27
 msgid "Permissions"
-msgstr ""
+msgstr "הרשאות"
 
 #: core/models.py:54
 msgid "ID number must contain digits only."
@@ -61,35 +60,35 @@ msgstr "%(value)s אינו מספר זהות תקין."
 
 #: core/models.py:86
 msgid "Office"
-msgstr ""
+msgstr "משרד"
 
 #: core/models.py:87
 msgid "Warehouse worker"
-msgstr ""
+msgstr "עובד מחסן"
 
 #: core/models.py:88
 msgid "Delivery driver"
-msgstr ""
+msgstr "נהג משלוחים"
 
 #: core/models.py:89
 msgid "Client"
-msgstr ""
+msgstr "לקוח"
 
 #: core/models.py:90
 msgid "Manager"
-msgstr ""
+msgstr "מנהל"
 
 #: core/models.py:96
 msgid "By hour"
-msgstr ""
+msgstr "לפי שעה"
 
 #: core/models.py:97
 msgid "By day"
-msgstr ""
+msgstr "לפי יום"
 
 #: core/models.py:98
 msgid "Monthly salary"
-msgstr ""
+msgstr "משכורת חודשית"
 
 #: core/models.py:130
 msgid "An ID number is required for staff accounts."
@@ -101,146 +100,146 @@ msgstr "נדרש מספר טלפון לחשבונות לקוחות."
 
 #: core/models.py:168
 msgid "Superuser must have is_staff=True."
-msgstr ""
+msgstr "משתמש-על חייב is_staff=True."
 
 #: core/models.py:170
 msgid "Superuser must have is_superuser=True."
-msgstr ""
+msgstr "משתמש-על חייב is_superuser=True."
 
 #: core/models.py:187
 msgid "ID number"
-msgstr ""
+msgstr "מספר זהות"
 
 #: core/models.py:194
 msgid "9-digit ID number (תעודת זהות). Staff sign in with this."
-msgstr ""
+msgstr "תעודת זהות בת 9 ספרות. העובדים מתחברים באמצעותה."
 
 #: core/models.py:197
 msgid "first name"
-msgstr ""
+msgstr "שם פרטי"
 
 #: core/models.py:198
 msgid "last name"
-msgstr ""
+msgstr "שם משפחה"
 
-#: core/models.py:199 core/models.py:634 core/models.py:977
+#: core/models.py:199 core/models.py:634 core/models.py:1068
 msgid "email"
-msgstr ""
+msgstr "דוא\"ל"
 
-#: core/models.py:201 core/models.py:633 core/models.py:976
+#: core/models.py:201 core/models.py:633 core/models.py:1067
 msgid "phone"
-msgstr ""
+msgstr "טלפון"
 
-#: core/models.py:206
+#: core/models.py:206 core/serializers.py:168
 msgid "Enter a valid phone number."
 msgstr "הזינו מספר טלפון תקין."
 
 #: core/models.py:213
 msgid "phone (normalised)"
-msgstr ""
+msgstr "טלפון (מנורמל)"
 
 #: core/models.py:221
 msgid "date of birth"
-msgstr ""
+msgstr "תאריך לידה"
 
-#: core/models.py:222 core/models.py:631 core/models.py:774
+#: core/models.py:222 core/models.py:631 core/models.py:788
 msgid "address"
-msgstr ""
+msgstr "כתובת"
 
 #: core/models.py:225 core/models.py:539
 msgid "role"
-msgstr ""
+msgstr "תפקיד"
 
 #: core/models.py:228
 msgid "language"
-msgstr ""
+msgstr "שפה"
 
 #: core/models.py:235
 msgid "hired on"
-msgstr ""
+msgstr "תאריך תחילת עבודה"
 
 #: core/models.py:236
 msgid "emergency contact"
-msgstr ""
+msgstr "איש קשר לחירום"
 
 #: core/models.py:237
 msgid "emergency phone"
-msgstr ""
+msgstr "טלפון לחירום"
 
-#: core/models.py:243 core/models.py:1591
+#: core/models.py:243 core/models.py:1682
 msgid "pay basis"
-msgstr ""
+msgstr "בסיס שכר"
 
-#: core/models.py:246 core/models.py:1604
+#: core/models.py:246 core/models.py:1695
 msgid "hourly rate"
-msgstr ""
+msgstr "תעריף שעתי"
 
 #: core/models.py:248
 msgid "daily rate"
-msgstr ""
+msgstr "תעריף יומי"
 
 #: core/models.py:250
 msgid "monthly salary"
-msgstr ""
+msgstr "שכר חודשי"
 
 #: core/models.py:251
 msgid "pay overtime"
-msgstr ""
+msgstr "תשלום שעות נוספות"
 
 #: core/models.py:253
 msgid "regular hours per day"
-msgstr ""
+msgstr "שעות רגילות ליום"
 
 #: core/models.py:255
 msgid "Hours before overtime starts; 8 for a 6-day week, 8.6 for 5-day."
-msgstr ""
+msgstr "שעות עד לתחילת שעות נוספות; 8 לשבוע בן 6 ימים, 8.6 לשבוע בן 5 ימים."
 
-#: core/models.py:260 core/models.py:1019 core/models.py:1043
-#: core/models.py:1291 core/models.py:1350
+#: core/models.py:260 core/models.py:1110 core/models.py:1134
+#: core/models.py:1382 core/models.py:1441
 msgid "client"
-msgstr ""
+msgstr "לקוח"
 
-#: core/models.py:267 core/models.py:428 core/models.py:474 core/models.py:782
-#: core/models.py:1015
+#: core/models.py:267 core/models.py:428 core/models.py:474 core/models.py:796
+#: core/models.py:1106
 msgid "active"
-msgstr ""
+msgstr "פעיל"
 
 #: core/models.py:269
 msgid "admin access"
-msgstr ""
+msgstr "גישת ניהול"
 
 #: core/models.py:269
 msgid "Can sign into Django admin."
-msgstr ""
+msgstr "יכול להתחבר לממשק הניהול."
 
 #: core/models.py:271
 msgid "date joined"
-msgstr ""
+msgstr "תאריך הצטרפות"
 
-#: core/models.py:276
+#: core/models.py:276 core/models.py:909
 msgid "last seen"
-msgstr ""
+msgstr "נראה לאחרונה"
 
 #: core/models.py:282
 msgid "must change password"
-msgstr ""
+msgstr "חייב להחליף סיסמה"
 
 #: core/models.py:283
 msgid "Blocks all other API access until the password is changed."
-msgstr ""
+msgstr "חוסם כל גישה אחרת עד להחלפת הסיסמה."
 
-#: core/models.py:286 core/models.py:1061 core/models.py:1390
-#: core/models.py:1613
+#: core/models.py:286 core/models.py:1152 core/models.py:1481
+#: core/models.py:1704
 msgid "created by"
-msgstr ""
+msgstr "נוצר על ידי"
 
-#: core/models.py:296
+#: core/models.py:296 core/models.py:898 core/models.py:931
 msgid "user"
-msgstr ""
+msgstr "משתמש"
 
 #: core/models.py:297
 msgid "users"
-msgstr ""
+msgstr "משתמשים"
 
 #: core/models.py:313
 msgid "Client users must be linked to a client."
@@ -260,1098 +259,1278 @@ msgstr "עובדים מתחברים עם מספר זהות."
 
 #: core/models.py:366
 msgid "Frame"
-msgstr ""
+msgstr "משקוף"
 
 #: core/models.py:367
 msgid "Sash"
-msgstr ""
+msgstr "כנף"
 
 #: core/models.py:368
 msgid "Track"
-msgstr ""
+msgstr "מסילה"
 
 #: core/models.py:369
 msgid "Mullion"
-msgstr ""
+msgstr "חציץ"
 
 #: core/models.py:370
 msgid "Glazing bead"
-msgstr ""
+msgstr "סרגל זיגוג"
 
 #: core/models.py:371
 msgid "Shutter"
-msgstr ""
+msgstr "תריס"
 
 #: core/models.py:372
 msgid "Trim"
-msgstr ""
+msgstr "הלבשה"
 
 #: core/models.py:373
 msgid "Adapter"
-msgstr ""
+msgstr "מעבר"
 
 #: core/models.py:374
 msgid "Accessory"
-msgstr ""
+msgstr "פרופיל עזר"
 
 #: core/models.py:378
 msgid "Post"
-msgstr ""
+msgstr "עמוד"
 
 #: core/models.py:379
 msgid "Beam"
-msgstr ""
+msgstr "קורה"
 
 #: core/models.py:380
 msgid "Seal / gasket"
-msgstr ""
+msgstr "אטם"
 
 #: core/models.py:381
 msgid "Railing"
-msgstr ""
+msgstr "מעקה"
 
 #: core/models.py:382
 msgid "Insect screen"
-msgstr ""
+msgstr "רשת"
 
 #: core/models.py:383
 msgid "Panel"
-msgstr ""
+msgstr "פנל"
 
-#: core/models.py:384 core/models.py:948
+#: core/models.py:384 core/models.py:1039
 msgid "Other"
-msgstr ""
+msgstr "אחר"
 
-#: core/models.py:390 core/models.py:408 core/models.py:623 core/models.py:773
-#: core/models.py:927
+#: core/models.py:390 core/models.py:408 core/models.py:623 core/models.py:787
+#: core/models.py:1018
 msgid "name"
-msgstr ""
+msgstr "שם"
 
 #: core/models.py:391 core/models.py:409
 msgid "name (English)"
-msgstr ""
+msgstr "שם (אנגלית)"
 
 #: core/models.py:392
 msgid "slug"
-msgstr ""
+msgstr "מזהה כתובת"
 
-#: core/models.py:393 core/models.py:450 core/models.py:801
+#: core/models.py:393 core/models.py:450 core/models.py:815
 msgid "description"
-msgstr ""
+msgstr "תיאור"
 
 #: core/models.py:396 core/models.py:412
 msgid "family"
-msgstr ""
+msgstr "משפחה"
 
 #: core/models.py:397
 msgid "families"
-msgstr ""
+msgstr "משפחות"
 
-#: core/models.py:407 core/models.py:799
+#: core/models.py:407 core/models.py:813
 msgid "code"
-msgstr ""
+msgstr "קוד"
 
 #: core/models.py:418
 msgid "manufacturer"
-msgstr ""
+msgstr "יצרן"
 
 #: core/models.py:419 core/models.py:555
 msgid "catalog page"
-msgstr ""
+msgstr "עמוד בקטלוג"
 
-#: core/models.py:425 core/models.py:1221
+#: core/models.py:425 core/models.py:1312
 msgid "price per kg"
-msgstr ""
+msgstr "מחיר לק\"ג"
 
 #: core/models.py:426
 msgid "Metal price per kilogram for this series. Drives catalog pricing."
-msgstr ""
+msgstr "מחיר המתכת לקילוגרם בסדרה זו. קובע את התמחור בקטלוג."
 
 #: core/models.py:431 core/models.py:432 core/models.py:469 core/models.py:508
-#: core/models.py:1196
+#: core/models.py:1287
 msgid "series"
-msgstr ""
+msgstr "סדרה"
 
 #: core/models.py:449
 msgid "profile number"
-msgstr ""
+msgstr "מספר פרופיל"
 
 #: core/models.py:451
 msgid "description (English)"
-msgstr ""
+msgstr "תיאור (אנגלית)"
 
 #: core/models.py:454
 msgid "weight (g/m)"
-msgstr ""
+msgstr "משקל (ג'/מ')"
 
 #: core/models.py:458
 msgid "Grams per metre, as printed in the catalog."
-msgstr ""
+msgstr "גרמים למטר, כפי שמופיע בקטלוג."
 
 #: core/models.py:464
 msgid "cross-section drawing"
-msgstr ""
+msgstr "שרטוט חתך"
 
-#: core/models.py:475 core/models.py:907 core/models.py:1016
-#: core/models.py:1392 core/models.py:1486 core/models.py:1546
-#: core/models.py:1615
+#: core/models.py:475 core/models.py:910 core/models.py:943 core/models.py:998
+#: core/models.py:1107 core/models.py:1483 core/models.py:1577
+#: core/models.py:1637 core/models.py:1706
 msgid "created at"
-msgstr ""
+msgstr "נוצר בתאריך"
 
 #: core/models.py:476
 msgid "updated at"
-msgstr ""
+msgstr "עודכן בתאריך"
 
-#: core/models.py:479 core/models.py:512 core/models.py:825 core/models.py:1192
+#: core/models.py:479 core/models.py:512 core/models.py:839 core/models.py:1283
 msgid "profile"
-msgstr ""
+msgstr "פרופיל"
 
 #: core/models.py:480
 msgid "profiles"
-msgstr ""
+msgstr "פרופילים"
 
 #: core/models.py:517
 msgid "catalog group"
-msgstr ""
+msgstr "קבוצה בקטלוג"
 
 #: core/models.py:518
 msgid "Sub-heading this row sits under, e.g. כנפיים – זיגוג עד 8 מ\"מ"
-msgstr ""
+msgstr "כותרת המשנה שתחתיה נמצאת שורה זו, לדוגמה כנפיים – זיגוג עד 8 מ\"מ"
 
 #: core/models.py:525
 msgid "description as listed"
-msgstr ""
+msgstr "תיאור כפי שמופיע"
 
 #: core/models.py:526
 msgid "Only set when it differs from the profile description."
-msgstr ""
+msgstr "יש למלא רק כאשר שונה מתיאור הפרופיל."
 
 #: core/models.py:534
 msgid "weight as listed (g/m)"
-msgstr ""
+msgstr "משקל כפי שמופיע (ג'/מ')"
 
 #: core/models.py:545
 msgid "glass min (mm)"
-msgstr ""
+msgstr "זכוכית מינימום (מ\"מ)"
 
 #: core/models.py:548
 msgid "glass max (mm)"
-msgstr ""
+msgstr "זכוכית מקסימום (מ\"מ)"
 
 #: core/models.py:551
 msgid "tracks"
-msgstr ""
+msgstr "נתיבים"
 
 #: core/models.py:552
 msgid "For rails: 1–5 נתיבים."
-msgstr ""
+msgstr "למסילות: 1–5 נתיבים."
 
 #: core/models.py:556
 msgid "position"
-msgstr ""
+msgstr "מיקום"
 
 #: core/models.py:559
 msgid "series profile"
-msgstr ""
+msgstr "פרופיל בסדרה"
 
 #: core/models.py:560
 msgid "series profiles"
-msgstr ""
+msgstr "פרופילים בסדרה"
 
-#: core/models.py:624 core/models.py:960
+#: core/models.py:624 core/models.py:1051
 msgid "registered legal name"
-msgstr ""
+msgstr "שם משפטי רשום"
 
-#: core/models.py:626 core/models.py:968
+#: core/models.py:626 core/models.py:1059
 msgid "tax ID"
-msgstr ""
+msgstr "ח.פ / ע.מ"
 
 #: core/models.py:627
 msgid "ח.פ. / ע.מ. — appears on order and delivery documents."
-msgstr ""
+msgstr "ח.פ. / ע.מ. — מופיע במסמכי הזמנה ומשלוח."
 
 #: core/models.py:630
 msgid "logo"
-msgstr ""
+msgstr "לוגו"
 
-#: core/models.py:632 core/models.py:775 core/models.py:981
+#: core/models.py:632 core/models.py:789 core/models.py:1072
 msgid "city"
-msgstr ""
+msgstr "עיר"
 
-#: core/models.py:636 core/models.py:777 core/models.py:1001
+#: core/models.py:636 core/models.py:791 core/models.py:1092
 msgid "latitude"
-msgstr ""
+msgstr "קו רוחב"
 
-#: core/models.py:639 core/models.py:780 core/models.py:1004
+#: core/models.py:639 core/models.py:794 core/models.py:1095
 msgid "longitude"
-msgstr ""
+msgstr "קו אורך"
 
 #: core/models.py:643 core/models.py:644
 msgid "shop"
-msgstr ""
+msgstr "העסק"
 
 #: core/models.py:664
 msgid "Cloudinary cloud name"
-msgstr ""
+msgstr "שם ענן Cloudinary"
 
 #: core/models.py:666
 msgid "Cloudinary API key"
-msgstr ""
+msgstr "מפתח API של Cloudinary"
 
 #: core/models.py:668
 msgid "Cloudinary API secret"
-msgstr ""
+msgstr "סוד API של Cloudinary"
 
 #: core/models.py:672
 msgid "OpenAI API key"
-msgstr ""
+msgstr "מפתח OpenAI"
 
 #: core/models.py:675
 msgid "SMTP host"
-msgstr ""
+msgstr "שרת SMTP"
 
 #: core/models.py:676
 msgid "SMTP port"
-msgstr ""
+msgstr "פורט SMTP"
 
 #: core/models.py:677
 msgid "SMTP username"
-msgstr ""
+msgstr "שם משתמש SMTP"
 
 #: core/models.py:678
 msgid "SMTP password"
-msgstr ""
+msgstr "סיסמת SMTP"
 
 #: core/models.py:679
 msgid "SMTP from address"
-msgstr ""
+msgstr "כתובת שולח SMTP"
 
 #: core/models.py:680
 msgid "SMTP use TLS"
-msgstr ""
+msgstr "SMTP עם TLS"
 
 #: core/models.py:683
 msgid "accountant name"
-msgstr ""
+msgstr "שם רואה החשבון"
 
 #: core/models.py:684
 msgid "accountant email"
-msgstr ""
+msgstr "דוא\"ל רואה החשבון"
 
 #: core/models.py:685
 msgid "accountant phone"
-msgstr ""
+msgstr "טלפון רואה החשבון"
 
 #: core/models.py:689
 msgid "Green Invoice API key"
-msgstr ""
+msgstr "מפתח Green Invoice"
 
 #: core/models.py:691
 msgid "Green Invoice API secret"
-msgstr ""
+msgstr "סוד Green Invoice"
 
 #: core/models.py:698
 msgid "Mapbox token"
-msgstr ""
+msgstr "אסימון Mapbox"
 
 #: core/models.py:699
-msgid ""
-"Public token (pk.…) for the map. A MAPBOX_TOKEN environment variable "
-"overrides this."
-msgstr ""
+msgid "Public token (pk.…) for the map. A MAPBOX_TOKEN environment variable overrides this."
+msgstr "אסימון ציבורי (pk.…) עבור המפה. משתנה הסביבה MAPBOX_TOKEN גובר על ערך זה."
 
-#: core/models.py:704 core/models.py:705
+#: core/models.py:710
+msgid "manager register code"
+msgstr "קוד רישום מנהל"
+
+#: core/models.py:711
+msgid "Anyone with this code can create a manager account. Leave empty to switch manager registration off. A REGISTER_CODE environment variable overrides this."
+msgstr "כל מי שברשותו קוד זה יכול ליצור חשבון מנהל. השאירו ריק כדי לכבות רישום מנהלים. משתנה הסביבה REGISTER_CODE גובר על ערך זה."
+
+#: core/models.py:717 core/models.py:718
 msgid "app configuration"
-msgstr ""
+msgstr "הגדרות המערכת"
 
-#: core/models.py:785 core/models.py:796
+#: core/models.py:799 core/models.py:810
 msgid "warehouse"
-msgstr ""
-
-#: core/models.py:786
-msgid "warehouses"
-msgstr ""
+msgstr "מחסן"
 
 #: core/models.py:800
+msgid "warehouses"
+msgstr "מחסנים"
+
+#: core/models.py:814
 msgid "barcode"
-msgstr ""
+msgstr "ברקוד"
 
-#: core/models.py:804 core/models.py:829
+#: core/models.py:818 core/models.py:843
 msgid "location"
-msgstr ""
+msgstr "מיקום"
 
-#: core/models.py:805
+#: core/models.py:819
 msgid "locations"
-msgstr ""
+msgstr "מיקומים"
 
-#: core/models.py:833 core/models.py:1204
+#: core/models.py:847 core/models.py:1295
 msgid "bar length (mm)"
-msgstr ""
+msgstr "אורך מוט (מ\"מ)"
 
-#: core/models.py:836
+#: core/models.py:850
 msgid "finish"
-msgstr ""
+msgstr "גימור"
 
-#: core/models.py:837
+#: core/models.py:851
 msgid "Anodised, powder-coated RAL code, mill finish, etc."
-msgstr ""
+msgstr "אנודייז, צביעה בתנור בגוון RAL, גימור גלם וכדומה."
 
-#: core/models.py:841
+#: core/models.py:855
 msgid "reorder level"
-msgstr ""
+msgstr "רמת חידוש הזמנה"
 
-#: core/models.py:842
+#: core/models.py:856
 msgid "Alert the office when quantity on hand drops below this."
-msgstr ""
+msgstr "התראה למשרד כאשר הכמות במלאי יורדת מתחת לערך זה."
 
-#: core/models.py:846 core/models.py:888
+#: core/models.py:860 core/models.py:979
 msgid "stock item"
-msgstr ""
+msgstr "פריט מלאי"
 
-#: core/models.py:847
+#: core/models.py:861
 msgid "stock items"
-msgstr ""
+msgstr "פריטי מלאי"
 
-#: core/models.py:869
-msgid "Goods received"
-msgstr ""
+#: core/models.py:893
+msgid "Android"
+msgstr "אנדרואיד"
 
-#: core/models.py:870
-msgid "Picked for order"
-msgstr ""
-
-#: core/models.py:871
-msgid "Returned"
-msgstr ""
-
-#: core/models.py:873
-msgid "Stock count adjustment"
-msgstr ""
-
-#: core/models.py:874
-msgid "Transferred in"
-msgstr ""
-
-#: core/models.py:875
-msgid "Transferred out"
-msgstr ""
-
-#: core/models.py:876
-msgid "Scrapped"
-msgstr ""
-
-#: core/models.py:892
-msgid "type"
-msgstr ""
-
-#: core/models.py:895 core/models.py:1207
-msgid "bars"
-msgstr ""
+#: core/models.py:894
+msgid "iOS"
+msgstr "iOS"
 
 #: core/models.py:895
-msgid "Negative for outgoing movements."
-msgstr ""
+msgid "Web"
+msgstr "אינטרנט"
 
-#: core/models.py:899 core/models.py:1235
-msgid "order line"
-msgstr ""
+#: core/models.py:901
+msgid "push token"
+msgstr "אסימון התראות"
 
 #: core/models.py:903
-msgid "performed by"
-msgstr ""
+msgid "platform"
+msgstr "פלטפורמה"
 
-#: core/models.py:906 core/models.py:1485 core/models.py:1610
-msgid "note"
-msgstr ""
+#: core/models.py:913
+msgid "device token"
+msgstr "אסימון מכשיר"
 
-#: core/models.py:910
-msgid "stock movement"
-msgstr ""
-
-#: core/models.py:911
-msgid "stock movements"
-msgstr ""
-
-#: core/models.py:929 core/models.py:1056
-msgid "discount %"
-msgstr ""
-
-#: core/models.py:933 core/models.py:1009
-msgid "price tier"
-msgstr ""
+#: core/models.py:914
+msgid "device tokens"
+msgstr "אסימוני מכשירים"
 
 #: core/models.py:934
-msgid "price tiers"
-msgstr ""
+msgid "title"
+msgstr "כותרת"
 
-#: core/models.py:943
-msgid "Osek Patur (עוסק פטור)"
-msgstr ""
+#: core/models.py:935
+msgid "body"
+msgstr "תוכן"
 
-#: core/models.py:944
-msgid "Osek Murshe (עוסק מורשה)"
-msgstr ""
+#: core/models.py:938 core/models.py:1379
+msgid "kind"
+msgstr "סוג"
 
-#: core/models.py:945
-msgid "Company (חברה בע\"מ)"
-msgstr ""
+#: core/models.py:941
+msgid "data"
+msgstr "נתונים"
+
+#: core/models.py:942
+msgid "read at"
+msgstr "נקרא בתאריך"
 
 #: core/models.py:946
-msgid "Partnership (שותפות)"
-msgstr ""
+msgid "notification"
+msgstr "התראה"
 
 #: core/models.py:947
-msgid "Non-profit (עמותה)"
-msgstr ""
+msgid "notifications"
+msgstr "התראות"
 
-#: core/models.py:958
-msgid "business name"
-msgstr ""
+#: core/models.py:960
+msgid "Goods received"
+msgstr "קבלת סחורה"
 
 #: core/models.py:961
-msgid "If it differs from the trading name."
-msgstr ""
+msgid "Picked for order"
+msgstr "לוקט להזמנה"
+
+#: core/models.py:962
+msgid "Returned"
+msgstr "הוחזר"
 
 #: core/models.py:964
-msgid "business type"
-msgstr ""
+msgid "Stock count adjustment"
+msgstr "תיקון ספירת מלאי"
 
-#: core/models.py:969
-msgid "ח.פ. / ע.מ. — appears on every invoice."
-msgstr ""
+#: core/models.py:965
+msgid "Transferred in"
+msgstr "הועבר פנימה"
 
-#: core/models.py:972
-msgid "company registration number"
-msgstr ""
+#: core/models.py:966
+msgid "Transferred out"
+msgstr "הועבר החוצה"
 
-#: core/models.py:975
-msgid "contact name"
-msgstr ""
+#: core/models.py:967
+msgid "Scrapped"
+msgstr "נגרט"
 
-#: core/models.py:978
-msgid "website"
-msgstr ""
+#: core/models.py:983
+msgid "type"
+msgstr "סוג"
 
-#: core/models.py:980
-msgid "billing address"
-msgstr ""
+#: core/models.py:986 core/models.py:1298
+msgid "bars"
+msgstr "מוטות"
 
-#: core/models.py:982
-msgid "postal code"
-msgstr ""
+#: core/models.py:986
+msgid "Negative for outgoing movements."
+msgstr "שלילי לתנועות יוצאות."
 
-#: core/models.py:984 core/models.py:1439
-msgid "delivery address"
-msgstr ""
-
-#: core/models.py:985
-msgid "Only if deliveries go somewhere other than the billing address."
-msgstr ""
-
-#: core/models.py:993
-msgid "map link"
-msgstr ""
+#: core/models.py:990 core/models.py:1326
+msgid "order line"
+msgstr "שורת הזמנה"
 
 #: core/models.py:994
-msgid ""
-"Paste a link from Google Maps, Waze or Apple Maps. The delivery point is "
-"taken from it."
-msgstr ""
+msgid "performed by"
+msgstr "בוצע על ידי"
 
-#: core/models.py:1006 core/models.py:1050 core/models.py:1387
-#: core/models.py:1455
-msgid "notes"
-msgstr ""
+#: core/models.py:997 core/models.py:1576 core/models.py:1701
+msgid "note"
+msgstr "הערה"
 
-#: core/models.py:1013
-msgid "credit limit"
-msgstr ""
+#: core/models.py:1001
+msgid "stock movement"
+msgstr "תנועת מלאי"
 
-#: core/models.py:1020
-msgid "clients"
-msgstr ""
+#: core/models.py:1002
+msgid "stock movements"
+msgstr "תנועות מלאי"
 
-#: core/models.py:1028 core/models.py:1571
-msgid "Draft"
-msgstr ""
+#: core/models.py:1020 core/models.py:1147
+msgid "discount %"
+msgstr "הנחה %"
 
-#: core/models.py:1029
-msgid "Submitted"
-msgstr ""
+#: core/models.py:1024 core/models.py:1100
+msgid "price tier"
+msgstr "מדרגת מחיר"
 
-#: core/models.py:1030
-msgid "Confirmed"
-msgstr ""
+#: core/models.py:1025
+msgid "price tiers"
+msgstr "מדרגות מחיר"
 
-#: core/models.py:1031
-msgid "Picking"
-msgstr ""
-
-#: core/models.py:1032
-msgid "Ready for delivery"
-msgstr ""
-
-#: core/models.py:1033
-msgid "Out for delivery"
-msgstr ""
-
-#: core/models.py:1034 core/models.py:1423
-msgid "Delivered"
-msgstr ""
+#: core/models.py:1034
+msgid "Osek Patur (עוסק פטור)"
+msgstr "עוסק פטור"
 
 #: core/models.py:1035
-msgid "Cancelled"
-msgstr ""
+msgid "Osek Murshe (עוסק מורשה)"
+msgstr "עוסק מורשה"
 
-#: core/models.py:1041
-msgid "order number"
-msgstr ""
+#: core/models.py:1036
+msgid "Company (חברה בע\"מ)"
+msgstr "חברה בע\"מ"
 
-#: core/models.py:1046 core/models.py:1377 core/models.py:1434
-#: core/models.py:1539 core/models.py:1585
-msgid "status"
-msgstr ""
+#: core/models.py:1037
+msgid "Partnership (שותפות)"
+msgstr "שותפות"
 
-#: core/models.py:1048
-msgid "ordered at"
-msgstr ""
+#: core/models.py:1038
+msgid "Non-profit (עמותה)"
+msgstr "עמותה"
 
 #: core/models.py:1049
-msgid "required by"
-msgstr ""
+msgid "business name"
+msgstr "שם העסק"
 
-#: core/models.py:1058
-msgid "VAT %"
-msgstr ""
+#: core/models.py:1052
+msgid "If it differs from the trading name."
+msgstr "אם שונה מהשם המסחרי."
+
+#: core/models.py:1055
+msgid "business type"
+msgstr "סוג העסק"
+
+#: core/models.py:1060
+msgid "ח.פ. / ע.מ. — appears on every invoice."
+msgstr "ח.פ. / ע.מ. — מופיע בכל חשבונית."
+
+#: core/models.py:1063
+msgid "company registration number"
+msgstr "מספר רישום החברה"
+
+#: core/models.py:1066
+msgid "contact name"
+msgstr "שם איש קשר"
 
 #: core/models.py:1069
-msgid "order note PDF"
-msgstr ""
+msgid "website"
+msgstr "אתר אינטרנט"
 
 #: core/models.py:1071
+msgid "billing address"
+msgstr "כתובת לחיוב"
+
+#: core/models.py:1073
+msgid "postal code"
+msgstr "מיקוד"
+
+#: core/models.py:1075 core/models.py:1530
+msgid "delivery address"
+msgstr "כתובת למשלוח"
+
+#: core/models.py:1076
+msgid "Only if deliveries go somewhere other than the billing address."
+msgstr "רק אם המשלוחים מגיעים לכתובת אחרת מכתובת החיוב."
+
+#: core/models.py:1084
+msgid "map link"
+msgstr "קישור למפה"
+
+#: core/models.py:1085
+msgid "Paste a link from Google Maps, Waze or Apple Maps. The delivery point is taken from it."
+msgstr "הדביקו קישור מ-Google Maps, Waze או Apple Maps. נקודת המסירה נלקחת ממנו."
+
+#: core/models.py:1097 core/models.py:1141 core/models.py:1478
+#: core/models.py:1546
+msgid "notes"
+msgstr "הערות"
+
+#: core/models.py:1104
+msgid "credit limit"
+msgstr "מסגרת אשראי"
+
+#: core/models.py:1111
+msgid "clients"
+msgstr "לקוחות"
+
+#: core/models.py:1119 core/models.py:1662
+msgid "Draft"
+msgstr "טיוטה"
+
+#: core/models.py:1120
+msgid "Submitted"
+msgstr "הוגש"
+
+#: core/models.py:1121
+msgid "Confirmed"
+msgstr "מאושר"
+
+#: core/models.py:1122
+msgid "Picking"
+msgstr "בליקוט"
+
+#: core/models.py:1123
+msgid "Ready for delivery"
+msgstr "מוכן למשלוח"
+
+#: core/models.py:1124
+msgid "Out for delivery"
+msgstr "בדרך למסירה"
+
+#: core/models.py:1125 core/models.py:1514
+msgid "Delivered"
+msgstr "נמסר"
+
+#: core/models.py:1126
+msgid "Cancelled"
+msgstr "בוטל"
+
+#: core/models.py:1132
+msgid "order number"
+msgstr "מספר הזמנה"
+
+#: core/models.py:1137 core/models.py:1468 core/models.py:1525
+#: core/models.py:1630 core/models.py:1676
+msgid "status"
+msgstr "סטטוס"
+
+#: core/models.py:1139
+msgid "ordered at"
+msgstr "הוזמן בתאריך"
+
+#: core/models.py:1140
+msgid "required by"
+msgstr "נדרש עד"
+
+#: core/models.py:1149
+msgid "VAT %"
+msgstr "מע\"מ %"
+
+#: core/models.py:1160
+msgid "order note PDF"
+msgstr "PDF תעודת הזמנה"
+
+#: core/models.py:1162
 msgid "delivery note PDF"
-msgstr ""
+msgstr "PDF תעודת משלוח"
 
-#: core/models.py:1075
+#: core/models.py:1166
 msgid "delivery signed at"
-msgstr ""
+msgstr "המשלוח נחתם בתאריך"
 
-#: core/models.py:1079
+#: core/models.py:1170
 msgid "public token"
-msgstr ""
+msgstr "אסימון ציבורי"
 
-#: core/models.py:1082 core/models.py:1189 core/models.py:1294
-#: core/models.py:1355 core/models.py:1427
+#: core/models.py:1173 core/models.py:1280 core/models.py:1385
+#: core/models.py:1446 core/models.py:1518
 msgid "order"
-msgstr ""
+msgstr "הזמנה"
 
-#: core/models.py:1083
+#: core/models.py:1174
 msgid "orders"
-msgstr ""
-
-#: core/models.py:1198
-msgid "Which series this line was ordered for; a profile can serve several."
-msgstr ""
-
-#: core/models.py:1209
-msgid "total length (m)"
-msgstr ""
-
-#: core/models.py:1216
-msgid "weight override (kg)"
-msgstr ""
-
-#: core/models.py:1226
-msgid "prepared"
-msgstr ""
-
-#: core/models.py:1227
-msgid "shortage note"
-msgstr ""
-
-#: core/models.py:1231
-msgid "delivered length (m)"
-msgstr ""
-
-#: core/models.py:1236
-msgid "order lines"
-msgstr ""
-
-#: core/models.py:1283
-msgid "Invoice"
-msgstr ""
-
-#: core/models.py:1284 core/views.py:362
-msgid "Delivery note"
-msgstr ""
-
-#: core/models.py:1285
-msgid "Quote"
-msgstr ""
-
-#: core/models.py:1286
-msgid "Credit note"
-msgstr ""
-
-#: core/models.py:1288
-msgid "kind"
-msgstr ""
+msgstr "הזמנות"
 
 #: core/models.py:1289
+msgid "Which series this line was ordered for; a profile can serve several."
+msgstr "עבור איזו סדרה הוזמנה שורה זו; פרופיל אחד יכול לשמש כמה סדרות."
+
+#: core/models.py:1300
+msgid "total length (m)"
+msgstr "אורך כולל (מ')"
+
+#: core/models.py:1307
+msgid "weight override (kg)"
+msgstr "דריסת משקל (ק\"ג)"
+
+#: core/models.py:1317
+msgid "prepared"
+msgstr "הוכן"
+
+#: core/models.py:1318
+msgid "shortage note"
+msgstr "הערת חוסר"
+
+#: core/models.py:1322
+msgid "delivered length (m)"
+msgstr "אורך שנמסר (מ')"
+
+#: core/models.py:1327
+msgid "order lines"
+msgstr "שורות הזמנה"
+
+#: core/models.py:1374
+msgid "Invoice"
+msgstr "חשבונית"
+
+#: core/models.py:1375 core/views.py:368
+msgid "Delivery note"
+msgstr "תעודת משלוח"
+
+#: core/models.py:1376
+msgid "Quote"
+msgstr "הצעת מחיר"
+
+#: core/models.py:1377
+msgid "Credit note"
+msgstr "חשבונית זיכוי"
+
+#: core/models.py:1380
 msgid "document number"
-msgstr ""
+msgstr "מספר מסמך"
 
-#: core/models.py:1298 core/models.py:1360
+#: core/models.py:1389 core/models.py:1451
 msgid "issued at"
-msgstr ""
+msgstr "הופק בתאריך"
 
-#: core/models.py:1299
+#: core/models.py:1390
 msgid "due at"
-msgstr ""
+msgstr "לתשלום עד"
 
-#: core/models.py:1300 core/models.py:1368
+#: core/models.py:1391 core/models.py:1459
 msgid "total"
-msgstr ""
+msgstr "סה\"כ"
 
-#: core/models.py:1302 core/models.py:1366
+#: core/models.py:1393 core/models.py:1457
 msgid "VAT"
-msgstr ""
-
-#: core/models.py:1304
-msgid "paid"
-msgstr ""
-
-#: core/models.py:1306 core/models.py:1611
-msgid "PDF"
-msgstr ""
-
-#: core/models.py:1309
-msgid "document"
-msgstr ""
-
-#: core/models.py:1310
-msgid "documents"
-msgstr ""
-
-#: core/models.py:1331
-msgid "Income"
-msgstr ""
-
-#: core/models.py:1332
-msgid "Expense"
-msgstr ""
-
-#: core/models.py:1335 core/models.py:1576
-msgid "Manual"
-msgstr ""
-
-#: core/models.py:1336 core/models.py:1575
-msgid "Generated"
-msgstr ""
-
-#: core/models.py:1337
-msgid "Scanned"
-msgstr ""
-
-#: core/models.py:1340
-msgid "Unpaid"
-msgstr ""
-
-#: core/models.py:1341
-msgid "Paid"
-msgstr ""
-
-#: core/models.py:1344
-msgid "direction"
-msgstr ""
-
-#: core/models.py:1345
-msgid "invoice number"
-msgstr ""
-
-#: core/models.py:1357
-msgid "party name"
-msgstr ""
-
-#: core/models.py:1358
-msgid "party tax ID"
-msgstr ""
-
-#: core/models.py:1361
-msgid "category"
-msgstr ""
-
-#: core/models.py:1364
-msgid "subtotal"
-msgstr ""
-
-#: core/models.py:1372
-msgid "amount paid"
-msgstr ""
-
-#: core/models.py:1375 core/models.py:1587
-msgid "source"
-msgstr ""
-
-#: core/models.py:1382
-msgid "allocation number"
-msgstr ""
-
-#: core/models.py:1383
-msgid "external id"
-msgstr ""
-
-#: core/models.py:1386
-msgid "file"
-msgstr ""
+msgstr "מע\"מ"
 
 #: core/models.py:1395
-msgid "invoice"
-msgstr ""
+msgid "paid"
+msgstr "שולם"
 
-#: core/models.py:1396
-msgid "invoices"
-msgstr ""
+#: core/models.py:1397 core/models.py:1702
+msgid "PDF"
+msgstr "PDF"
 
-#: core/models.py:1420 core/models.py:1522
-msgid "Pending"
-msgstr ""
+#: core/models.py:1400
+msgid "document"
+msgstr "מסמך"
 
-#: core/models.py:1421
-msgid "Loaded"
-msgstr ""
+#: core/models.py:1401
+msgid "documents"
+msgstr "מסמכים"
 
 #: core/models.py:1422
-msgid "En route"
-msgstr ""
+msgid "Income"
+msgstr "הכנסות"
 
-#: core/models.py:1424
-msgid "Failed"
-msgstr ""
+#: core/models.py:1423
+msgid "Expense"
+msgstr "הוצאות"
 
-#: core/models.py:1430
-msgid "driver"
-msgstr ""
+#: core/models.py:1426 core/models.py:1667
+msgid "Manual"
+msgstr "ידני"
+
+#: core/models.py:1427 core/models.py:1666
+msgid "Generated"
+msgstr "הופק"
+
+#: core/models.py:1428
+msgid "Scanned"
+msgstr "נסרק"
+
+#: core/models.py:1431
+msgid "Unpaid"
+msgstr "לא שולם"
+
+#: core/models.py:1432
+msgid "Paid"
+msgstr "שולם"
+
+#: core/models.py:1435
+msgid "direction"
+msgstr "כיוון"
 
 #: core/models.py:1436
+msgid "invoice number"
+msgstr "מספר חשבונית"
+
+#: core/models.py:1448
+msgid "party name"
+msgstr "שם הצד"
+
+#: core/models.py:1449
+msgid "party tax ID"
+msgstr "ח.פ / ע.מ של הצד"
+
+#: core/models.py:1452
+msgid "category"
+msgstr "קטגוריה"
+
+#: core/models.py:1455
+msgid "subtotal"
+msgstr "סכום ביניים"
+
+#: core/models.py:1463
+msgid "amount paid"
+msgstr "סכום ששולם"
+
+#: core/models.py:1466 core/models.py:1678
+msgid "source"
+msgstr "מקור"
+
+#: core/models.py:1473
+msgid "allocation number"
+msgstr "מספר הקצאה"
+
+#: core/models.py:1474
+msgid "external id"
+msgstr "מזהה חיצוני"
+
+#: core/models.py:1477
+msgid "file"
+msgstr "קובץ"
+
+#: core/models.py:1486
+msgid "invoice"
+msgstr "חשבונית"
+
+#: core/models.py:1487
+msgid "invoices"
+msgstr "חשבוניות"
+
+#: core/models.py:1511 core/models.py:1613
+msgid "Pending"
+msgstr "ממתין"
+
+#: core/models.py:1512
+msgid "Loaded"
+msgstr "הועמס"
+
+#: core/models.py:1513
+msgid "En route"
+msgstr "בדרך"
+
+#: core/models.py:1515
+msgid "Failed"
+msgstr "נכשל"
+
+#: core/models.py:1521
+msgid "driver"
+msgstr "נהג"
+
+#: core/models.py:1527
 msgid "scheduled for"
-msgstr ""
+msgstr "מתוזמן ל"
 
-#: core/models.py:1437
+#: core/models.py:1528
 msgid "delivered at"
-msgstr ""
+msgstr "נמסר בתאריך"
 
-#: core/models.py:1440
+#: core/models.py:1531
 msgid "received by"
-msgstr ""
+msgstr "התקבל על ידי"
 
-#: core/models.py:1446
+#: core/models.py:1537
 msgid "recipient's phone"
-msgstr ""
+msgstr "טלפון המקבל"
 
-#: core/models.py:1447
+#: core/models.py:1538
 msgid "The person who signed, for sending them the delivery note."
-msgstr ""
-
-#: core/models.py:1450
-msgid "signature"
-msgstr ""
-
-#: core/models.py:1453
-msgid "proof photo"
-msgstr ""
-
-#: core/models.py:1458
-msgid "delivery"
-msgstr ""
-
-#: core/models.py:1459
-msgid "deliveries"
-msgstr ""
-
-#: core/models.py:1480 core/models.py:1527 core/models.py:1579
-msgid "worker"
-msgstr ""
-
-#: core/models.py:1483
-msgid "clock in"
-msgstr ""
-
-#: core/models.py:1484
-msgid "clock out"
-msgstr ""
-
-#: core/models.py:1489 core/models.py:1530
-msgid "shift"
-msgstr ""
-
-#: core/models.py:1490
-msgid "shifts"
-msgstr ""
-
-#: core/models.py:1523
-msgid "Approved"
-msgstr ""
-
-#: core/models.py:1524
-msgid "Rejected"
-msgstr ""
-
-#: core/models.py:1533
-msgid "work date"
-msgstr ""
-
-#: core/models.py:1534
-msgid "requested clock in"
-msgstr ""
-
-#: core/models.py:1535
-msgid "requested clock out"
-msgstr ""
-
-#: core/models.py:1536
-msgid "reason"
-msgstr ""
+msgstr "מי שחתם, לצורך שליחת תעודת המשלוח אליו."
 
 #: core/models.py:1541
-msgid "reviewed by"
-msgstr ""
-
-#: core/models.py:1543
-msgid "reviewed at"
-msgstr ""
+msgid "signature"
+msgstr "חתימה"
 
 #: core/models.py:1544
-msgid "review note"
-msgstr ""
+msgid "proof photo"
+msgstr "תמונת אישור"
 
 #: core/models.py:1549
-msgid "shift correction request"
-msgstr ""
+msgid "delivery"
+msgstr "משלוח"
 
 #: core/models.py:1550
-msgid "shift correction requests"
-msgstr ""
+msgid "deliveries"
+msgstr "משלוחים"
 
-#: core/models.py:1572
-msgid "Finalised"
-msgstr ""
+#: core/models.py:1571 core/models.py:1618 core/models.py:1670
+msgid "worker"
+msgstr "עובד"
+
+#: core/models.py:1574
+msgid "clock in"
+msgstr "כניסה"
+
+#: core/models.py:1575
+msgid "clock out"
+msgstr "יציאה"
+
+#: core/models.py:1580 core/models.py:1621
+msgid "shift"
+msgstr "משמרת"
 
 #: core/models.py:1581
+msgid "shifts"
+msgstr "משמרות"
+
+#: core/models.py:1614
+msgid "Approved"
+msgstr "אושר"
+
+#: core/models.py:1615
+msgid "Rejected"
+msgstr "נדחה"
+
+#: core/models.py:1624
+msgid "work date"
+msgstr "תאריך עבודה"
+
+#: core/models.py:1625
+msgid "requested clock in"
+msgstr "כניסה מבוקשת"
+
+#: core/models.py:1626
+msgid "requested clock out"
+msgstr "יציאה מבוקשת"
+
+#: core/models.py:1627
+msgid "reason"
+msgstr "סיבה"
+
+#: core/models.py:1632
+msgid "reviewed by"
+msgstr "נבדק על ידי"
+
+#: core/models.py:1634
+msgid "reviewed at"
+msgstr "נבדק בתאריך"
+
+#: core/models.py:1635
+msgid "review note"
+msgstr "הערת בדיקה"
+
+#: core/models.py:1640
+msgid "shift correction request"
+msgstr "בקשת תיקון משמרת"
+
+#: core/models.py:1641
+msgid "shift correction requests"
+msgstr "בקשות תיקון משמרת"
+
+#: core/models.py:1663
+msgid "Finalised"
+msgstr "סופי"
+
+#: core/models.py:1672
 msgid "year"
-msgstr ""
+msgstr "שנה"
 
-#: core/models.py:1582
+#: core/models.py:1673
 msgid "month"
-msgstr ""
+msgstr "חודש"
 
-#: core/models.py:1592
+#: core/models.py:1683
 msgid "overtime paid"
-msgstr ""
+msgstr "שעות נוספות שולמו"
 
-#: core/models.py:1595
+#: core/models.py:1686
 msgid "days worked"
-msgstr ""
+msgstr "ימי עבודה"
 
-#: core/models.py:1597
+#: core/models.py:1688
 msgid "regular hours"
-msgstr ""
+msgstr "שעות רגילות"
 
-#: core/models.py:1599
+#: core/models.py:1690
 msgid "overtime 125% hours"
-msgstr ""
+msgstr "שעות נוספות 125%"
 
-#: core/models.py:1601
+#: core/models.py:1692
 msgid "overtime 150% hours"
-msgstr ""
+msgstr "שעות נוספות 150%"
 
-#: core/models.py:1606
+#: core/models.py:1697
 msgid "base pay"
-msgstr ""
+msgstr "שכר בסיס"
 
-#: core/models.py:1608
+#: core/models.py:1699
 msgid "overtime pay"
-msgstr ""
+msgstr "תשלום שעות נוספות"
 
-#: core/models.py:1616
+#: core/models.py:1707
 msgid "finalised at"
-msgstr ""
+msgstr "הופק סופית בתאריך"
 
-#: core/models.py:1619 core/models.py:1653
+#: core/models.py:1710 core/models.py:1744
 msgid "payslip"
-msgstr ""
+msgstr "תלוש שכר"
 
-#: core/models.py:1620
+#: core/models.py:1711
 msgid "payslips"
-msgstr ""
+msgstr "תלושי שכר"
 
-#: core/models.py:1655
+#: core/models.py:1746
 msgid "label"
-msgstr ""
+msgstr "תווית"
 
-#: core/models.py:1657
+#: core/models.py:1748
 msgid "amount"
-msgstr ""
+msgstr "סכום"
 
-#: core/models.py:1658
+#: core/models.py:1749
 msgid "Positive to add (bonus, travel), negative to deduct (advance)."
-msgstr ""
+msgstr "חיובי להוספה (בונוס, נסיעות), שלילי לניכוי (מקדמה)."
 
-#: core/models.py:1661
+#: core/models.py:1752
 msgid "payslip adjustment"
-msgstr ""
+msgstr "תיקון תלוש"
 
-#: core/models.py:1662
+#: core/models.py:1753
 msgid "payslip adjustments"
-msgstr ""
+msgstr "תיקוני תלוש"
 
-#: core/serializers.py:66 core/serializers.py:378
+#: core/notify.py:28
+msgid "a client"
+msgstr "לקוח"
+
+#: core/notify.py:37
+msgid "Clocked in"
+msgstr "נכנס למשמרת"
+
+#: core/notify.py:38
+#, python-format
+msgid "%(worker)s started work."
+msgstr "%(worker)s התחיל/ה לעבוד."
+
+#: core/notify.py:45
+#, python-format
+msgid "%(worker)s finished work (%(hours)s h)."
+msgstr "%(worker)s סיים/ה לעבוד (%(hours)s שע')."
+
+#: core/notify.py:48
+#, python-format
+msgid "%(worker)s finished work."
+msgstr "%(worker)s סיים/ה לעבוד."
+
+#: core/notify.py:51
+msgid "Clocked out"
+msgstr "יצא מהמשמרת"
+
+#: core/notify.py:64
+msgid "New order"
+msgstr "הזמנה חדשה"
+
+#: core/notify.py:65
+#, python-format
+msgid "%(number)s for %(client)s."
+msgstr "%(number)s עבור %(client)s."
+
+#: core/notify.py:77
+msgid "Order being loaded"
+msgstr "ההזמנה בליקוט"
+
+#: core/notify.py:78
+#, python-format
+msgid "%(number)s for %(client)s is being picked."
+msgstr "%(number)s עבור %(client)s בליקוט."
+
+#: core/notify.py:83
+msgid "Order loaded"
+msgstr "ההזמנה מוכנה"
+
+#: core/notify.py:84
+#, python-format
+msgid "%(number)s for %(client)s is ready to load."
+msgstr "%(number)s עבור %(client)s מוכנה להעמסה."
+
+#: core/notify.py:89
+msgid "On the way"
+msgstr "בדרך"
+
+#: core/notify.py:90
+#, python-format
+msgid "%(number)s is on its way to %(client)s."
+msgstr "%(number)s בדרך אל %(client)s."
+
+#: core/notify.py:95
+msgid "Arrived"
+msgstr "הגיע"
+
+#: core/notify.py:96
+#, python-format
+msgid "%(number)s was delivered to %(client)s."
+msgstr "%(number)s נמסרה ל%(client)s."
+
+#: core/notify.py:101
+msgid "Order cancelled"
+msgstr "ההזמנה בוטלה"
+
+#: core/notify.py:102
+#, python-format
+msgid "%(number)s for %(client)s was cancelled."
+msgstr "%(number)s עבור %(client)s בוטלה."
+
+#: core/notify.py:136
+msgid "Delivery signed"
+msgstr "המשלוח נחתם"
+
+#: core/notify.py:137
+#, python-format
+msgid "%(number)s was received by %(person)s."
+msgstr "%(number)s התקבלה על ידי %(person)s."
+
+#: core/notify.py:139
+msgid "the client"
+msgstr "הלקוח"
+
+#: core/serializers.py:70 core/serializers.py:171 core/serializers.py:524
 msgid "An account already exists for this phone number."
 msgstr "כבר קיים חשבון עם מספר הטלפון הזה."
 
-#: core/serializers.py:160
+#: core/serializers.py:216
+msgid "Manager registration is not enabled."
+msgstr "רישום מנהלים אינו מופעל."
+
+#: core/serializers.py:219
+msgid "That code is not correct."
+msgstr "הקוד אינו נכון."
+
+#: core/serializers.py:306
 msgid "Enter your ID number or phone number."
 msgstr "הזינו מספר זהות או מספר טלפון."
 
-#: core/serializers.py:190
+#: core/serializers.py:336
 msgid "Current password is incorrect."
-msgstr ""
+msgstr "הסיסמה הנוכחית שגויה."
 
-#: core/serializers.py:452
-msgid ""
-"That link does not contain a location. Open the place in Google Maps, Waze "
-"or Apple Maps, share it, and paste the link that gives you."
-msgstr ""
+#: core/serializers.py:598
+msgid "That link does not contain a location. Open the place in Google Maps, Waze or Apple Maps, share it, and paste the link that gives you."
+msgstr "הקישור אינו מכיל מיקום. פתחו את המקום ב-Google Maps, ב-Waze או ב-Apple Maps, שתפו אותו, והדביקו את הקישור שמתקבל."
 
-#: core/serializers.py:718
+#: core/serializers.py:837
+#, python-format
+msgid "Invoice %(number)s from %(party)s is already recorded (%(date)s, %(total)s)."
+msgstr "חשבונית %(number)s מאת %(party)s כבר נרשמה (%(date)s, %(total)s)."
+
+#: core/serializers.py:937
 msgid "Enter a quantity greater than zero."
 msgstr "הזינו כמות גדולה מאפס."
 
-#: core/serializers.py:819
+#: core/serializers.py:950
+#, python-format
+msgid "Only %(available)s in stock at this location."
+msgstr "רק %(available)s במלאי במיקום זה."
+
+#: core/serializers.py:1051
 msgid "Enter a total length, or bars and a bar length."
 msgstr "הזינו אורך כולל, או מספר מוטות ואורך מוט."
 
-#: core/serializers.py:963
+#: core/serializers.py:1195
 msgid "Give a new clock-in or clock-out time."
-msgstr ""
+msgstr "ציינו שעת כניסה או יציאה חדשה."
 
-#: core/serializers.py:1018
+#: core/serializers.py:1250
 msgid "This payslip is finalised. Reopen it to edit."
 msgstr "תלוש השכר סופי. יש לפתוח אותו מחדש כדי לערוך."
 
-#: core/views.py:358
+#: core/views.py:364
 msgid "Order note"
-msgstr ""
+msgstr "הזמנה"
 
-#: core/views.py:434
+#: core/views.py:440
 msgid "Enter a valid price."
 msgstr "הזינו מחיר תקין."
 
-#: core/views.py:439
+#: core/views.py:445
 msgid "Price cannot be negative."
-msgstr ""
+msgstr "המחיר אינו יכול להיות שלילי."
 
-#: core/views.py:494
+#: core/views.py:500
 msgid "No image file was provided."
 msgstr "לא סופק קובץ תמונה."
 
-#: core/views.py:595
+#: core/views.py:601
 msgid "No profiles match these filters."
 msgstr "אין פרופילים התואמים את הסינון."
 
-#: core/views.py:804 core/views.py:815 core/views.py:830
-msgid "Office access only."
-msgstr ""
+#: core/views.py:831
+msgid "Choose client or manager."
+msgstr "בחרו לקוח או מנהל."
 
-#: core/views.py:819
+#: core/views.py:922
+msgid "Which device?"
+msgstr "איזה מכשיר?"
+
+#: core/views.py:943 core/views.py:954 core/views.py:969
+msgid "Office access only."
+msgstr "גישה למשרד בלבד."
+
+#: core/views.py:958
 msgid "No image was uploaded."
 msgstr "לא הועלתה תמונה."
 
-#: core/views.py:1245
+#: core/views.py:1401
 msgid "Unknown line."
 msgstr "שורה לא מוכרת."
 
-#: core/views.py:1256
+#: core/views.py:1412
 msgid "Enter a valid weight."
 msgstr "הזינו משקל תקין."
 
-#: core/views.py:1270
+#: core/views.py:1426
 msgid "Enter a valid length."
 msgstr "הזינו אורך תקין."
 
-#: core/views.py:1294
+#: core/views.py:1453
 msgid "Unknown status."
 msgstr "סטטוס לא מוכר."
 
-#: core/views.py:1366
+#: core/views.py:1534
+msgid "Attach a photo of the invoice."
+msgstr "צרפו תמונה של החשבונית."
+
+#: core/views.py:1541 core/views.py:1551
+msgid "Invoice scanning is not switched on. Enter the invoice by hand."
+msgstr "סריקת חשבוניות אינה מופעלת. הזינו את החשבונית ידנית."
+
+#: core/views.py:1577
 msgid "No recipient email address."
 msgstr "אין כתובת דואר אלקטרוני של נמען."
 
-#: core/views.py:1371 core/views.py:1436
+#: core/views.py:1582 core/views.py:1647
 msgid "Email is not configured in Settings."
 msgstr "הדואר האלקטרוני אינו מוגדר בהגדרות."
 
-#: core/views.py:1383
+#: core/views.py:1594
 #, python-format
 msgid "Please find the attached invoice %(label)s."
 msgstr "מצורפת חשבונית %(label)s."
 
-#: core/views.py:1410
+#: core/views.py:1621
 msgid "Use ?year=&month=."
-msgstr ""
+msgstr "השתמשו ב-?year=&month=."
 
-#: core/views.py:1428
+#: core/views.py:1639
 msgid "Give a year and month."
-msgstr ""
+msgstr "ציינו שנה וחודש."
 
-#: core/views.py:1433
+#: core/views.py:1644
 msgid "No accountant email in Settings."
 msgstr "אין כתובת דואר אלקטרוני של רואה החשבון בהגדרות."
 
-#: core/views.py:1445
+#: core/views.py:1656
 #, python-format
 msgid "Invoices & salary %(m)s"
-msgstr ""
+msgstr "חשבוניות ושכר %(m)s"
 
-#: core/views.py:1446
+#: core/views.py:1657
 #, python-format
-msgid ""
-"Attached: %(inc)d income and %(exp)d expense invoices plus the salary sheet "
-"for %(m)s."
-msgstr ""
+msgid "Attached: %(inc)d income and %(exp)d expense invoices plus the salary sheet for %(m)s."
+msgstr "מצורף: %(inc)d חשבוניות הכנסה ו-%(exp)d חשבוניות הוצאה, וכן גיליון השכר עבור %(m)s."
 
-#: core/views.py:1546
+#: core/views.py:1757
 msgid "You are already clocked in."
-msgstr ""
+msgstr "כבר נכנסת למשמרת."
 
-#: core/views.py:1552
+#: core/views.py:1763
 msgid "You have already clocked in today."
-msgstr ""
+msgstr "כבר נכנסת למשמרת היום."
 
-#: core/views.py:1565
+#: core/views.py:1777
 msgid "You are not clocked in."
-msgstr ""
+msgstr "לא נכנסת למשמרת."
 
-#: core/views.py:1589 core/views.py:1655 core/views.py:1831
+#: core/views.py:1803 core/views.py:1869 core/views.py:2045
 msgid "Unknown worker."
 msgstr "עובד לא מוכר."
 
-#: core/views.py:1598 core/views.py:1665
+#: core/views.py:1812 core/views.py:1879
 msgid "Use the format YYYY-MM."
-msgstr ""
+msgstr "השתמשו בתבנית YYYY-MM."
 
-#: core/views.py:1747 core/views.py:1769
+#: core/views.py:1961 core/views.py:1983
 msgid "Already reviewed."
-msgstr ""
+msgstr "כבר נבדק."
 
-#: core/views.py:1827
+#: core/views.py:2041
 msgid "year and month are required."
-msgstr ""
+msgstr "שנה וחודש הם שדות חובה."
 
-#: core/views.py:1835
+#: core/views.py:2049
 msgid "A payslip for that month already exists."
 msgstr "כבר קיים תלוש שכר לחודש הזה."
 
-#: core/views.py:1876
+#: core/views.py:2090
 msgid "Only managers can reopen a payslip."
 msgstr "רק מנהלים יכולים לפתוח מחדש תלוש שכר."

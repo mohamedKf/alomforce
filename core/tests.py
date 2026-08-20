@@ -1086,8 +1086,16 @@ class StockCannotGoNegativeTests(APITestCase):
         self.assertEqual(self.item.quantity, 500)
 
 
+@override_settings(RELAXED_AUTH=False)
 class RegistrationTests(APITestCase):
-    """The only endpoint that creates an account for an anonymous caller."""
+    """The only endpoint that creates an account for an anonymous caller.
+
+    Pinned to strict auth like the other suites here: two of these check that
+    a weak password and a bogus ID are refused, which is only true when the
+    rules are on. Without the pin they inherited whatever RELAXED_AUTH the
+    developer's .env happened to set, and failed on any machine with it on
+    while passing in CI and on Railway, where it is off.
+    """
 
     URL = '/api/auth/register/'
 

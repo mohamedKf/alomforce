@@ -15,10 +15,27 @@ Two rules run through all of it:
   that is off must never roll back a delivery.
 """
 
-from django.utils.translation import gettext as _
+# Lazy, not gettext: these strings are built inside the request of whoever
+# tapped the button, but they are read by somebody else, possibly in another
+# language. Translating eagerly here would render every notification in the
+# sender's language. push renders each one per recipient instead.
+from django.utils.functional import lazy
+from django.utils.translation import gettext_lazy as _
 
 from core import push
 from core.models import OrderStatus, Role
+
+
+def _fmt(template, **params):
+    """Translate and fill in a message when it is read, not when it is sent.
+
+    `gettext_lazy(...) % params` is not lazy: the % operator casts the proxy
+    to str there and then, in the sender's language. This keeps both the
+    translation and the interpolation pending until push renders the message
+    for a particular recipient.
+    """
+    return lazy(lambda: str(template) % params, str)()
+
 
 # Who watches the floor without standing on it.
 BACK_OFFICE = [Role.OFFICE, Role.MANAGER]
@@ -35,17 +52,17 @@ def worker_clocked_in(worker):
     push.send_to_roles(
         BACK_OFFICE,
         _('Clocked in'),
-        _('%(worker)s started work.') % {'worker': worker.full_name},
+        _fmt(_('%(worker)s started work.'), worker=worker.full_name),
         {'kind': 'clock_in', 'worker_id': worker.id},
         exclude=worker,
     )
 
 
 def worker_clocked_out(worker, hours=None):
-    body = (_('%(worker)s finished work (%(hours)s h).')
-            % {'worker': worker.full_name, 'hours': hours}
+    body = (_fmt(_('%(worker)s finished work (%(hours)s h).'),
+                 worker=worker.full_name, hours=hours)
             if hours is not None else
-            _('%(worker)s finished work.') % {'worker': worker.full_name})
+            _fmt(_('%(worker)s finished work.'), worker=worker.full_name))
     push.send_to_roles(
         BACK_OFFICE,
         _('Clocked out'),
@@ -62,8 +79,8 @@ def order_created(order, by=None):
     push.send_to_roles(
         [Role.WAREHOUSE] + BACK_OFFICE,
         _('New order'),
-        _('%(number)s for %(client)s.') % {
-            'number': order.number, 'client': _client_of(order)},
+        _fmt(_('%(number)s for %(client)s.'),
+             number=order.number, client=_client_of(order)),
         {'kind': 'order_created', 'order_id': order.id},
         exclude=by,
     )
@@ -75,32 +92,32 @@ _ORDER_STEPS = {
     OrderStatus.PICKING: (
         BACK_OFFICE,
         lambda o: (_('Order being loaded'),
-                   _('%(number)s for %(client)s is being picked.') % {
-                       'number': o.number, 'client': _client_of(o)}),
+                   _fmt(_('%(number)s for %(client)s is being picked.'),
+                        number=o.number, client=_client_of(o))),
     ),
     OrderStatus.READY: (
         [Role.DRIVER] + BACK_OFFICE,
         lambda o: (_('Order loaded'),
-                   _('%(number)s for %(client)s is ready to load.') % {
-                       'number': o.number, 'client': _client_of(o)}),
+                   _fmt(_('%(number)s for %(client)s is ready to load.'),
+                        number=o.number, client=_client_of(o))),
     ),
     OrderStatus.OUT_FOR_DELIVERY: (
         BACK_OFFICE,
         lambda o: (_('On the way'),
-                   _('%(number)s is on its way to %(client)s.') % {
-                       'number': o.number, 'client': _client_of(o)}),
+                   _fmt(_('%(number)s is on its way to %(client)s.'),
+                        number=o.number, client=_client_of(o))),
     ),
     OrderStatus.DELIVERED: (
         BACK_OFFICE,
         lambda o: (_('Arrived'),
-                   _('%(number)s was delivered to %(client)s.') % {
-                       'number': o.number, 'client': _client_of(o)}),
+                   _fmt(_('%(number)s was delivered to %(client)s.'),
+                        number=o.number, client=_client_of(o))),
     ),
     OrderStatus.CANCELLED: (
         [Role.WAREHOUSE, Role.DRIVER] + BACK_OFFICE,
         lambda o: (_('Order cancelled'),
-                   _('%(number)s for %(client)s was cancelled.') % {
-                       'number': o.number, 'client': _client_of(o)}),
+                   _fmt(_('%(number)s for %(client)s was cancelled.'),
+                        number=o.number, client=_client_of(o))),
     ),
 }
 
@@ -134,10 +151,9 @@ def delivery_signed(order, delivery, by=None):
     push.send_to_roles(
         BACK_OFFICE,
         _('Delivery signed'),
-        _('%(number)s was received by %(person)s.') % {
-            'number': order.number,
-            'person': delivery.recipient_name or _('the client'),
-        },
+        _fmt(_('%(number)s was received by %(person)s.'),
+             number=order.number,
+             person=delivery.recipient_name or _('the client')),
         {'kind': 'delivery_signed', 'order_id': order.id},
         exclude=by,
     )

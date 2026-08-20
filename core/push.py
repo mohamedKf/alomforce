@@ -85,7 +85,29 @@ def _send_one(project_id, access_token, token, title, body, data):
         return json.loads(response.read().decode('utf-8'))
 
 
-def _record(user_ids, title, body, data):
+def _languages(user_ids):
+    """{user id: their language}, for rendering each notification once per reader."""
+    from core.models import User
+
+    return dict(User.objects.filter(id__in=user_ids)
+                .values_list('id', 'language'))
+
+
+def _render(title, body, language):
+    """The title and body as `language` reads them.
+
+    notify.py builds these lazily precisely so this can happen here: the
+    strings arrive untranslated and are resolved against the recipient, not
+    against whoever happened to trigger the event.
+    """
+    from django.conf import settings
+    from django.utils import translation
+
+    with translation.override(language or settings.LANGUAGE_CODE):
+        return str(title), str(body)
+
+
+def _record(languages, title, body, data):
     """Write the notification down for the bell to read.
 
     Failing to record must not stop the push: the nudge is still worth
@@ -94,12 +116,14 @@ def _record(user_ids, title, body, data):
     from core.models import Notification
 
     try:
-        Notification.objects.bulk_create([
-            Notification(user_id=uid, title=str(title), body=str(body),
-                         kind=str((data or {}).get('kind', '')),
-                         data={k: str(v) for k, v in (data or {}).items()})
-            for uid in user_ids
-        ])
+        rows = []
+        for uid, language in languages.items():
+            shown_title, shown_body = _render(title, body, language)
+            rows.append(Notification(
+                user_id=uid, title=shown_title, body=shown_body,
+                kind=str((data or {}).get('kind', '')),
+                data={k: str(v) for k, v in (data or {}).items()}))
+        Notification.objects.bulk_create(rows)
     except Exception:                                     # noqa: BLE001
         logger.exception('Could not record notifications.')
 
@@ -118,15 +142,18 @@ def send_to_users(users, title, body, data=None):
     from core.models import DeviceToken
 
     user_ids = [u.id if hasattr(u, 'id') else u for u in users]
-    _record(user_ids, title, body, data)
+    languages = _languages(user_ids)
+    _record(languages, title, body, data)
 
     info = _credentials()
     if info is None:
         return 0
 
-    tokens = list(DeviceToken.objects.filter(user_id__in=user_ids)
-                  .values_list('token', flat=True))
-    if not tokens:
+    # Carry the owner along: which language a device is addressed in depends
+    # on whose device it is.
+    devices = list(DeviceToken.objects.filter(user_id__in=user_ids)
+                   .values_list('token', 'user_id'))
+    if not devices:
         return 0
 
     try:
@@ -137,9 +164,11 @@ def send_to_users(users, title, body, data=None):
 
     project_id = info.get('project_id')
     sent, dead = 0, []
-    for token in tokens:
+    for token, owner_id in devices:
+        shown_title, shown_body = _render(title, body, languages.get(owner_id))
         try:
-            _send_one(project_id, access_token, token, title, body, data)
+            _send_one(project_id, access_token, token,
+                      shown_title, shown_body, data)
             sent += 1
         except HTTPError as exc:
             detail = exc.read().decode('utf-8', 'replace')
