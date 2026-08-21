@@ -1860,3 +1860,80 @@ class RetranslateNotificationsTests(TestCase):
         self.note.refresh_from_db()
         self.assertEqual(self.note.title, 'Clocked out')
         self.assertIn('clock_out', output)
+
+
+class DeliveryListFilterTests(APITestCase):
+    """The delivered list: filtered like orders, but dated by arrival."""
+
+    URL = '/api/orders/deliveries/?done=true'
+
+    def setUp(self):
+        from core.models import Client as Co, Order, OrderStatus
+        self.office = User.objects.create_user(
+            id_number=make_id('28282828'), password='Str0ng!Passw0rd',
+            first_name='O', last_name='D', role=Role.OFFICE, phone='050-2828282')
+        self.alpha = Co.objects.create(name='Alpha Glass')
+        self.beta = Co.objects.create(name='Beta Frames')
+        # Ordered in March, delivered in August: the delivery list must date
+        # it by August, the order list by March.
+        self.late = self._order('ORD-LATE', self.alpha,
+                                ordered='2026-03-01', signed='2026-08-19')
+        self.same = self._order('ORD-SAME', self.beta,
+                                ordered='2026-08-02', signed='2026-08-03')
+        # Delivered without anyone signing -- must not vanish from the list.
+        self.unsigned = self._order('ORD-UNSIGNED', self.alpha,
+                                    ordered='2026-08-05', signed=None)
+        self.client.force_authenticate(self.office)
+
+    def _order(self, number, client, ordered, signed):
+        from django.utils.dateparse import parse_datetime
+        from core.models import Order, OrderStatus
+        o = Order.objects.create(number=number, client=client,
+                                 status=OrderStatus.DELIVERED,
+                                 created_by=self.office)
+        Order.objects.filter(pk=o.pk).update(
+            ordered_at=parse_datetime(f'{ordered}T09:00:00+00:00'),
+            delivery_signed_at=(parse_datetime(f'{signed}T09:00:00+00:00')
+                                if signed else None))
+        return o
+
+    def _numbers(self, query=''):
+        rows = self.client.get(self.URL + query).data
+        return {r['number'] for r in rows}
+
+    def test_it_lists_every_delivered_order(self):
+        self.assertEqual(self._numbers(),
+                         {'ORD-LATE', 'ORD-SAME', 'ORD-UNSIGNED'})
+
+    def test_the_month_filter_uses_the_delivery_date(self):
+        """Ordered in March, delivered in August -- this is an August delivery."""
+        self.assertIn('ORD-LATE', self._numbers('&year=2026&month=8'))
+        self.assertNotIn('ORD-LATE', self._numbers('&year=2026&month=3'))
+
+    def test_an_unsigned_delivery_still_appears_in_its_month(self):
+        """It falls back to the order date rather than dropping out entirely."""
+        self.assertIn('ORD-UNSIGNED', self._numbers('&year=2026&month=8'))
+
+    def test_client_and_search_narrow_it(self):
+        self.assertEqual(self._numbers(f'&client={self.beta.id}'), {'ORD-SAME'})
+        self.assertEqual(self._numbers('&search=LATE'), {'ORD-LATE'})
+
+    def test_newest_delivery_first(self):
+        rows = self.client.get(self.URL).data
+        self.assertEqual([r['number'] for r in rows],
+                         ['ORD-LATE', 'ORD-UNSIGNED', 'ORD-SAME'])
+
+    def test_rows_carry_the_arrival_date(self):
+        row = next(r for r in self.client.get(self.URL).data
+                   if r['number'] == 'ORD-LATE')
+        self.assertTrue(row['delivered_on'].startswith('2026-08-19'))
+
+    def test_years_can_report_delivery_years(self):
+        r = self.client.get('/api/orders/years/?delivered=true')
+        self.assertEqual(r.data['years'], [2026])
+
+    def test_the_run_is_unaffected(self):
+        """?done=false is a to-do list and keeps its due-date order."""
+        r = self.client.get('/api/orders/deliveries/')
+        self.assertEqual(r.status_code, 200)
+        self.assertEqual(r.data, [])

@@ -1226,10 +1226,13 @@ class OrderViewSet(viewsets.ModelViewSet):
         # not need telling about it.
         notify.order_created(order, by=self.request.user)
 
-    def get_queryset(self):
-        qs = (Order.objects.select_related('client', 'created_by')
-              .prefetch_related('lines__profile', 'lines__series'))
-        params = self.request.query_params
+    @staticmethod
+    def _filtered(qs, params, date_field='ordered_at'):
+        """Apply the shared client/status/date/search filters.
+
+        `date_field` differs by list: the order list is asked about when
+        something was ordered, the delivery list about when it arrived.
+        """
         if client := params.get('client'):
             qs = qs.filter(client_id=client)
         if status_f := params.get('status'):
@@ -1237,13 +1240,31 @@ class OrderViewSet(viewsets.ModelViewSet):
         # Ignored rather than rejected when it is not a number: a filter is a
         # view of a list, and a bad one should show everything, not a 500.
         if (year := _as_int(params.get('year'))) is not None:
-            qs = qs.filter(ordered_at__year=year)
+            qs = qs.filter(**{f'{date_field}__year': year})
         if (month := _as_int(params.get('month'))) is not None:
-            qs = qs.filter(ordered_at__month=month)
+            qs = qs.filter(**{f'{date_field}__month': month})
         if search := params.get('search'):
             qs = qs.filter(
                 Q(number__icontains=search) | Q(client__name__icontains=search))
-        return qs.order_by('-ordered_at')
+        return qs
+
+    def get_queryset(self):
+        qs = (Order.objects.select_related('client', 'created_by')
+              .prefetch_related('lines__profile', 'lines__series'))
+        return self._filtered(qs, self.request.query_params).order_by('-ordered_at')
+
+    @staticmethod
+    def _delivered_on():
+        """When an order arrived, for sorting and filtering the delivery list.
+
+        Orders are normally stamped when the signature is captured, but one
+        moved straight to delivered without a signature has no such stamp.
+        Falling back to the order date keeps those rows in the list instead of
+        dropping them out of every month.
+        """
+        from django.db.models.functions import Coalesce
+
+        return Coalesce('delivery_signed_at', 'ordered_at')
 
     @action(detail=False, methods=['get'])
     def years(self, request):
@@ -1251,13 +1272,20 @@ class OrderViewSet(viewsets.ModelViewSet):
 
         So the year picker offers what exists rather than a fixed range that
         is half empty at the start and wrong once the business outlives it.
+        ?delivered=true answers the same question for the delivery list.
         """
         # Deliberately not get_queryset(): that applies the year filter, so the
         # picker would offer only the year already chosen.
-        years = sorted({d.year for d in Order.objects
-                        .values_list('ordered_at', flat=True) if d},
-                       reverse=True)
-        return Response({'years': years})
+        if request.query_params.get('delivered') == 'true':
+            from core.models import OrderStatus
+
+            dates = (Order.objects.filter(status=OrderStatus.DELIVERED)
+                     .annotate(on=self._delivered_on())
+                     .values_list('on', flat=True))
+        else:
+            dates = Order.objects.values_list('ordered_at', flat=True)
+        return Response({'years': sorted({d.year for d in dates if d},
+                                         reverse=True)})
 
     def _pdf_response(self, order, kind):
         from django.http import HttpResponse
@@ -1304,8 +1332,18 @@ class OrderViewSet(viewsets.ModelViewSet):
         statuses = ([OrderStatus.DELIVERED] if done
                     else [OrderStatus.READY, OrderStatus.OUT_FOR_DELIVERY])
         orders = (Order.objects.filter(status__in=statuses)
-                  .select_related('client').prefetch_related('lines')
-                  .order_by('required_by', '-ordered_at'))
+                  .select_related('client').prefetch_related('lines'))
+        if done:
+            # The office looks back through this list, so it takes the same
+            # filters as the order list -- but dated by arrival, which is the
+            # only date that means anything about a delivery.
+            orders = (orders.annotate(delivered_on=self._delivered_on())
+                      .order_by('-delivered_on'))
+            orders = self._filtered(orders, request.query_params,
+                                    date_field='delivered_on')
+        else:
+            # The run itself is a to-do list, ordered by what is due first.
+            orders = orders.order_by('required_by', '-ordered_at')
         data = [self._delivery_row(o, request) for o in orders]
         return Response(data)
 
@@ -1334,6 +1372,11 @@ class OrderViewSet(viewsets.ModelViewSet):
             'signed': bool(o.delivery_signed_at),
             'signed_at': (o.delivery_signed_at.isoformat()
                           if o.delivery_signed_at else None),
+            # When it arrived, falling back to the order date for one marked
+            # delivered without a signature. Only annotated on the done list.
+            'delivered_on': (delivered_on.isoformat()
+                             if (delivered_on := getattr(o, 'delivered_on', None))
+                             else None),
             # Who signed, and how to reach them. Sent with every row so the
             # driver can re-send the note days later from a restarted app,
             # rather than only in the moment the signature was captured.
