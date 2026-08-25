@@ -201,6 +201,8 @@ class LoginView(TokenObtainPairView):
 
     serializer_class = LoginSerializer
     permission_classes = [permissions.AllowAny]
+    # Rate-limit password attempts per client IP to blunt brute-forcing.
+    throttle_scope = 'login'
 
 
 class MeView(generics.RetrieveUpdateAPIView):

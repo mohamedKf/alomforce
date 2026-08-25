@@ -278,7 +278,7 @@ REST_FRAMEWORK = {
     # against. Ten attempts an hour per IP leaves a fat-fingered code harmless
     # and a brute force pointless.
     'DEFAULT_THROTTLE_CLASSES': ['rest_framework.throttling.ScopedRateThrottle'],
-    'DEFAULT_THROTTLE_RATES': {'register': '10/hour'},
+    'DEFAULT_THROTTLE_RATES': {'register': '10/hour', 'login': '10/min'},
 }
 
 # Logging.
