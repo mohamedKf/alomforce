@@ -277,7 +277,14 @@ REST_FRAMEWORK = {
     # caller, which also makes it the only one worth grinding the manager code
     # against. Ten attempts an hour per IP leaves a fat-fingered code harmless
     # and a brute force pointless.
-    'DEFAULT_THROTTLE_CLASSES': ['rest_framework.throttling.ScopedRateThrottle'],
+    # Off under test: the suite shares one IP and one cache, so ten logins a
+    # minute is a budget it exhausts on its own, and whichever login test runs
+    # once it is dry fails for a reason that has nothing to do with it. The
+    # classes go rather than the rates -- ScopedRateThrottle raises when a
+    # scope has no rate, breaking every throttled endpoint instead of freeing
+    # it.
+    'DEFAULT_THROTTLE_CLASSES': (
+        [] if TESTING else ['rest_framework.throttling.ScopedRateThrottle']),
     'DEFAULT_THROTTLE_RATES': {'register': '10/hour', 'login': '10/min'},
 }
 
