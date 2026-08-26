@@ -1823,12 +1823,21 @@ class AttendanceViewSet(viewsets.ReadOnlyModelViewSet):
     @action(detail=False, methods=['get'])
     def current(self, request):
         """GET /api/attendance/current/ — the open shift, or null."""
+        # Resolve a forgotten shift before reporting it, so the app never shows
+        # an elapsed timer counting up for days.
+        from core.attendance_auto_close import close_stale_for_worker
+        close_stale_for_worker(request.user)
         shift = self._open_shift(request.user)
         return Response(ShiftSerializer(shift).data if shift else None)
 
     @action(detail=False, methods=['post'])
     def clock_in(self, request):
         """POST /api/attendance/clock_in/ — start today's shift (once per day)."""
+        # Close a shift the worker forgot to clock out of before deciding
+        # whether they are "already clocked in" — otherwise a forgotten shift
+        # would block every future clock-in.
+        from core.attendance_auto_close import close_stale_for_worker
+        close_stale_for_worker(request.user)
         if self._open_shift(request.user):
             return Response(
                 {'detail': _('You are already clocked in.')},
@@ -2043,8 +2052,14 @@ class ShiftCorrectionRequestViewSet(viewsets.ModelViewSet):
                           clock_in=req.requested_clock_in or timezone.now())
         if req.requested_clock_in:
             shift.clock_in = req.requested_clock_in
-        # An explicit clock-out is applied; note it may reopen or close the shift.
-        shift.clock_out = req.requested_clock_out
+        # Only apply a clock-out that was actually given. A blank one must not
+        # wipe the existing time and re-open the shift — that would undo an
+        # auto-close of a forgotten shift whose correction still has no end time.
+        if req.requested_clock_out:
+            shift.clock_out = req.requested_clock_out
+        # A real correction clears the auto-closed flag: it now has a human time.
+        if req.requested_clock_out or req.requested_clock_in:
+            shift.auto_closed = False
         shift.save()
         req.shift = shift
         req.save(update_fields=['shift'])

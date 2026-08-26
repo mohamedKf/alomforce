@@ -1162,9 +1162,9 @@ class ShiftSerializer(serializers.ModelSerializer):
         model = Shift
         fields = [
             'id', 'worker', 'worker_name', 'clock_in', 'clock_out',
-            'is_open', 'duration_minutes', 'hours', 'note',
+            'is_open', 'duration_minutes', 'hours', 'note', 'auto_closed',
         ]
-        read_only_fields = ['id', 'worker', 'worker_name']
+        read_only_fields = ['id', 'worker', 'worker_name', 'auto_closed']
 
 
 class ShiftCorrectionRequestSerializer(serializers.ModelSerializer):

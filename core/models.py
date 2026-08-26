@@ -1574,6 +1574,13 @@ class Shift(models.Model):
     clock_in = models.DateTimeField(_('clock in'))
     clock_out = models.DateTimeField(_('clock out'), null=True, blank=True)
     note = models.CharField(_('note'), max_length=255, blank=True)
+    # True when the system closed a forgotten shift (open past the stale
+    # threshold). clock_out is set equal to clock_in — a zero-hour shift — so a
+    # runaway open shift never inflates pay; the worker files the real end time
+    # through the correction flow.
+    auto_closed = models.BooleanField(
+        _('auto-closed'), default=False, db_index=True,
+        help_text=_('System closed a shift the worker forgot to clock out of.'))
     created_at = models.DateTimeField(_('created at'), auto_now_add=True)
 
     class Meta:
