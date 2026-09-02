@@ -13,6 +13,7 @@ projects can drift independently.
 import os
 import re
 import tempfile
+from datetime import timedelta
 from decimal import Decimal
 from pathlib import Path
 
@@ -554,6 +555,155 @@ def _read_and_clean(path):
     except OSError:
         pass
     return data
+
+
+# ─────────────────────────── price quote ───────────────────────────
+def build_quote_pdf(order, company=None):
+    """הצעת מחיר — what this job would cost, before anybody commits to it.
+
+    A quote is not an order note with a different heading. It carries a date
+    the price holds until, because steel moves week to week and a yard that
+    honours a two-month-old quote eats the difference; it shows the discount
+    per line, because that is the part a contractor reads; and it says
+    plainly that it is not a demand for payment.
+
+    It refuses to print while any line has no price. A zero on a quote is
+    read as "free", and it goes out over the yard's name.
+    """
+    from django.utils import timezone
+
+    unpriced = [line for line in order.lines.all() if line.needs_a_price]
+    if unpriced:
+        raise ValueError(
+            'These have no price yet: '
+            + ', '.join(line.profile.number if line.profile_id else '?'
+                        for line in unpriced))
+
+    font = _font('he')
+    company = company or {}
+
+    def s(txt):
+        return _shape(txt)
+
+    right = ParagraphStyle('r', fontName=font, fontSize=9.5,
+                           alignment=TA_RIGHT, leading=14)
+    muted_r = ParagraphStyle('sub', fontName=font, fontSize=10,
+                             alignment=TA_RIGHT, leading=16, textColor=MUTED)
+    small_r = ParagraphStyle('sm', fontName=font, fontSize=8.5,
+                             alignment=TA_RIGHT, leading=12, textColor=MUTED)
+
+    doc, path = _new_doc('quote_', order)
+
+    days = getattr(_shop_of(order), 'quote_valid_days', 14) or 14
+    good_until = (timezone.localdate() + timedelta(days=days))
+    rows = [("מס' הצעה", order.number),
+            ('תאריך', timezone.localdate().strftime('%Y-%m-%d')),
+            ('בתוקף עד', good_until.strftime('%Y-%m-%d'))]
+    if order.client and (order.client.tax_id or order.client.phone):
+        rows.append(("מס' לקוח", order.client.tax_id or order.client.phone))
+    story = _he_header(company, 'הצעת מחיר', rows)
+
+    client_lines, supplier = _addr_blocks_for(order, company)
+    story += _he_addr_blocks('לכבוד', client_lines, 'מאת', supplier)
+
+    # columns (RTL): total | discount | price/kg | weight | description | profile
+    data = [[s('סה"כ'), s('הנחה'), s('מחיר לק"ג'), s('משקל ק"ג'), s('תיאור'),
+             s('מק"ט')]]
+    style = [
+        ('FONTNAME', (0, 0), (-1, -1), font),
+        ('FONTSIZE', (0, 0), (-1, -1), 9.5),
+        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+        ('ALIGN', (0, 0), (3, -1), 'CENTER'),
+        ('ALIGN', (4, 0), (4, -1), 'RIGHT'),
+        ('ALIGN', (5, 0), (5, -1), 'CENTER'),
+        ('BACKGROUND', (0, 0), (-1, 0), PRIMARY),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
+        ('TOPPADDING', (0, 0), (-1, -1), 6),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
+        ('LEFTPADDING', (0, 0), (-1, -1), 6),
+        ('RIGHTPADDING', (0, 0), (-1, -1), 6),
+        ('LINEBELOW', (0, 1), (-1, -1), 0.4, LINE),
+    ]
+    r = 1
+    for line in order.lines.all():
+        # The description carries the line's note -- "לפי תוכנית 3", a bend
+        # detail -- because that is often what the price was quoted for.
+        text = _prof_name(line)
+        data.append([
+            _money(line.line_total),
+            f'{_num(line.discount_percent)}%' if line.discount_percent else '—',
+            _money(line.price_per_kg),
+            _num(line.effective_weight_kg or 0),
+            Paragraph(_rtl(text), right),
+            s(line.profile.number if line.profile_id else '')])
+        if r % 2 == 0:
+            style.append(('BACKGROUND', (0, r), (-1, r), ZEBRA))
+        r += 1
+    table = Table(data,
+                  colWidths=[24 * mm, 16 * mm, 22 * mm, 24 * mm, None, 22 * mm],
+                  repeatRows=1)
+    table.setStyle(TableStyle(style))
+    story += [table, Spacer(1, 5 * mm)]
+
+    story.append(Paragraph(
+        f'{s("סה\"כ ביניים")}: {_money(order.subtotal)} ₪', muted_r))
+    if order.discount_percent:
+        story.append(Paragraph(
+            f'{s("הנחה")} ({_num(order.discount_percent)}%): '
+            f'-{_money(order.discount_amount)} ₪', muted_r))
+    story.append(Paragraph(
+        f'{s("מע\"מ")} ({_num(order.vat_percent)}%): '
+        f'{_money(order.vat_amount)} ₪', muted_r))
+    weight = sum((line.effective_weight_kg or Decimal('0')
+                  for line in order.lines.all()), Decimal('0'))
+    if weight:
+        story.append(Paragraph(
+            f'{s("משקל כולל")}: {_num(weight)} {s("ק\"ג")}', muted_r))
+    story.append(Spacer(1, 2 * mm))
+
+    total_para = Paragraph(
+        f'<font color="white">{s("סה״כ הצעה")}:&nbsp;&nbsp;'
+        f'{_money(order.total)} ₪</font>',
+        ParagraphStyle('tot', fontName=font, fontSize=13,
+                       alignment=TA_RIGHT, leading=17))
+    totals = Table([[total_para]], colWidths=[80 * mm], hAlign='LEFT')
+    totals.setStyle(TableStyle([('BACKGROUND', (0, 0), (-1, -1), PRIMARY),
+                                ('TOPPADDING', (0, 0), (-1, -1), 9),
+                                ('BOTTOMPADDING', (0, 0), (-1, -1), 9),
+                                ('RIGHTPADDING', (0, 0), (-1, -1), 14)]))
+    story.append(totals)
+
+    if order.notes.strip():
+        story += [Spacer(1, 6 * mm),
+                  Paragraph(f'<b>{s("הערות")}:</b> {_rtl(order.notes)}', right)]
+
+    story += [Spacer(1, 8 * mm)]
+    for term in _QUOTE_TERMS:
+        story.append(Paragraph(f'{s("•")} {_rtl(term.format(days=days))}',
+                               small_r))
+
+    ftr = _footer_drawer(company, font)
+    doc.build(story, onFirstPage=ftr, onLaterPages=ftr)
+    return path
+
+
+_QUOTE_TERMS = [
+    'הצעה זו בתוקף {days} ימים מתאריך הנפקתה. מחירי האלומיניום משתנים, '
+    'ולאחר מכן יש לאשר את המחיר מחדש.',
+    'המחירים אינם כוללים מע"מ אלא אם צוין אחרת.',
+    'משקלים מחושבים לפי משקל הפרופיל למטר ולפי המידות שנמסרו.',
+    'ההצעה אינה דרישת תשלום. אספקה בכפוף לזמינות במלאי ולאישור ההזמנה.',
+]
+
+
+def _shop_of(order):
+    """The yard issuing the quote."""
+    from core.models import Shop
+    return Shop.objects.first()
+
+
+def render_quote(order, company=None):
+    return _read_and_clean(build_quote_pdf(order, company=company))
 
 
 def render_order_note(order, company=None):

@@ -27,6 +27,8 @@ from core.models import (
     DeviceToken,
     Family,
     Invoice,
+    OrderAttachment,
+    Payment,
     Location,
     MovementType,
     Notification,
@@ -753,6 +755,164 @@ class SettingsSerializer(serializers.ModelSerializer):
         return super().update(instance, validated_data)
 
 
+class OrderAttachmentSerializer(serializers.ModelSerializer):
+    """A document that came with the order, and where to fetch it.
+
+    The file is validated here rather than at the view, so the phone and the
+    desktop get the same refusal for the same reason.
+    """
+
+    # Only what a yard actually receives: the engineer's PDF, or a photo of
+    # the paper copy taken at the counter. Anything else is a mistake worth
+    # refusing rather than storing and serving back later.
+    ALLOWED = {'.pdf', '.jpg', '.jpeg', '.png', '.heic', '.webp'}
+    MAX_BYTES = 25 * 1024 * 1024
+
+    file_url = serializers.SerializerMethodField()
+    filename = serializers.CharField(read_only=True)
+    is_pdf = serializers.BooleanField(read_only=True)
+    kind_display = serializers.CharField(source='get_kind_display', read_only=True)
+    uploaded_by_name = serializers.CharField(
+        source='uploaded_by.full_name', read_only=True)
+    # False here, always: a stored attachment is a file somebody uploaded.
+    # The generated cutting list is listed alongside these but is not one.
+    generated = serializers.SerializerMethodField()
+
+    class Meta:
+        model = OrderAttachment
+        fields = ['id', 'order', 'kind', 'kind_display', 'file', 'file_url',
+                  'filename', 'is_pdf', 'original_name', 'note',
+                  'uploaded_by_name', 'uploaded_at', 'generated']
+        read_only_fields = ['id', 'order', 'uploaded_by_name', 'uploaded_at']
+
+    def get_file_url(self, attachment):
+        if not attachment.file:
+            return None
+        request = self.context.get('request')
+        url = attachment.file.url
+        return request.build_absolute_uri(url) if request else url
+
+    def get_generated(self, _attachment):
+        return False
+
+    def validate_file(self, value):
+        name = (getattr(value, 'name', '') or '').lower()
+        if not any(name.endswith(ext) for ext in self.ALLOWED):
+            raise serializers.ValidationError(
+                _('Attach a PDF or a photo.'))
+        if value.size > self.MAX_BYTES:
+            raise serializers.ValidationError(
+                _('That file is too large (limit %(mb)d MB).')
+                % {'mb': self.MAX_BYTES // (1024 * 1024)})
+        return value
+
+
+class PaymentSerializer(serializers.ModelSerializer):
+    """Money received, and the invoice for it when there is one.
+
+    Not every sale gets invoiced. Cash at the counter, a deposit against work
+    not yet started -- a shop takes plenty of money that no document
+    accompanies, and a form that insists on an invoice number before it will
+    record a payment just means the payment never gets recorded.
+
+    So the invoice is optional and sits on the same form: tick it, give the
+    number, and the invoice is raised for this amount at the same moment the
+    money is recorded. Leave it, and the money is recorded on its own.
+    """
+
+    method_display = serializers.CharField(source='get_method_display',
+                                           read_only=True)
+    recorded_by_name = serializers.CharField(source='recorded_by.full_name',
+                                             read_only=True)
+    is_cleared = serializers.BooleanField(read_only=True)
+    # A method field, not source='invoice.number': DRF drops a nested source
+    # whose relation is null, so a payment with no paperwork -- the ordinary
+    # case -- came back with the key missing rather than empty, and anything
+    # reading it by index broke.
+    invoice_number = serializers.SerializerMethodField()
+
+    # Write-only, and not model fields: asking for an invoice with the money.
+    issue_invoice = serializers.BooleanField(write_only=True, required=False,
+                                             default=False)
+    invoice_number_in = serializers.CharField(
+        write_only=True, required=False, allow_blank=True, max_length=64)
+
+    class Meta:
+        model = Payment
+        fields = ['id', 'order', 'invoice', 'invoice_number', 'amount',
+                  'method', 'method_display', 'paid_on', 'due_on',
+                  'reference', 'note', 'is_cleared', 'recorded_by_name',
+                  'created_at', 'issue_invoice', 'invoice_number_in']
+        read_only_fields = ['id', 'order', 'invoice', 'invoice_number',
+                            'recorded_by_name', 'created_at']
+
+    def get_invoice_number(self, payment):
+        return payment.invoice.number if payment.invoice_id else ''
+
+    def validate(self, attrs):
+        method = attrs.get('method') or getattr(self.instance, 'method', None)
+        due_on = attrs.get('due_on', getattr(self.instance, 'due_on', None))
+        # Only a cheque waits to be banked. A due date on cash is somebody
+        # filling in a field because it is there.
+        if due_on and method != Payment.Method.CHEQUE:
+            raise serializers.ValidationError(
+                {'due_on': _('Only a cheque has a date it can be banked.')})
+        paid_on = attrs.get('paid_on', getattr(self.instance, 'paid_on', None))
+        if due_on and paid_on and due_on < paid_on:
+            raise serializers.ValidationError(
+                {'due_on': _('A cheque cannot clear before it was written.')})
+        return attrs
+
+    def create(self, validated_data):
+        wanted = validated_data.pop('issue_invoice', False)
+        number = (validated_data.pop('invoice_number_in', '') or '').strip()
+        payment = super().create(validated_data)
+        if wanted:
+            payment.invoice = self._raise_invoice(payment, number)
+            payment.save(update_fields=['invoice'])
+        if payment.invoice_id:
+            payment.invoice.sync_status()
+            payment.invoice.save(update_fields=['amount_paid', 'status'])
+        return payment
+
+    def update(self, instance, validated_data):
+        validated_data.pop('issue_invoice', None)
+        validated_data.pop('invoice_number_in', None)
+        payment = super().update(instance, validated_data)
+        # Correcting or removing money changes what its invoice has been paid.
+        if payment.invoice_id:
+            payment.invoice.sync_status()
+            payment.invoice.save(update_fields=['amount_paid', 'status'])
+        return payment
+
+    def _raise_invoice(self, payment, number):
+        """The document for this money.
+
+        It is written for the amount handed over, not for the order total: an
+        invoice raised for the whole job when a deposit is paid is what made
+        an order read as fully invoiced off a part payment.
+        """
+        order = payment.order
+        vat_percent = (order.vat_percent if order is not None
+                       else Decimal('18'))
+        gross = payment.amount
+        # The amount is what changed hands, VAT included; the subtotal is what
+        # is left once the VAT in it is taken back out.
+        subtotal = (gross / (1 + vat_percent / 100)).quantize(Decimal('0.01'))
+        return Invoice.objects.create(
+            direction=Invoice.Direction.INCOME,
+            number=number,
+            client=order.client if order is not None else None,
+            order=order,
+            party_name=(order.client.name
+                        if order is not None and order.client else ''),
+            party_tax_id=(order.client.tax_id
+                          if order is not None and order.client else ''),
+            issued_at=payment.paid_on,
+            subtotal=subtotal, vat=gross - subtotal, total=gross,
+            amount_paid=gross, status=Invoice.Status.PAID,
+            source=Invoice.Source.MANUAL)
+
 class InvoiceSerializer(serializers.ModelSerializer):
     """An income or expense invoice. The file (PDF/photo) uploads via multipart."""
 
@@ -1113,7 +1273,7 @@ class OrderSerializer(serializers.ModelSerializer):
             validated_data['discount_percent'] = (
                 tier.discount_percent if tier else Decimal('0.00'))
         order = Order.objects.create(
-            number=self._next_number(),
+            number=self._next_number(validated_data.get('status')),
             created_by=request.user if request else None,
             **validated_data,
         )
@@ -1135,10 +1295,18 @@ class OrderSerializer(serializers.ModelSerializer):
         return instance
 
     @staticmethod
-    def _next_number():
+    def _next_number(status=None):
+        """The next number in its own series.
+
+        Quotes number separately from orders. Most quotes are never accepted,
+        and letting them consume order numbers leaves the order book full of
+        gaps that look like deleted orders to anybody auditing it.
+        """
+        from core.models import OrderStatus
+
         from django.utils import timezone
         year = timezone.now().year
-        prefix = f'ORD-{year}-'
+        prefix = ('QUO-' if status == OrderStatus.QUOTE else 'ORD-') + f'{year}-'
         last = (Order.objects.filter(number__startswith=prefix)
                 .order_by('-number').first())
         seq = (int(last.number.rsplit('-', 1)[1]) + 1) if last else 1

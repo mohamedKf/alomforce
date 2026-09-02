@@ -17,7 +17,8 @@ from decimal import Decimal
 from django.conf import settings
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 from django.core.exceptions import ValidationError
-from django.core.validators import MinValueValidator, RegexValidator
+from django.core.validators import (MaxValueValidator, MinValueValidator,
+                                    RegexValidator)
 from django.db import models
 from django.db.models import Sum
 from django.utils import timezone
@@ -639,6 +640,10 @@ class Shop(models.Model):
         _('longitude'), max_digits=9, decimal_places=6, null=True, blank=True
     )
 
+    quote_valid_days = models.PositiveSmallIntegerField(
+        _('quote valid for (days)'), default=14,
+        help_text=_('Aluminium moves. A quote says how long the price holds.'))
+
     class Meta:
         verbose_name = _('shop')
         verbose_name_plural = _('shop')
@@ -1116,6 +1121,11 @@ class Client(models.Model):
 
 
 class OrderStatus(models.TextChoices):
+    # Before it is an order at all. A quote is a price offered, not work
+    # promised: it holds lines and prices, but nothing is cut and nothing is
+    # reserved. Accepting it turns it into an order -- same rows, new number
+    # -- so what the customer agreed to and what gets made are one record.
+    QUOTE = 'quote', _('Quote')
     DRAFT = 'draft', _('Draft')
     SUBMITTED = 'submitted', _('Submitted')
     CONFIRMED = 'confirmed', _('Confirmed')
@@ -1130,6 +1140,11 @@ class Order(models.Model):
     """A client order. Created in the desktop app or by the client on mobile."""
 
     number = models.CharField(_('order number'), max_length=32, unique=True)
+    # The quote this order was accepted off, if it began as one. Kept because
+    # "we ordered off quote 14" is how a fabricator refers to it weeks later,
+    # and because the number changes when a quote is accepted.
+    quoted_as = models.CharField(_('quoted as'), max_length=32, blank=True)
+    accepted_at = models.DateTimeField(_('accepted at'), null=True, blank=True)
     client = models.ForeignKey(
         Client, verbose_name=_('client'), on_delete=models.PROTECT, related_name='orders'
     )
@@ -1223,6 +1238,59 @@ class Order(models.Model):
         # A hair of tolerance so rounding never leaves an order 'unfinished'.
         return self.invoiced_total >= (self.total - Decimal('0.01'))
 
+    # -- money in ----------------------------------------------------------
+
+    @property
+    def paid_total(self):
+        """Everything received, cleared or not."""
+        return sum((payment.amount for payment in self.payments.all()),
+                   Decimal('0.00'))
+
+    @property
+    def paid_cleared(self):
+        """What is actually in the bank -- post-dated cheques excluded."""
+        return sum((payment.amount for payment in self.payments.all()
+                    if payment.is_cleared), Decimal('0.00'))
+
+    @property
+    def balance_due(self):
+        """Still owed. Never negative: an overpayment is not a debt."""
+        left = self.total - self.paid_total
+        return left if left > 0 else Decimal('0.00')
+
+    @property
+    def is_paid(self):
+        """Settled in full.
+
+        An order with nothing on it to pay is not paid -- it is unpriced, or
+        empty. Reading zero owed as "paid in full" tells the office an order
+        is settled before anybody has been asked for a shekel.
+        """
+        return self.total > 0 and self.balance_due <= Decimal('0.00')
+
+    @property
+    def cost_breakdown(self):
+        """What the order is made of, by series.
+
+        A customer asks "how much of that is the 7000 series?" and the answer
+        has to come off the same lines the total does, or the two disagree.
+        """
+        groups = {}
+        for line in self.lines.select_related('series', 'profile'):
+            series = line.series
+            key = series.id if series else 0
+            row = groups.setdefault(key, {
+                'series': key,
+                'name': series.name if series else _('Other'),
+                'lines': 0,
+                'subtotal': Decimal('0.00'),
+                'weight_kg': Decimal('0.00'),
+            })
+            row['lines'] += 1
+            row['subtotal'] += line.line_total
+            row['weight_kg'] += line.effective_weight_kg or Decimal('0')
+        return sorted(groups.values(), key=lambda r: -r['subtotal'])
+
     def refresh_prepared_status(self):
         """Follow the picking state: every line prepared means ready to send.
 
@@ -1308,6 +1376,11 @@ class OrderLine(models.Model):
         null=True, blank=True)
     # Price per kilo charged on this line, snapshotted from the series so the
     # order keeps its price even if the series price/kg later changes.
+    discount_percent = models.DecimalField(
+        _('discount %'), max_digits=5, decimal_places=2, default=Decimal('0'),
+        validators=[MinValueValidator(Decimal('0')),
+                    MaxValueValidator(Decimal('100'))],
+        help_text=_('Off this line, before any discount on the order.'))
     price_per_kg = models.DecimalField(
         _('price per kg'), max_digits=10, decimal_places=2, default=Decimal('0.00'))
 
@@ -1345,9 +1418,35 @@ class OrderLine(models.Model):
         return self.computed_weight_kg
 
     @property
-    def line_total(self):
+    def gross_total(self):
+        """What the line comes to before its own discount."""
         weight = self.effective_weight_kg or Decimal('0')
         return (weight * self.price_per_kg).quantize(Decimal('0.01'))
+
+    @property
+    def discount_amount(self):
+        return (self.gross_total * self.discount_percent
+                / Decimal('100')).quantize(Decimal('0.01'))
+
+    @property
+    def line_total(self):
+        """What the customer pays for this line.
+
+        A shop discounts a line at a time -- a keen price on the frames to win
+        the job, list price on the trim -- so the discount lives here as well
+        as on the order. The order's own discount applies on top of the sum,
+        which is how "and another 2% off the lot" is actually meant.
+        """
+        return self.gross_total - self.discount_amount
+
+    @property
+    def needs_a_price(self):
+        """True when nobody has said what this costs.
+
+        A line can reach the pricing screen with nothing on it. Quoting that
+        as zero sends the customer a quote that gives the aluminium away.
+        """
+        return not self.price_per_kg
 
     # The standard stock bar length when a line was entered as plain metres and
     # so carries no bar length of its own (matches the order editor's default).
@@ -1503,6 +1602,138 @@ class Invoice(models.Model):
         else:
             self.status = self.Status.UNPAID
 
+
+class OrderAttachment(models.Model):
+    """A document that came with the order — usually the iron design.
+
+    A reinforcement order does not arrive as a list of products. It arrives as
+    a bar bending schedule (רשימות ברזל) from the engineer: every bar with its
+    element mark, grade, diameter, cut length, count and bent shape. The yard
+    cuts and bends from that sheet, and the order lines are only the totals.
+
+    So the sheet travels with the order rather than being retyped. The office
+    attaches the engineer's PDF; a yard hand can photograph a paper copy from
+    the phone. Nothing here interprets it -- it is put in front of the person
+    doing the bending, which is what the drawing is for.
+    """
+
+    class Kind(models.TextChoices):
+        CUTTING_LIST = 'cutting_list', _('Cutting list')
+        DRAWING = 'drawing', _('Drawing')
+        OTHER = 'other', _('Other')
+
+    order = models.ForeignKey(
+        Order, verbose_name=_('order'), on_delete=models.CASCADE,
+        related_name='attachments')
+    kind = models.CharField(
+        _('kind'), max_length=20, choices=Kind.choices, default=Kind.DRAWING)
+    file = models.FileField(_('file'), upload_to='order-attachments/')
+    # What it was called on the engineer's machine. The stored name is
+    # sanitised and may collide, and "PRO1.BAR.pdf" is how the customer will
+    # ask for it on the phone.
+    original_name = models.CharField(_('original name'), max_length=255, blank=True)
+    note = models.CharField(
+        _('note'), max_length=255, blank=True,
+        help_text=_('Which drawing or elevation this sheet covers.'))
+    uploaded_by = models.ForeignKey(
+        User, verbose_name=_('uploaded by'), on_delete=models.SET_NULL,
+        null=True, blank=True, related_name='order_attachments')
+    uploaded_at = models.DateTimeField(_('uploaded at'), auto_now_add=True)
+
+    class Meta:
+        verbose_name = _('order attachment')
+        verbose_name_plural = _('order attachments')
+        ordering = ['uploaded_at', 'id']
+
+    def __str__(self):
+        return f'{self.order.number} — {self.original_name or self.file.name}'
+
+    @property
+    def filename(self):
+        """What to show and what to save it as."""
+        if self.original_name:
+            return self.original_name
+        return (self.file.name or '').rsplit('/', 1)[-1]
+
+    @property
+    def is_pdf(self):
+        return self.filename.lower().endswith('.pdf')
+
+class Payment(models.Model):
+    """Money received. The one record of it.
+
+    A payment is the event; an invoice is a piece of paper that may or may not
+    accompany it. Plenty of a yard's takings never get invoiced at all -- cash
+    over the counter, a deposit against work not yet done -- so an invoice
+    cannot be what money is recorded on. Equally, an invoice that has been
+    part-paid has to say so in the same place the order does, or the office
+    reads two screens and believes whichever it looked at last.
+
+    So: money is a Payment, always. `invoice` attaches the paperwork when
+    there is any, and the invoice reads what it has been paid off these rows
+    rather than keeping a figure of its own to drift out of step.
+
+    A cheque is not cash. Israeli construction runs on post-dated cheques, so
+    a cheque carries the date it can actually be banked as well as the date it
+    was handed over -- money in hand next March is not money in hand today,
+    and a balance that pretends otherwise is a lie the yard will act on.
+    """
+
+    class Method(models.TextChoices):
+        CASH = 'cash', _('Cash')
+        CHEQUE = 'cheque', _('Cheque')
+        TRANSFER = 'transfer', _('Bank transfer')
+        CARD = 'card', _('Card')
+        OTHER = 'other', _('Other')
+
+    order = models.ForeignKey(
+        Order, verbose_name=_('order'), on_delete=models.CASCADE,
+        null=True, blank=True, related_name='payments')
+    # The paperwork, when there is any. A payment against an invoice with no
+    # order -- a supplier being paid, say -- has this and no order; a cash
+    # sale has the order and no invoice; most have both.
+    invoice = models.ForeignKey(
+        'Invoice', verbose_name=_('invoice'), on_delete=models.SET_NULL,
+        null=True, blank=True, related_name='payments')
+    amount = models.DecimalField(
+        _('amount'), max_digits=12, decimal_places=2,
+        validators=[MinValueValidator(Decimal('0.01'))])
+    method = models.CharField(
+        _('method'), max_length=20, choices=Method.choices,
+        default=Method.CASH)
+    paid_on = models.DateField(_('paid on'))
+    # When a post-dated cheque can be banked. Null for anything that is money
+    # the moment it is handed over.
+    due_on = models.DateField(
+        _('due on'), null=True, blank=True,
+        help_text=_('For a post-dated cheque: when it can be banked.'))
+    reference = models.CharField(
+        _('reference'), max_length=80, blank=True,
+        help_text=_('Cheque number, transfer reference, receipt number.'))
+    note = models.CharField(_('note'), max_length=255, blank=True)
+    recorded_by = models.ForeignKey(
+        User, verbose_name=_('recorded by'), on_delete=models.SET_NULL,
+        null=True, blank=True, related_name='payments_recorded')
+    created_at = models.DateTimeField(_('recorded at'), auto_now_add=True)
+
+    class Meta:
+        verbose_name = _('payment')
+        verbose_name_plural = _('payments')
+        ordering = ['-paid_on', '-id']
+
+    def __str__(self):
+        return f'{self.amount} {self.get_method_display()}'
+
+    @property
+    def is_cleared(self):
+        """True when the money can actually be used.
+
+        A cheque dated for next month is a promise, not a balance.
+        """
+        if self.due_on is None:
+            return True
+        from django.utils import timezone
+        return self.due_on <= timezone.localdate()
 
 class Delivery(models.Model):
     """A delivery run — what the driver sees in the worker app."""

@@ -10,6 +10,7 @@ Sections:
 """
 
 from datetime import timedelta
+import logging
 from decimal import Decimal, InvalidOperation
 
 from django.contrib.auth import get_user_model
@@ -130,6 +131,71 @@ def _as_int(value):
 # DRF's permission_classes REPLACES DEFAULT_PERMISSION_CLASSES rather than
 # adding to it, so any view declaring its own permissions would silently skip
 # the password gate. Every view builds its list from this one instead.
+def _decimal_or(value, fallback):
+    """A number as typed, or the fallback when the box was left empty."""
+    if value in (None, '', '-'):
+        return fallback
+    try:
+        return Decimal(str(value)).quantize(Decimal('0.01'))
+    except (InvalidOperation, ValueError):
+        return fallback
+
+
+def _typed_number(value, current):
+    """What to store for a box somebody has been typing in.
+
+    Cleared means cleared -- an emptied price box says "this is not priced",
+    which is a real thing to mean. Half-typed nonsense is not an instruction,
+    so it leaves the figure where it was rather than wiping a price the office
+    already agreed.
+    """
+    if value in (None, '', '-'):
+        return Decimal('0')
+    try:
+        return Decimal(str(value)).quantize(Decimal('0.01'))
+    except (InvalidOperation, ValueError):
+        return current
+
+
+def _percent(value, current=Decimal('0')):
+    """A percentage, held to the range a percentage has."""
+    number = _typed_number(value, current)
+    return min(max(number, Decimal('0')), Decimal('100'))
+
+
+def _last_prices(order):
+    """What this customer was charged per kilo for these profiles before.
+
+    The question an office asks itself before typing a price is "what did we
+    charge him last time". A price agreed with one fabricator is not the price
+    for the next, so his own history wins; failing that, the last price the
+    shop got from anyone is at least a floor to argue from.
+    """
+    from core.models import OrderLine
+
+    profiles = {line.profile_id for line in order.lines.all() if line.profile_id}
+    if not profiles:
+        return {}
+
+    def scan(queryset):
+        found = {}
+        # Oldest first, so the newest price for each profile lands last.
+        for profile_id, price in queryset.order_by('order__ordered_at') \
+                .values_list('profile_id', 'price_per_kg'):
+            found[profile_id] = price
+        return found
+
+    base = (OrderLine.objects
+            .filter(profile_id__in=profiles, price_per_kg__gt=0)
+            .exclude(order_id=order.id))
+    anyone = scan(base)
+    if order.client_id:
+        anyone.update(scan(base.filter(order__client_id=order.client_id)))
+    return anyone
+
+
+logger = logging.getLogger(__name__)
+
 BASE = [permissions.IsAuthenticated, PasswordChangeRequired]
 
 
@@ -1201,6 +1267,46 @@ class StockItemViewSet(viewsets.ModelViewSet):
 # ---------------------------------------------------------------------------
 
 
+
+def _generated_documents(order, request):
+    """Every document the system makes for this order, as live documents.
+
+    None is a file. Each is rendered from the order when it is asked for, so
+    it cannot go stale and cannot be lost to a storage outage. They are listed
+    beside the uploaded drawings because "the order's documents" is one
+    question, and answering it in three places is how a workshop ends up
+    cutting to last week's revision.
+    """
+    from core.models import OrderStatus, Role
+
+    def document(path, kind, kind_display, filename):
+        return {
+            'id': None, 'generated': True, 'section': 'generated',
+            'kind': kind, 'kind_display': str(kind_display),
+            'filename': filename, 'is_pdf': True, 'note': '',
+            'uploaded_by_name': '', 'uploaded_at': None, 'path': path,
+            'file_url': request.build_absolute_uri(path) if request else path,
+        }
+
+    base = f'/api/orders/{order.id}/'
+    documents = [document(f'{base}order_note/', 'order_note', _('Order note'),
+                          f'{order.number}_order.pdf')]
+
+    user = getattr(request, 'user', None)
+    is_office = bool(user and getattr(user, 'role', None) in
+                     {Role.OFFICE, Role.MANAGER})
+    if is_office and order.lines.exists() and not any(
+            line.needs_a_price for line in order.lines.all()):
+        documents.append(document(f'{base}quote/', 'quote', _('Price quote'),
+                                  f'{order.number}_quote.pdf'))
+    if order.status in (OrderStatus.READY, OrderStatus.OUT_FOR_DELIVERY,
+                        OrderStatus.DELIVERED):
+        documents.append(document(f'{base}delivery_note/', 'delivery_note',
+                                  _('Delivery note'),
+                                  f'{order.number}_delivery.pdf'))
+    return documents
+
+
 class OrderViewSet(viewsets.ModelViewSet):
     """GET/POST/PATCH /api/orders/ — client orders, priced by weight.
 
@@ -1235,8 +1341,23 @@ class OrderViewSet(viewsets.ModelViewSet):
         `date_field` differs by list: the order list is asked about when
         something was ordered, the delivery list about when it arrived.
         """
+        from core.models import OrderStatus
+
         if client := params.get('client'):
             qs = qs.filter(client_id=client)
+        # Quotes and orders are two lists, not one. A quote is a price
+        # offered; nothing is cut against it, and letting them sit among real
+        # orders is how one gets put into production. Orders are the default
+        # so every screen that predates quotes is unaffected.
+        #
+        # Listing only. Fetching one by id must find it whichever it is, or
+        # every action on a quote answers 404 because the quote was filtered
+        # out of its own lookup.
+        kind = params.get('kind')
+        if kind == 'quote':
+            qs = qs.filter(status=OrderStatus.QUOTE)
+        elif kind != 'all' and params.get('_list'):
+            qs = qs.exclude(status=OrderStatus.QUOTE)
         if status_f := params.get('status'):
             qs = qs.filter(status=status_f)
         # Ignored rather than rejected when it is not a number: a filter is a
@@ -1253,7 +1374,12 @@ class OrderViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         qs = (Order.objects.select_related('client', 'created_by')
               .prefetch_related('lines__profile', 'lines__series'))
-        return self._filtered(qs, self.request.query_params).order_by('-ordered_at')
+        params = self.request.query_params
+        if self.action == 'list':
+            # Copied so the flag cannot leak into a detail lookup.
+            params = params.copy()
+            params['_list'] = '1'
+        return self._filtered(qs, params).order_by('-ordered_at')
 
     @staticmethod
     def _delivered_on():
@@ -1316,6 +1442,309 @@ class OrderViewSet(viewsets.ModelViewSet):
     def order_note(self, request, pk=None):
         """GET /api/orders/<id>/order_note/ — the priced order note PDF."""
         return self._pdf_response(self.get_object(), 'order_note')
+
+    # -- what it costs, and what has been paid ------------------------------
+
+    @action(detail=True, methods=['get', 'post'], url_path='pricing',
+            permission_classes=BASE + [IsOffice])
+    def order_pricing(self, request, pk=None):
+        """GET/POST /api/orders/<id>/pricing/ — what this customer pays.
+
+        Aluminium is sold by the kilo at a price that moves with the metal and
+        with what the fabricator is worth to the shop, so the figure is
+        settled per job rather than held in a table. This is where somebody
+        says what it costs.
+
+        Nothing is guessed. A line with no price is reported as needing one
+        and the quote will not print until it has one -- quoting an empty
+        price as zero is how a shop gives away a lorry of profiles.
+        """
+        order = self.get_object()
+        if request.method == 'POST':
+            self._apply_pricing(order, request.data)
+            order.refresh_from_db()
+        return Response(self._pricing_payload(order))
+
+    def _apply_pricing(self, order, data):
+        """Write the prices and discounts the office typed."""
+        lines = {line.id: line for line in order.lines.all()}
+        for row in data.get('lines') or []:
+            line = lines.get(row.get('id'))
+            if line is None:
+                continue
+            fields = []
+            if 'price_per_kg' in row:
+                line.price_per_kg = _typed_number(row['price_per_kg'],
+                                                  line.price_per_kg)
+                fields.append('price_per_kg')
+            if 'discount_percent' in row:
+                line.discount_percent = _percent(row['discount_percent'],
+                                                 line.discount_percent)
+                fields.append('discount_percent')
+            if fields:
+                line.save(update_fields=fields)
+
+        changed = []
+        if 'discount_percent' in data:
+            order.discount_percent = _percent(data['discount_percent'],
+                                              order.discount_percent)
+            changed.append('discount_percent')
+        if 'vat_percent' in data:
+            order.vat_percent = _percent(data['vat_percent'],
+                                         order.vat_percent)
+            changed.append('vat_percent')
+        if changed:
+            order.save(update_fields=changed)
+
+    def _pricing_payload(self, order):
+        last_prices = _last_prices(order)
+        rows = []
+        for line in order.lines.select_related('profile', 'series'):
+            weight = line.effective_weight_kg or Decimal('0')
+            rows.append({
+                'id': line.id,
+                'profile': line.profile.number if line.profile_id else '',
+                'name': (line.profile.description if line.profile_id else ''),
+                'series': line.series.name if line.series_id else '',
+                'length_mm': line.length_mm,
+                'quantity': line.quantity,
+                'total_length_m': str(line.total_length_m or 0),
+                'weight_kg': str(weight),
+                'price_per_kg': str(line.price_per_kg),
+                'discount_percent': str(line.discount_percent),
+                'gross_total': str(line.gross_total),
+                'line_total': str(line.line_total),
+                'needs_a_price': line.needs_a_price,
+                'suggested_price': (
+                    None if not line.needs_a_price
+                    or last_prices.get(line.profile_id) is None
+                    else str(last_prices[line.profile_id])),
+            })
+        return {
+            'lines': rows,
+            'client': {
+                'id': order.client_id,
+                'name': order.client.name if order.client else '',
+                'email': order.client.email if order.client else '',
+                'tax_id': order.client.tax_id if order.client else '',
+            },
+            'totals': {
+                'subtotal': str(order.subtotal),
+                'discount_percent': str(order.discount_percent),
+                'discount': str(order.discount_amount),
+                'vat_percent': str(order.vat_percent),
+                'vat': str(order.vat_amount),
+                'total': str(order.total),
+            },
+            'unpriced': sum(1 for row in rows if row['needs_a_price']),
+        }
+
+    @action(detail=True, methods=['get', 'post'], url_path='payments',
+            permission_classes=BASE + [IsOffice])
+    def order_payments(self, request, pk=None):
+        """GET/POST /api/orders/<id>/payments/ — what the customer has paid.
+
+        GET also returns what the order is made of, by series, because the
+        question after "how much do I owe" is always "how much of that is the
+        7000".
+        """
+        from core.models import Payment
+        from core.serializers import PaymentSerializer
+
+        order = self.get_object()
+        if request.method == 'GET':
+            payments = order.payments.select_related('recorded_by')
+            return Response({
+                'payments': PaymentSerializer(payments, many=True).data,
+                'breakdown': [
+                    {'series': row['series'], 'name': str(row['name']),
+                     'lines': row['lines'], 'subtotal': str(row['subtotal']),
+                     'weight_kg': str(row['weight_kg'])}
+                    for row in order.cost_breakdown],
+                'totals': {
+                    'subtotal': str(order.subtotal),
+                    'discount': str(order.discount_amount),
+                    'vat': str(order.vat_amount),
+                    'total': str(order.total),
+                    'paid': str(order.paid_total),
+                    # What is actually in the bank: a post-dated cheque is a
+                    # promise, and spending against it is borrowing.
+                    'cleared': str(order.paid_cleared),
+                    'balance': str(order.balance_due),
+                    'is_paid': order.is_paid,
+                },
+            })
+
+        serializer = PaymentSerializer(data=request.data,
+                                       context={'request': request})
+        serializer.is_valid(raise_exception=True)
+        serializer.save(order=order, recorded_by=request.user)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    @action(detail=True, methods=['patch', 'delete'],
+            url_path=r'payments/(?P<payment_id>\d+)',
+            permission_classes=BASE + [IsOffice])
+    def order_payment(self, request, pk=None, payment_id=None):
+        """Correct or remove one payment."""
+        from django.http import Http404
+
+        from core.models import Payment
+        from core.serializers import PaymentSerializer
+
+        order = self.get_object()
+        try:
+            payment = order.payments.get(pk=payment_id)
+        except Payment.DoesNotExist:
+            raise Http404('No such payment.')
+        if request.method == 'DELETE':
+            payment.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        serializer = PaymentSerializer(payment, data=request.data,
+                                       partial=True,
+                                       context={'request': request})
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data)
+
+    # -- the documents that came with the order ----------------------------
+
+    @action(detail=True, methods=['get', 'post'],
+            parser_classes=[MultiPartParser, FormParser, JSONParser],
+            permission_classes=BASE + [IsStockStaff])
+    def attachments(self, request, pk=None):
+        """GET/POST /api/orders/<id>/attachments/ — the drawings and the rest.
+
+        An aluminium order is rarely just a list of profiles: it comes with a
+        fabrication drawing or a cutting list, and the workshop works from
+        that sheet. POST it here -- a PDF from the office, or a photo of the
+        paper copy from a phone at the counter -- and it travels with the
+        order to whoever does the cutting.
+        """
+        from core.models import OrderAttachment
+        from core.serializers import OrderAttachmentSerializer
+
+        order = self.get_object()
+        if request.method == 'GET':
+            rows = order.attachments.select_related('uploaded_by')
+            uploaded = OrderAttachmentSerializer(
+                rows, many=True, context={'request': request}).data
+            for row in uploaded:
+                row['section'] = row.get('kind') or 'other'
+                row['path'] = f"/api/orders/{order.id}/attachments/{row['id']}/"
+            return Response(_generated_documents(order, request) + uploaded)
+
+        serializer = OrderAttachmentSerializer(
+            data=request.data, context={'request': request})
+        serializer.is_valid(raise_exception=True)
+        upload = serializer.validated_data['file']
+        try:
+            # Its own savepoint. Model.save() opens an atomic block with
+            # savepoint=False, so a storage failure marks the whole
+            # surrounding transaction for rollback and every query after it
+            # -- including the error response's own -- then fails.
+            with transaction.atomic():
+                serializer.save(
+                    order=order, uploaded_by=request.user,
+                    original_name=(
+                        serializer.validated_data.get('original_name')
+                        or getattr(upload, 'name', ''))[:255])
+        except Exception as exc:                      # noqa: BLE001
+            logger.warning('Order attachment upload failed: %s', exc)
+            return Response(
+                {'file': [_('The file could not be stored. Check that it is '
+                            'a valid PDF or photo and try again.')]},
+                status=status.HTTP_400_BAD_REQUEST)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    @action(detail=True, methods=['get', 'delete'],
+            url_path=r'attachments/(?P<attachment_id>\d+)',
+            renderer_classes=[BinaryFileRenderer],
+            permission_classes=BASE + [IsStockStaff])
+    def attachment(self, request, pk=None, attachment_id=None):
+        """Fetch or remove one document.
+
+        Served through the API rather than from a storage URL: the bucket may
+        be private and its links expire, and the apps already hold a token.
+        """
+        from django.http import FileResponse, Http404
+
+        from core.models import OrderAttachment
+
+        order = self.get_object()
+        try:
+            row = order.attachments.get(pk=attachment_id)
+        except OrderAttachment.DoesNotExist:
+            raise Http404('No such document.')
+        if request.method == 'DELETE':
+            row.file.delete(save=False)
+            row.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        row.file.open('rb')
+        response = FileResponse(row.file, as_attachment=False,
+                                filename=row.filename)
+        if row.is_pdf:
+            response['Content-Type'] = 'application/pdf'
+        return response
+
+    @action(detail=True, methods=['post'], url_path='accept_quote',
+            permission_classes=BASE + [IsOffice])
+    def accept_quote(self, request, pk=None):
+        """POST /api/orders/<id>/accept_quote/ — the customer said yes.
+
+        The quote becomes the order. Same rows, same prices -- it is the same
+        record, given an order number and moved on. Copying it into a fresh
+        order would leave two documents that start identical and drift the
+        moment anybody edits one, and the customer agreed to the quote.
+        """
+        from core.models import OrderStatus
+        from core.serializers import OrderSerializer
+
+        order = self.get_object()
+        if order.status != OrderStatus.QUOTE:
+            return Response({'status': [_('This is already an order.')]},
+                            status=status.HTTP_400_BAD_REQUEST)
+        unpriced = [line for line in order.lines.all() if line.needs_a_price]
+        if unpriced:
+            return Response(
+                {'lines': [_('Some lines have no price yet.')]},
+                status=status.HTTP_400_BAD_REQUEST)
+        if not order.lines.exists():
+            return Response({'lines': [_('There is nothing on this quote.')]},
+                            status=status.HTTP_400_BAD_REQUEST)
+
+        order.quoted_as = order.number
+        order.number = OrderSerializer._next_number(OrderStatus.DRAFT)
+        order.status = OrderStatus.CONFIRMED
+        order.accepted_at = timezone.now()
+        order.save(update_fields=['number', 'status', 'quoted_as',
+                                  'accepted_at'])
+        return Response(OrderSerializer(order,
+                                        context={'request': request}).data)
+
+    @action(detail=True, methods=['get'], renderer_classes=[BinaryFileRenderer],
+            permission_classes=BASE + [IsOffice])
+    def quote(self, request, pk=None):
+        """GET /api/orders/<id>/quote/ — the price quote PDF.
+
+        Built fresh every time rather than stored: a quote that has been
+        re-priced and still hands out the old PDF is worse than no PDF.
+        """
+        from django.http import HttpResponse
+
+        from core import order_pdf
+
+        order = self.get_object()
+        try:
+            data = order_pdf.render_quote(order, order_pdf.company_from_shop())
+        except ValueError as exc:
+            # Not a crash: the office has lines it has not priced yet, and the
+            # screen turns this into "3 lines still need a price".
+            return Response({'detail': str(exc)},
+                            status=status.HTTP_400_BAD_REQUEST)
+        response = HttpResponse(data, content_type='application/pdf')
+        response['Content-Disposition'] = (
+            f'inline; filename="{order.number}_quote.pdf"')
+        return response
 
     @action(detail=True, methods=['get'], renderer_classes=[BinaryFileRenderer])
     def delivery_note(self, request, pk=None):
