@@ -15,7 +15,7 @@ from decimal import Decimal, InvalidOperation
 
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError as DjangoValidationError
-from django.db.models import Count, F, Q, Sum
+from django.db.models import Count, DecimalField, F, Q, Sum, Value
 from django.db.models.functions import Coalesce
 from django.utils import timezone
 from django.utils.dateparse import parse_date
@@ -543,7 +543,20 @@ class ProfileViewSet(viewsets.ReadOnlyModelViewSet):
     lookup_field = 'number'
 
     def get_queryset(self):
-        qs = Profile.objects.prefetch_related('series').order_by('number')
+        # On hand, summed across every holding of this profile -- all lengths,
+        # all finishes, all warehouses. Zero for a profile nothing has been
+        # booked in against, which is most of them: the catalogue has 1,321
+        # extrusions and a yard keeps stock of perhaps seventy. Answering
+        # "what have we got" off the stock table alone hides the other 1,250
+        # entirely, so somebody looking up a profile the shop can order but
+        # does not stock is told it does not exist.
+        qs = (Profile.objects
+              .prefetch_related('series')
+              .annotate(on_hand=Coalesce(
+                  Sum('stock_items__movements__quantity'),
+                  Value(Decimal('0')),
+                  output_field=DecimalField(max_digits=12, decimal_places=2)))
+              .order_by('number'))
         params = self.request.query_params
         if search := params.get('search'):
             qs = qs.filter(
@@ -553,6 +566,9 @@ class ProfileViewSet(viewsets.ReadOnlyModelViewSet):
             qs = qs.filter(series__code=series)
         if params.get('active') != 'all':
             qs = qs.filter(is_active=True)
+        # "Only what we actually have", for the times that is the question.
+        if params.get('in_stock') == 'true':
+            qs = qs.filter(on_hand__gt=0)
         return qs.distinct()
 
     @action(detail=True, methods=['post', 'delete'],

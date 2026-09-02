@@ -401,14 +401,29 @@ class ProfileSerializer(serializers.ModelSerializer):
 
     series_codes = serializers.SerializerMethodField()
     weight_kg_per_m = serializers.FloatField(read_only=True)
+    # Metres on hand across every length, finish and warehouse. Present as a
+    # plain 0 rather than absent when nothing is stocked, so a screen can show
+    # the whole catalogue and say honestly what it has of each.
+    on_hand = serializers.SerializerMethodField()
 
     class Meta:
         model = Profile
         fields = [
             'id', 'number', 'description', 'description_en',
             'weight_g_per_m', 'weight_kg_per_m', 'section_image',
-            'series_codes', 'is_active',
+            'series_codes', 'is_active', 'on_hand',
         ]
+
+    def get_on_hand(self, profile):
+        # Annotated by the list view; a profile fetched on its own has to be
+        # asked directly rather than reporting nothing.
+        value = getattr(profile, 'on_hand', None)
+        if value is None:
+            from django.db.models import Sum
+
+            value = (profile.stock_items
+                     .aggregate(n=Sum('movements__quantity'))['n'] or 0)
+        return str(value)
 
     def get_series_codes(self, obj):
         return sorted(s.code for s in obj.series.all())
