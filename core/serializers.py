@@ -1174,9 +1174,18 @@ class OrderLineSerializer(serializers.ModelSerializer):
         slug_field='number', queryset=Profile.objects.all())
     series = serializers.SlugRelatedField(
         slug_field='code', queryset=Series.objects.all(), required=False, allow_null=True)
+    # Which family the profile belongs to, spelled out. "1700" alone means
+    # nothing on a picking list; "1700 קליל בלגי" is what somebody looks for.
+    series_name = serializers.CharField(source='series.name', read_only=True,
+                                        default='')
 
     number = serializers.CharField(source='profile.number', read_only=True)
     description = serializers.CharField(source='profile.description', read_only=True)
+    # The cross-section drawing. A fitter recognises a profile by its shape
+    # long before they read the number off it, and on a phone in a workshop
+    # that picture is the difference between pulling 1700 and pulling 1701.
+    section_image = serializers.ImageField(
+        source='profile.section_image', read_only=True)
     weight_g_per_m = serializers.IntegerField(
         source='profile.weight_g_per_m', read_only=True)
     computed_weight_kg = serializers.DecimalField(
@@ -1190,7 +1199,8 @@ class OrderLineSerializer(serializers.ModelSerializer):
     class Meta:
         model = OrderLine
         fields = [
-            'id', 'profile', 'number', 'description', 'series',
+            'id', 'profile', 'number', 'description', 'section_image',
+            'series', 'series_name',
             'weight_g_per_m', 'length_mm', 'quantity', 'total_length_m',
             'weight_kg_override', 'computed_weight_kg', 'effective_weight_kg',
             'price_per_kg', 'line_total', 'bars_needed', 'prepared',
