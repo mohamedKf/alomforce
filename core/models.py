@@ -1614,11 +1614,10 @@ class OrderAttachment(models.Model):
     So the sheet travels with the order rather than being retyped. The office
     attaches the engineer's PDF; a yard hand can photograph a paper copy from
     the phone. Nothing here interprets it -- it is put in front of the person
-    doing the bending, which is what the drawing is for.
+    doing the work, which is what a drawing is for.
     """
 
     class Kind(models.TextChoices):
-        CUTTING_LIST = 'cutting_list', _('Cutting list')
         DRAWING = 'drawing', _('Drawing')
         OTHER = 'other', _('Other')
 

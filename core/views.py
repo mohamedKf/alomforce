@@ -1314,11 +1314,16 @@ def _generated_documents(order, request):
     documents = [document(f'{base}order_note/', 'order_note', _('Order note'),
                           f'{order.number}_order.pdf')]
 
+    # The quote, while it is still a quote. Once the customer has accepted and
+    # the job is in the workshop, the order note is the document -- listing the
+    # offer beside it invites somebody to cut to the wrong sheet.
     user = getattr(request, 'user', None)
     is_office = bool(user and getattr(user, 'role', None) in
                      {Role.OFFICE, Role.MANAGER})
-    if is_office and order.lines.exists() and not any(
-            line.needs_a_price for line in order.lines.all()):
+    if (is_office
+            and order.status in (OrderStatus.QUOTE, OrderStatus.DRAFT)
+            and order.lines.exists()
+            and not any(line.needs_a_price for line in order.lines.all())):
         documents.append(document(f'{base}quote/', 'quote', _('Price quote'),
                                   f'{order.number}_quote.pdf'))
     if order.status in (OrderStatus.READY, OrderStatus.OUT_FOR_DELIVERY,
