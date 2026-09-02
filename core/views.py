@@ -564,6 +564,12 @@ class ProfileViewSet(viewsets.ReadOnlyModelViewSet):
             )
         if series := params.get('series'):
             qs = qs.filter(series__code=series)
+        # What the profile does in an assembled window -- frame, sash, track.
+        # It lives on the series listing rather than on the extrusion, because
+        # the same section can be a mullion in one series and a post in
+        # another, so this asks whether any listing gives it that role.
+        if role := params.get('role'):
+            qs = qs.filter(series_profiles__role=role)
         if params.get('active') != 'all':
             qs = qs.filter(is_active=True)
         # "Only what we actually have", for the times that is the question.
