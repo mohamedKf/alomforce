@@ -1350,8 +1350,16 @@ class OrderViewSet(viewsets.ModelViewSet):
             return [p() for p in BASE + [IsDeliveryStaff]]
         # Warehouse workers and drivers may also create orders (for a client at
         # the counter) and prepare them, not just read.
+        # The documents come with the order to the person doing the work: the
+        # drawing is what the workshop cuts to, and a fitter who cannot open it
+        # has to walk to the office for a sheet of paper.
+        #
+        # Listed by name because this override wins over any permission_classes
+        # set on the action itself -- a decorator that looks like it grants
+        # access and silently does nothing is worse than no decorator.
         if self.action in ('list', 'retrieve', 'create', 'order_note',
-                           'delivery_note', 'line_action', 'set_status'):
+                           'delivery_note', 'line_action', 'set_status',
+                           'attachments', 'attachment'):
             return [p() for p in BASE + [IsStockStaff]]
         return [p() for p in BASE + [IsOffice]]
 
@@ -1532,6 +1540,8 @@ class OrderViewSet(viewsets.ModelViewSet):
                 'id': line.id,
                 'profile': line.profile.number if line.profile_id else '',
                 'name': (line.profile.description if line.profile_id else ''),
+                # The number the workshop knows it by, and the family name.
+                'series_code': line.series.code if line.series_id else '',
                 'series': line.series.name if line.series_id else '',
                 'length_mm': line.length_mm,
                 'quantity': line.quantity,

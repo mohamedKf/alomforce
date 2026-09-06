@@ -1189,8 +1189,12 @@ class OrderLineSerializer(serializers.ModelSerializer):
         slug_field='number', queryset=Profile.objects.all())
     series = serializers.SlugRelatedField(
         slug_field='code', queryset=Series.objects.all(), required=False, allow_null=True)
-    # Which family the profile belongs to, spelled out. "1700" alone means
-    # nothing on a picking list; "1700 קליל בלגי" is what somebody looks for.
+    # What the workshop calls it. A fitter asks for "1700 צד" -- the series
+    # number and what the part does -- not for catalogue code 05980, which is
+    # what is printed on the rack label and nowhere else. Both are sent: the
+    # number to recognise it by, the code to find it on the shelf.
+    series_code = serializers.CharField(source='series.code', read_only=True,
+                                        default='')
     series_name = serializers.CharField(source='series.name', read_only=True,
                                         default='')
 
@@ -1215,7 +1219,7 @@ class OrderLineSerializer(serializers.ModelSerializer):
         model = OrderLine
         fields = [
             'id', 'profile', 'number', 'description', 'section_image',
-            'series', 'series_name',
+            'series', 'series_code', 'series_name',
             'weight_g_per_m', 'length_mm', 'quantity', 'total_length_m',
             'weight_kg_override', 'computed_weight_kg', 'effective_weight_kg',
             'price_per_kg', 'line_total', 'bars_needed', 'prepared',
