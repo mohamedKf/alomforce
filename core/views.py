@@ -2269,6 +2269,39 @@ class InvoiceViewSet(viewsets.ModelViewSet):
 
         return Response({'available': True, 'ok': True, 'fields': fields})
 
+    @action(detail=True, methods=['get'], permission_classes=BASE + [IsOffice])
+    def share(self, request, pk=None):
+        """GET /api/invoices/<id>/share/ — a WhatsApp link to this invoice.
+
+        The office was sending a typed summary ending "the PDF follows by
+        email", which is no use when email is not set up and not much use when
+        it is. An invoice is a document, so it goes as a link to the document,
+        the way the quote and the delivery note already do.
+        """
+        invoice = self.get_object()
+        if not invoice.file:
+            return Response(
+                {'detail': _('There is no file on this invoice to send.')},
+                status=status.HTTP_400_BAD_REQUEST)
+
+        if not invoice.public_token:
+            invoice.public_token = uuid.uuid4()
+            invoice.save(update_fields=['public_token'])
+
+        shop = Shop.get()
+        link = request.build_absolute_uri(f'/i/{invoice.public_token}/')
+        label = invoice.number or str(invoice.id)
+        message = str(_('Invoice {number} from {shop}: {link}')).format(
+            number=label, shop=shop.name, link=link)
+        phone = whatsapp_number(invoice.client.phone if invoice.client else '')
+        return Response({
+            'kind': 'invoice',
+            'public_url': link,
+            'message': message,
+            'phone': phone,
+            'whatsapp_url': whatsapp_url(phone, message),
+        })
+
     @action(detail=True, methods=['post'])
     def send_email(self, request, pk=None):
         """POST /api/invoices/<id>/send_email/ — email the invoice + its file.
@@ -2956,6 +2989,24 @@ def public_quote(request, token):
     response = HttpResponse(data, content_type='application/pdf')
     response['Content-Disposition'] = f'inline; filename="{filename}"'
     return response
+
+
+def public_invoice(request, token):
+    """GET /i/<token>/ — the invoice file, no login.
+
+    Serves only the file the office already attached; nothing is generated
+    here, so a guessed token cannot fish out an invoice that was never sent.
+    """
+    from django.http import FileResponse, Http404
+
+    from core.models import Invoice
+
+    invoice = Invoice.objects.filter(public_token=token).first()
+    if invoice is None or not invoice.file:
+        raise Http404('Unknown or expired link.')
+    return FileResponse(invoice.file.open('rb'),
+                        filename=f'{invoice.number or invoice.id}.pdf',
+                        content_type='application/pdf')
 
 
 def public_delivery_pdf(request, token):

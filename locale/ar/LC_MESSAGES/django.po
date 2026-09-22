@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-22 18:54+0300\n"
+"POT-Creation-Date: 2026-09-22 21:25+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -265,11 +265,11 @@ msgstr "جهة اتصال للطوارئ"
 msgid "emergency phone"
 msgstr "هاتف الطوارئ"
 
-#: core/models.py:244 core/models.py:2072
+#: core/models.py:244 core/models.py:2078
 msgid "pay basis"
 msgstr "أساس الأجر"
 
-#: core/models.py:247 core/models.py:2085
+#: core/models.py:247 core/models.py:2091
 msgid "hourly rate"
 msgstr "الأجر بالساعة"
 
@@ -293,7 +293,9 @@ msgstr "ساعات عادية في اليوم"
 msgid "Hours before overtime starts; 8 for a 6-day week, 8.6 for 5-day."
 msgstr "عدد الساعات قبل بدء الساعات الإضافية؛ 8 لأسبوع من 6 أيام و8.6 لأسبوع من 5 أيام."
 "عدد الساعات قبل بدء الساعات الإضافية؛ 8 لأسبوع من 6 أيام و8.6 لأسبوع من 5 "
-"أيام.الساعات قبل بدء الوقت الإضافي؛ 8 لأسبوع من 6 أيام، 8.6 لأسبوع من 5 أيام."
+"أيام.عدد الساعات قبل بدء الساعات الإضافية؛ 8 لأسبوع من 6 أيام و8.6 لأسبوع من "
+"5 أيام.الساعات قبل بدء الوقت الإضافي؛ 8 لأسبوع من 6 أيام، 8.6 لأسبوع من 5 "
+"أيام."
 
 #: core/models.py:261 core/models.py:1268 core/models.py:1302
 #: core/models.py:1634 core/models.py:1693
@@ -329,8 +331,8 @@ msgstr "يجب تغيير كلمة المرور"
 msgid "Blocks all other API access until the password is changed."
 msgstr "يمنع أي وصول آخر حتى تغيير كلمة المرور."
 
-#: core/models.py:287 core/models.py:1320 core/models.py:1733
-#: core/models.py:2094
+#: core/models.py:287 core/models.py:1320 core/models.py:1739
+#: core/models.py:2100
 msgid "created by"
 msgstr "أنشأه"
 
@@ -419,7 +421,7 @@ msgid "Panel"
 msgstr "لوح"
 
 #: core/models.py:385 core/models.py:1197 core/models.py:1437
-#: core/models.py:1775 core/models.py:1839
+#: core/models.py:1781 core/models.py:1845
 msgid "Other"
 msgstr "أخرى"
 
@@ -528,8 +530,8 @@ msgid "equivalent of"
 msgstr "مكافئ لـ"
 
 #: core/models.py:564 core/models.py:1068 core/models.py:1101
-#: core/models.py:1156 core/models.py:1265 core/models.py:1735
-#: core/models.py:1967 core/models.py:2027 core/models.py:2096
+#: core/models.py:1156 core/models.py:1265 core/models.py:1741
+#: core/models.py:1973 core/models.py:2033 core/models.py:2102
 msgid "created at"
 msgstr "أُنشئ في"
 
@@ -840,7 +842,7 @@ msgstr "العنوان"
 msgid "body"
 msgstr "النص"
 
-#: core/models.py:1096 core/models.py:1631 core/models.py:1781
+#: core/models.py:1096 core/models.py:1631 core/models.py:1787
 msgid "kind"
 msgstr "النوع"
 
@@ -908,8 +910,8 @@ msgstr "بند الطلب"
 msgid "performed by"
 msgstr "نفّذه"
 
-#: core/models.py:1155 core/models.py:1788 core/models.py:1865
-#: core/models.py:1959 core/models.py:2091
+#: core/models.py:1155 core/models.py:1794 core/models.py:1871
+#: core/models.py:1965 core/models.py:2097
 msgid "note"
 msgstr "ملاحظة"
 
@@ -985,7 +987,7 @@ msgstr "عنوان الفوترة"
 msgid "postal code"
 msgstr "الرمز البريدي"
 
-#: core/models.py:1233 core/models.py:1913
+#: core/models.py:1233 core/models.py:1919
 msgid "delivery address"
 msgstr "عنوان التسليم"
 
@@ -1004,8 +1006,8 @@ msgid ""
 msgstr ""
 "الصق رابطًا من خرائط Google أو Waze أو خرائط Apple. تُؤخذ نقطة التسليم منه."
 
-#: core/models.py:1255 core/models.py:1309 core/models.py:1730
-#: core/models.py:1929
+#: core/models.py:1255 core/models.py:1309 core/models.py:1736
+#: core/models.py:1935
 msgid "notes"
 msgstr "ملاحظات"
 
@@ -1021,7 +1023,7 @@ msgstr "عملاء"
 msgid "Quote"
 msgstr "عرض سعر"
 
-#: core/models.py:1282 core/models.py:2052
+#: core/models.py:1282 core/models.py:2058
 msgid "Draft"
 msgstr "مسودة"
 
@@ -1045,7 +1047,7 @@ msgstr "جاهز للتسليم"
 msgid "Out for delivery"
 msgstr "في الطريق"
 
-#: core/models.py:1288 core/models.py:1897
+#: core/models.py:1288 core/models.py:1903
 msgid "Delivered"
 msgstr "تم التسليم"
 
@@ -1069,8 +1071,8 @@ msgstr "حُدّث في"
 msgid "accepted at"
 msgstr "أُنشئ في"
 
-#: core/models.py:1305 core/models.py:1720 core/models.py:1908
-#: core/models.py:2020 core/models.py:2066
+#: core/models.py:1305 core/models.py:1720 core/models.py:1914
+#: core/models.py:2026 core/models.py:2072
 msgid "status"
 msgstr "الحالة"
 
@@ -1098,13 +1100,13 @@ msgstr "ملف PDF لمستند التسليم"
 msgid "delivery signed at"
 msgstr "وُقّع التسليم في"
 
-#: core/models.py:1338
+#: core/models.py:1338 core/models.py:1735
 msgid "public token"
 msgstr "الرمز العام"
 
 #: core/models.py:1341 core/models.py:1501 core/models.py:1637
-#: core/models.py:1698 core/models.py:1778 core/models.py:1842
-#: core/models.py:1901
+#: core/models.py:1698 core/models.py:1784 core/models.py:1848
+#: core/models.py:1907
 msgid "order"
 msgstr "الطلب"
 
@@ -1180,7 +1182,7 @@ msgstr "ض.ق.م"
 msgid "paid"
 msgstr "مدفوع"
 
-#: core/models.py:1649 core/models.py:2092
+#: core/models.py:1649 core/models.py:2098
 msgid "PDF"
 msgstr "PDF"
 
@@ -1200,11 +1202,11 @@ msgstr "الإيرادات"
 msgid "Expense"
 msgstr "المصروفات"
 
-#: core/models.py:1678 core/models.py:2057
+#: core/models.py:1678 core/models.py:2063
 msgid "Manual"
 msgstr "يدوي"
 
-#: core/models.py:1679 core/models.py:2056
+#: core/models.py:1679 core/models.py:2062
 msgid "Generated"
 msgstr "مُنشأ"
 
@@ -1248,7 +1250,7 @@ msgstr "المجموع الفرعي"
 msgid "amount paid"
 msgstr "المبلغ المدفوع"
 
-#: core/models.py:1718 core/models.py:2068
+#: core/models.py:1718 core/models.py:2074
 msgid "source"
 msgstr "المصدر"
 
@@ -1260,319 +1262,319 @@ msgstr "رقم التخصيص"
 msgid "external id"
 msgstr "المعرّف الخارجي"
 
-#: core/models.py:1729 core/models.py:1782
+#: core/models.py:1729 core/models.py:1788
 msgid "file"
 msgstr "ملف"
 
-#: core/models.py:1738 core/models.py:1848
+#: core/models.py:1744 core/models.py:1854
 msgid "invoice"
 msgstr "فاتورة"
 
-#: core/models.py:1739
+#: core/models.py:1745
 msgid "invoices"
 msgstr "فواتير"
 
-#: core/models.py:1774
+#: core/models.py:1780
 msgid "Drawing"
 msgstr "رسم"
 
-#: core/models.py:1786
+#: core/models.py:1792
 #, fuzzy
 #| msgid "contact name"
 msgid "original name"
 msgstr "اسم جهة الاتصال"
 
-#: core/models.py:1789
+#: core/models.py:1795
 msgid "Which drawing or elevation this sheet covers."
 msgstr "أي رسم أو واجهة تغطيها هذه الورقة."
 
-#: core/models.py:1791
+#: core/models.py:1797
 #, fuzzy
 #| msgid "performed by"
 msgid "uploaded by"
 msgstr "نفّذه"
 
-#: core/models.py:1793
+#: core/models.py:1799
 #, fuzzy
 #| msgid "updated at"
 msgid "uploaded at"
 msgstr "حُدّث في"
 
-#: core/models.py:1796
+#: core/models.py:1802
 #, fuzzy
 #| msgid "ordered at"
 msgid "order attachment"
 msgstr "طُلب في"
 
-#: core/models.py:1797
+#: core/models.py:1803
 msgid "order attachments"
 msgstr "مرفقات الطلب"
 
-#: core/models.py:1835
+#: core/models.py:1841
 msgid "Cash"
 msgstr "نقدًا"
 
-#: core/models.py:1836
+#: core/models.py:1842
 msgid "Cheque"
 msgstr "شيك"
 
-#: core/models.py:1837
+#: core/models.py:1843
 msgid "Bank transfer"
 msgstr "حوالة بنكية"
 
-#: core/models.py:1838
+#: core/models.py:1844
 msgid "Card"
 msgstr "بطاقة"
 
-#: core/models.py:1851 core/models.py:2138
+#: core/models.py:1857 core/models.py:2144
 msgid "amount"
 msgstr "المبلغ"
 
-#: core/models.py:1854
+#: core/models.py:1860
 msgid "method"
 msgstr "طريقة الدفع"
 
-#: core/models.py:1856
+#: core/models.py:1862
 #, fuzzy
 #| msgid "paid"
 msgid "paid on"
 msgstr "مدفوع"
 
-#: core/models.py:1860
+#: core/models.py:1866
 #, fuzzy
 #| msgid "due at"
 msgid "due on"
 msgstr "مستحق في"
 
-#: core/models.py:1861
+#: core/models.py:1867
 msgid "For a post-dated cheque: when it can be banked."
 msgstr "للشيك المؤجّل: متى يمكن إيداعه."
 
-#: core/models.py:1863
+#: core/models.py:1869
 msgid "reference"
 msgstr "مرجع"
 
-#: core/models.py:1864
+#: core/models.py:1870
 msgid "Cheque number, transfer reference, receipt number."
 msgstr "رقم الشيك، مرجع الحوالة، رقم الإيصال."
 
-#: core/models.py:1867
+#: core/models.py:1873
 #, fuzzy
 #| msgid "required by"
 msgid "recorded by"
 msgstr "مطلوب بحلول"
 
-#: core/models.py:1869
+#: core/models.py:1875
 #, fuzzy
 #| msgid "ordered at"
 msgid "recorded at"
 msgstr "طُلب في"
 
-#: core/models.py:1872
+#: core/models.py:1878
 #, fuzzy
 #| msgid "Employment"
 msgid "payment"
 msgstr "التوظيف"
 
-#: core/models.py:1873
+#: core/models.py:1879
 #, fuzzy
 #| msgid "Employment"
 msgid "payments"
 msgstr "التوظيف"
 
-#: core/models.py:1894 core/models.py:2003
+#: core/models.py:1900 core/models.py:2009
 msgid "Pending"
 msgstr "قيد الانتظار"
 
-#: core/models.py:1895
+#: core/models.py:1901
 msgid "Loaded"
 msgstr "مُحمّل"
 
-#: core/models.py:1896
+#: core/models.py:1902
 msgid "En route"
 msgstr "في الطريق"
 
-#: core/models.py:1898
+#: core/models.py:1904
 msgid "Failed"
 msgstr "فشل"
 
-#: core/models.py:1904
+#: core/models.py:1910
 msgid "driver"
 msgstr "السائق"
 
-#: core/models.py:1910
+#: core/models.py:1916
 msgid "scheduled for"
 msgstr "مجدول لـ"
 
-#: core/models.py:1911
+#: core/models.py:1917
 msgid "delivered at"
 msgstr "سُلّم في"
 
-#: core/models.py:1914
+#: core/models.py:1920
 msgid "received by"
 msgstr "استلمه"
 
-#: core/models.py:1920
+#: core/models.py:1926
 msgid "recipient's phone"
 msgstr "هاتف المستلم"
 
-#: core/models.py:1921
+#: core/models.py:1927
 msgid "The person who signed, for sending them the delivery note."
 msgstr "الشخص الذي وقّع، لإرسال مستند التسليم إليه."
 
-#: core/models.py:1924
+#: core/models.py:1930
 msgid "signature"
 msgstr "التوقيع"
 
-#: core/models.py:1927
+#: core/models.py:1933
 msgid "proof photo"
 msgstr "صورة إثبات"
 
-#: core/models.py:1932
+#: core/models.py:1938
 msgid "delivery"
 msgstr "تسليم"
 
-#: core/models.py:1933
+#: core/models.py:1939
 msgid "deliveries"
 msgstr "التسليمات"
 
-#: core/models.py:1954 core/models.py:2008 core/models.py:2060
+#: core/models.py:1960 core/models.py:2014 core/models.py:2066
 msgid "worker"
 msgstr "العامل"
 
-#: core/models.py:1957
+#: core/models.py:1963
 msgid "clock in"
 msgstr "تسجيل دخول"
 
-#: core/models.py:1958
+#: core/models.py:1964
 msgid "clock out"
 msgstr "تسجيل خروج"
 
-#: core/models.py:1965
+#: core/models.py:1971
 msgid "auto-closed"
 msgstr "أُغلقت تلقائيًا"
 
-#: core/models.py:1966
+#: core/models.py:1972
 msgid "System closed a shift the worker forgot to clock out of."
 msgstr "أغلق النظام وردية نسي العامل تسجيل الخروج منها."
 
-#: core/models.py:1970 core/models.py:2011
+#: core/models.py:1976 core/models.py:2017
 msgid "shift"
 msgstr "وردية"
 
-#: core/models.py:1971
+#: core/models.py:1977
 msgid "shifts"
 msgstr "الورديات"
 
-#: core/models.py:2004
+#: core/models.py:2010
 msgid "Approved"
 msgstr "مقبول"
 
-#: core/models.py:2005
+#: core/models.py:2011
 msgid "Rejected"
 msgstr "مرفوض"
 
-#: core/models.py:2014
+#: core/models.py:2020
 msgid "work date"
 msgstr "تاريخ العمل"
 
-#: core/models.py:2015
+#: core/models.py:2021
 msgid "requested clock in"
 msgstr "دخول مطلوب"
 
-#: core/models.py:2016
+#: core/models.py:2022
 msgid "requested clock out"
 msgstr "خروج مطلوب"
 
-#: core/models.py:2017
+#: core/models.py:2023
 msgid "reason"
 msgstr "السبب"
 
-#: core/models.py:2022
+#: core/models.py:2028
 msgid "reviewed by"
 msgstr "راجعه"
 
-#: core/models.py:2024
+#: core/models.py:2030
 msgid "reviewed at"
 msgstr "روجع في"
 
-#: core/models.py:2025
+#: core/models.py:2031
 msgid "review note"
 msgstr "ملاحظة المراجعة"
 
-#: core/models.py:2030
+#: core/models.py:2036
 msgid "shift correction request"
 msgstr "طلب تصحيح وردية"
 
-#: core/models.py:2031
+#: core/models.py:2037
 msgid "shift correction requests"
 msgstr "طلبات تصحيح الورديات"
 
-#: core/models.py:2053
+#: core/models.py:2059
 msgid "Finalised"
 msgstr "نهائي"
 
-#: core/models.py:2062
+#: core/models.py:2068
 msgid "year"
 msgstr "السنة"
 
-#: core/models.py:2063
+#: core/models.py:2069
 msgid "month"
 msgstr "الشهر"
 
-#: core/models.py:2073
+#: core/models.py:2079
 msgid "overtime paid"
 msgstr "دُفعت الساعات الإضافية"
 
-#: core/models.py:2076
+#: core/models.py:2082
 msgid "days worked"
 msgstr "أيام العمل"
 
-#: core/models.py:2078
+#: core/models.py:2084
 msgid "regular hours"
 msgstr "ساعات عادية"
 
-#: core/models.py:2080
+#: core/models.py:2086
 msgid "overtime 125% hours"
 msgstr "ساعات إضافية 125%"
 
-#: core/models.py:2082
+#: core/models.py:2088
 msgid "overtime 150% hours"
 msgstr "ساعات إضافية 150%"
 
-#: core/models.py:2087
+#: core/models.py:2093
 msgid "base pay"
 msgstr "الأجر الأساسي"
 
-#: core/models.py:2089
+#: core/models.py:2095
 msgid "overtime pay"
 msgstr "أجر الساعات الإضافية"
 
-#: core/models.py:2097
+#: core/models.py:2103
 msgid "finalised at"
 msgstr "أُنهي في"
 
-#: core/models.py:2100 core/models.py:2134
+#: core/models.py:2106 core/models.py:2140
 msgid "payslip"
 msgstr "قسيمة الراتب"
 
-#: core/models.py:2101
+#: core/models.py:2107
 msgid "payslips"
 msgstr "قسائم الرواتب"
 
-#: core/models.py:2136
+#: core/models.py:2142
 msgid "label"
 msgstr "التسمية"
 
-#: core/models.py:2139
+#: core/models.py:2145
 msgid "Positive to add (bonus, travel), negative to deduct (advance)."
 msgstr "موجب للإضافة (مكافأة، مواصلات)، سالب للخصم (سلفة)."
 
-#: core/models.py:2142
+#: core/models.py:2148
 msgid "payslip adjustment"
 msgstr "تعديل القسيمة"
 
-#: core/models.py:2143
+#: core/models.py:2149
 msgid "payslip adjustments"
 msgstr "تعديلات القسيمة"
 
@@ -1846,37 +1848,49 @@ msgstr "أرفق صورة للفاتورة."
 msgid "Invoice scanning is not switched on. Enter the invoice by hand."
 msgstr "مسح الفواتير غير مفعّل. أدخل الفاتورة يدويًا."
 
-#: core/views.py:2287
+#: core/views.py:2284
+#, fuzzy
+#| msgid "There is nothing on this quote."
+msgid "There is no file on this invoice to send."
+msgstr "لا توجد سطور في عرض السعر."
+
+#: core/views.py:2294
+#, fuzzy, python-brace-format
+#| msgid "Price quote {number} from {shop}: {link}"
+msgid "Invoice {number} from {shop}: {link}"
+msgstr "عرض سعر {number} من {shop}: {link}"
+
+#: core/views.py:2320
 msgid "No recipient email address."
 msgstr "لا يوجد عنوان بريد للمستلم."
 
-#: core/views.py:2292 core/views.py:2357
+#: core/views.py:2325 core/views.py:2390
 msgid "Email is not configured in Settings."
 msgstr "البريد الإلكتروني غير مضبوط في الإعدادات."
 
-#: core/views.py:2304
+#: core/views.py:2337
 #, python-format
 msgid "Please find the attached invoice %(label)s."
 msgstr "مرفق الفاتورة %(label)s."
 
-#: core/views.py:2331
+#: core/views.py:2364
 msgid "Use ?year=&month=."
 msgstr "استخدم ?year=&month=."
 
-#: core/views.py:2349
+#: core/views.py:2382
 msgid "Give a year and month."
 msgstr "حدّد السنة والشهر."
 
-#: core/views.py:2354
+#: core/views.py:2387
 msgid "No accountant email in Settings."
 msgstr "لا يوجد بريد المحاسب في الإعدادات."
 
-#: core/views.py:2366
+#: core/views.py:2399
 #, python-format
 msgid "Invoices & salary %(m)s"
 msgstr "الفواتير والرواتب %(m)s"
 
-#: core/views.py:2367
+#: core/views.py:2400
 #, python-format
 msgid ""
 "Attached: %(inc)d income and %(exp)d expense invoices plus the salary sheet "
@@ -1885,39 +1899,39 @@ msgstr ""
 "مرفق: %(inc)d فاتورة دخل و%(exp)d فاتورة مصروفات بالإضافة إلى كشف الرواتب لـ "
 "%(m)s."
 
-#: core/views.py:2476
+#: core/views.py:2509
 msgid "You are already clocked in."
 msgstr "أنت مسجّل الدخول بالفعل."
 
-#: core/views.py:2482
+#: core/views.py:2515
 msgid "You have already clocked in today."
 msgstr "سجّلت الدخول اليوم بالفعل."
 
-#: core/views.py:2496
+#: core/views.py:2529
 msgid "You are not clocked in."
 msgstr "أنت غير مسجّل الدخول."
 
-#: core/views.py:2522 core/views.py:2588 core/views.py:2770
+#: core/views.py:2555 core/views.py:2621 core/views.py:2803
 msgid "Unknown worker."
 msgstr "موظف غير معروف."
 
-#: core/views.py:2531 core/views.py:2598
+#: core/views.py:2564 core/views.py:2631
 msgid "Use the format YYYY-MM."
 msgstr "استخدم الصيغة YYYY-MM."
 
-#: core/views.py:2680 core/views.py:2708
+#: core/views.py:2713 core/views.py:2741
 msgid "Already reviewed."
 msgstr "تمت المراجعة بالفعل."
 
-#: core/views.py:2766
+#: core/views.py:2799
 msgid "year and month are required."
 msgstr "السنة والشهر مطلوبان."
 
-#: core/views.py:2774
+#: core/views.py:2807
 msgid "A payslip for that month already exists."
 msgstr "توجد قسيمة راتب لهذا الشهر بالفعل."
 
-#: core/views.py:2815
+#: core/views.py:2848
 msgid "Only managers can reopen a payslip."
 msgstr "يمكن للمديرين فقط إعادة فتح قسيمة الراتب."
 

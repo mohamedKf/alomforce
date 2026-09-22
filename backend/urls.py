@@ -36,6 +36,7 @@ from core.views import (
     ShopView,
     public_delivery,
     public_delivery_pdf,
+    public_invoice,
     public_quote,
     StaffViewSet,
     StockItemViewSet,
@@ -89,6 +90,7 @@ urlpatterns = [
     path('d/<uuid:token>/', public_delivery, name='public-delivery'),
     path('d/<uuid:token>/pdf/', public_delivery_pdf, name='public-delivery-pdf'),
     path('q/<uuid:token>/', public_quote, name='public-quote'),
+    path('i/<uuid:token>/', public_invoice, name='public-invoice'),
     # green invoice: /api/orders/<id>/issue_invoice/ and /api/invoicing/status/
     path('', include('core.views_invoicing')),
 ]

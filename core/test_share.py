@@ -1,6 +1,9 @@
 """Sending a quote or a delivery note by WhatsApp, and the app crash-report config."""
 
+import tempfile
 from unittest import mock
+
+from django.test import override_settings
 
 from rest_framework.test import APITestCase
 
@@ -101,3 +104,73 @@ class ClientSentryConfigTests(APITestCase):
             os.environ.pop('SENTRY_DSN_CLIENTS', None)
             r = self.client.get('/api/config/')
         self.assertEqual(r.data['sentry_dsn'], '')
+
+
+@override_settings(MEDIA_ROOT=tempfile.mkdtemp(prefix='alomforce-test-'), STORAGES={
+    # Files go to a throwaway directory rather than Cloudinary: a test that
+    # uploads to the real bucket is slow, needs the network, and leaves litter
+    # in the customer's account.
+    'default': {'BACKEND': 'django.core.files.storage.FileSystemStorage'},
+    'staticfiles': {'BACKEND':
+                    'django.contrib.staticfiles.storage.StaticFilesStorage'},
+})
+class InvoiceShareTests(APITestCase):
+    """An invoice goes as a link to the document, not as a typed summary."""
+
+    def setUp(self):
+        # The app repoints default storage at import time from AppConfig, so
+        # the override above only takes effect once that cache is dropped.
+        from core.storage_config import _reset_default_storage
+        _reset_default_storage()
+        self.addCleanup(_reset_default_storage)
+        from django.core.files.base import ContentFile
+        from core.models import Invoice
+
+        self.manager = User.objects.create_user(
+            id_number=make_id('88888888'), password='Str0ng!Passw0rd',
+            first_name='M', last_name='K', role=Role.MANAGER, phone='050-4445566')
+        self.client.force_authenticate(self.manager)
+        self.customer = Client.objects.create(name='Bina Ltd', phone='052-123 4567')
+        self.invoice = Invoice.objects.create(
+            direction='income', number='INV-2026-0001', issued_at='2026-01-01',
+            subtotal=100, vat=18, total=118, client=self.customer)
+        self.invoice.file.save('INV-2026-0001.pdf',
+                               ContentFile(b'%PDF-1.4 a real enough file'),
+                               save=True)
+
+    def test_sharing_gives_a_link_addressed_to_the_client(self):
+        r = self.client.get(f'/api/invoices/{self.invoice.id}/share/')
+        self.assertEqual(r.status_code, 200, r.data)
+        self.assertEqual(r.data['phone'], '972521234567')
+        self.assertIn('INV-2026-0001', r.data['message'])
+        self.assertIn(r.data['public_url'], r.data['message'])
+        self.invoice.refresh_from_db()
+        self.assertIsNotNone(self.invoice.public_token)
+
+    def test_the_link_serves_the_file_without_a_login(self):
+        link = self.client.get(f'/api/invoices/{self.invoice.id}/share/').data['public_url']
+        self.client.force_authenticate(None)
+        r = self.client.get(link)
+        self.assertEqual(r.status_code, 200)
+        self.assertEqual(r['Content-Type'], 'application/pdf')
+
+    def test_an_invoice_with_no_file_cannot_be_shared(self):
+        from core.models import Invoice
+        bare = Invoice.objects.create(
+            direction='income', number='INV-2', issued_at='2026-01-01',
+            subtotal=1, vat=0, total=1, client=self.customer)
+        r = self.client.get(f'/api/invoices/{bare.id}/share/')
+        self.assertEqual(r.status_code, 400)
+        bare.refresh_from_db()
+        # And no token was minted for a document that cannot be sent.
+        self.assertIsNone(bare.public_token)
+
+    def test_an_unknown_token_is_not_found(self):
+        self.client.force_authenticate(None)
+        r = self.client.get('/i/6f1c8d34-0000-4000-8000-000000000000/')
+        self.assertEqual(r.status_code, 404)
+
+    def test_sharing_twice_keeps_the_same_link(self):
+        first = self.client.get(f'/api/invoices/{self.invoice.id}/share/').data
+        second = self.client.get(f'/api/invoices/{self.invoice.id}/share/').data
+        self.assertEqual(first['public_url'], second['public_url'])

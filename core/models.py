@@ -1727,6 +1727,12 @@ class Invoice(models.Model):
 
     file = models.FileField(
         _('file'), upload_to='invoices/', blank=True, null=True)
+    # Unguessable token for the login-free link the office sends over
+    # WhatsApp, the same shape the delivery note has used since it needed one.
+    # Issued when the invoice is first shared, not at creation: an invoice
+    # nobody sent has no link to leak.
+    public_token = models.UUIDField(
+        _('public token'), null=True, blank=True, editable=False, db_index=True)
     notes = models.TextField(_('notes'), blank=True)
 
     created_by = models.ForeignKey(
