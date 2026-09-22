@@ -6,6 +6,8 @@ number means now, how a key (`extal:C90`) names things unambiguously, and
 that the old Klil-only calls still behave as they did.
 """
 
+from decimal import Decimal
+
 from rest_framework.test import APITestCase
 
 from core.models import (Family, Manufacturer, Profile, Role, Series,
@@ -228,3 +230,50 @@ class EquivalentsTests(TwoMakersMixin, APITestCase):
         r = self.client.get(f'/api/catalog/profiles/{twin.key}/')
         self.assertEqual(r.status_code, 200, r.data)
         self.assertEqual(r.data['equivalent_of'], self.klil_profile.key)
+
+
+class GlassParsingTests(APITestCase):
+    """What a profile's glazing text is allowed to mean.
+
+    A thickness comes out of OCR'd Hebrew, so the parser meets numbers that
+    are not thicknesses at all. MySQL refuses to store them and takes the
+    whole catalogue import down; SQLite stores them quietly, which is worse.
+    Either way the answer is the same: if it cannot be glass, it is not glass.
+    """
+
+    def setUp(self):
+        from core.management.commands.import_catalog import parse_glass
+        self.parse = parse_glass
+
+    def test_a_real_range_survives(self):
+        from decimal import Decimal
+        self.assertEqual(self.parse(None, 'זיגוג 11÷16 מ"מ'),
+                         (Decimal('11'), Decimal('16')))
+
+    def test_a_ceiling_survives(self):
+        from decimal import Decimal
+        self.assertEqual(self.parse('כנפיים – זיגוג עד 8 מ"מ', ''),
+                         (None, Decimal('8')))
+
+    def test_catalogue_numbers_read_as_glass_are_refused(self):
+        # Schremer's "זיגוג 66240, 6625" is two profile numbers, not a range.
+        self.assertEqual(self.parse('ארגזי תריס', 'זיגוג 66240, 6625'),
+                         (None, None))
+
+    def test_every_shipped_catalogue_fits_the_column(self):
+        """No row in any bundled catalogue can overflow glass_max_mm."""
+        import json
+        from core.management.commands.import_catalog import DATA_DIR, REGISTRY_FILE
+
+        limit = Decimal('9999.9')  # max_digits=5, decimal_places=1
+        for entry in json.loads(REGISTRY_FILE.read_text(encoding='utf-8')):
+            path = DATA_DIR / entry['file']
+            if not path.exists():
+                continue
+            for row in json.loads(path.read_text(encoding='utf-8')):
+                low, high = self.parse(row.get('group'), row.get('description'))
+                for value in (low, high):
+                    if value is not None:
+                        self.assertLessEqual(
+                            value, limit,
+                            f'{entry["slug"]} {row["profile_number"]}: {value}')

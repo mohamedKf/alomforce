@@ -147,7 +147,7 @@ RE_GLASS_LIST = re.compile(r'זיגוג\s*(\d+(?:\.\d+)?)\s*,\s*(\d+(?:\.\d+)?)'
 RE_BARE_RANGE = re.compile(r'(\d+(?:\.\d+)?)\s*÷\s*(\d+(?:\.\d+)?)\s*מ["״]?מ')
 
 
-def parse_glass(group_header, description):
+def _parse_glass_text(group_header, description):
     """Return (min_mm, max_mm). Either may be None.
 
     Handles the four notations the catalog uses:
@@ -179,6 +179,35 @@ def parse_glass(group_header, description):
                 return Decimal(match.group(1)), Decimal(match.group(2))
 
     return None, None
+
+
+# Architectural glazing runs from about 3mm single glass to a fat insulated
+# unit; nothing a window takes is outside this. A number beyond it is not a
+# thickness, it is the parser having read a profile number or a dimension as
+# one -- Schremer prints "זיגוג 66240, 6625", which is two catalogue numbers.
+# Rejected rather than clamped: a made-up 60 would be believed, a blank is
+# honestly "not stated". MySQL refuses the overflow outright and takes the
+# whole catalogue down with it; SQLite stores the nonsense and says nothing,
+# which is worse, because then it is in the data.
+GLASS_MIN_MM = Decimal('1')
+GLASS_MAX_MM = Decimal('100')
+
+
+def plausible_glass(value):
+    """The thickness, or None when it cannot be one."""
+    if value is None:
+        return None
+    return value if GLASS_MIN_MM <= value <= GLASS_MAX_MM else None
+
+
+def parse_glass(group_header, description):
+    """The glazing range a profile takes, ignoring anything impossible."""
+    low, high = _parse_glass_text(group_header, description)
+    low, high = plausible_glass(low), plausible_glass(high)
+    # A range needs both ends to survive; one alone is a ceiling, not a range.
+    if low is not None and high is not None and low > high:
+        return None, None
+    return low, high
 
 
 # --- Track count ------------------------------------------------------------
