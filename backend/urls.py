@@ -7,6 +7,7 @@ from django.urls import include, path
 from rest_framework.routers import DefaultRouter
 from rest_framework_simplejwt.views import TokenRefreshView, TokenVerifyView
 
+from core.views_setup import SetupView
 from core.views import (
     AttendanceViewSet,
     CatalogListingViewSet,
@@ -78,6 +79,7 @@ urlpatterns = [
     path('api/config/', ConfigView.as_view(), name='config'),
     path('api/shop/', ShopView.as_view(), name='shop'),
     path('api/settings/', SettingsView.as_view(), name='settings'),
+    path('api/setup/', SetupView.as_view(), name='setup'),
     path('api/map/', MapView.as_view(), name='map'),
     path('api/auth/', include(auth_patterns)),
     path('api/devices/', DeviceView.as_view(), name='devices'),

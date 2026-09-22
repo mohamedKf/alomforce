@@ -982,6 +982,13 @@ class ConfigView(APIView):
             # rebuild. Empty means the apps report nothing.
             'sentry_dsn': env('SENTRY_DSN_CLIENTS', default=''),
             'sentry_environment': env('RAILWAY_ENVIRONMENT_NAME', default='local'),
+            # The current release, so an app can say it is behind. Null when
+            # nothing is published: an app told nothing says nothing, rather
+            # than claiming the yard is up to date on no information.
+            'update': {
+                'desktop': cfg.release_for('desktop'),
+                'android': cfg.release_for('android'),
+            },
         })
 
 

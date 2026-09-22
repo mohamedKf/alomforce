@@ -839,6 +839,11 @@ class AppConfig(models.Model):
         'cloudinary_api_secret': 'CLOUDINARY_API_SECRET',
         'mapbox_token': 'MAPBOX_TOKEN',
         'register_code': 'REGISTER_CODE',
+        'latest_desktop_version': 'LATEST_DESKTOP_VERSION',
+        'latest_desktop_url': 'LATEST_DESKTOP_URL',
+        'latest_android_version': 'LATEST_ANDROID_VERSION',
+        'latest_android_build': 'LATEST_ANDROID_BUILD',
+        'latest_android_url': 'LATEST_ANDROID_URL',
     }
 
     @classmethod
@@ -865,6 +870,32 @@ class AppConfig(models.Model):
         env = self.ENV_MAP.get(field)
         return bool(env and config(env, default=None))
 
+    # -- the current release, so the apps can say an update is out ---------
+    #
+    # A yard on an old build is a support call that starts "it doesn't do
+    # that", and the only way to tell them was to ring. The provider puts the
+    # current version and a download link here (or in the environment, per
+    # deployment) and the apps say so themselves the next time they start.
+    latest_desktop_version = models.CharField(
+        _('current desktop version'), max_length=20, blank=True,
+        help_text=_('e.g. 1.1.0. Leave empty and the app never mentions updates.'),
+    )
+    latest_desktop_url = models.URLField(
+        _('desktop download link'), blank=True,
+        help_text=_('Where the installer can be downloaded.'),
+    )
+    latest_android_version = models.CharField(
+        _('current phone version'), max_length=20, blank=True)
+    latest_android_build = models.PositiveIntegerField(
+        _('current phone build'), null=True, blank=True,
+        help_text=_('The build number (13 in 1.1.0+13). This is what is compared.'),
+    )
+    latest_android_url = models.URLField(_('phone download link'), blank=True)
+    release_notes = models.TextField(
+        _('what is new'), blank=True,
+        help_text=_('Shown with the update notice. One or two lines is plenty.'),
+    )
+
     @property
     def cloudinary_ready(self):
         return bool(self.setting('cloudinary_cloud_name')
@@ -883,6 +914,31 @@ class AppConfig(models.Model):
     def greeninvoice_ready(self):
         return bool(self.setting('greeninvoice_api_key')
                     and self.setting('greeninvoice_api_secret'))
+
+    def release_for(self, platform):
+        """What the apps are told about the current release, or None.
+
+        None when no version is published, which is the state a fresh
+        deployment starts in -- an app that is never told about an update
+        should say nothing, not "you are up to date" against no information.
+        """
+        if platform == 'android':
+            version = self.setting('latest_android_version')
+            build = self.setting('latest_android_build')
+            url = self.setting('latest_android_url')
+            try:
+                build = int(build) if build not in (None, '') else None
+            except (TypeError, ValueError):
+                build = None
+            if not version and build is None:
+                return None
+            return {'version': version, 'build': build, 'url': url,
+                    'notes': self.release_notes}
+        version = self.setting('latest_desktop_version')
+        if not version:
+            return None
+        return {'version': version, 'url': self.setting('latest_desktop_url'),
+                'notes': self.release_notes}
 
 
 class Warehouse(models.Model):
