@@ -385,27 +385,92 @@ class ProfileRole(models.TextChoices):
     OTHER = 'other', _('Other')
 
 
-class Family(models.Model):
-    """A product line: קלאסי, אופיס, בלגי, מנהטן, נוף."""
+class Manufacturer(models.Model):
+    """An extruder or system house whose catalogue the yard sells from.
 
+    Every family, series and profile belongs to exactly one manufacturer, and
+    a catalogue number is only unique within it: Klil's 05980 and a Profal
+    05980 would be two different bars on two different racks. The default
+    manufacturer is what a bare number means when nothing says otherwise --
+    the labels already printed for the racks carry Klil numbers alone.
+    """
+
+    slug = models.SlugField(_('slug'), max_length=40, unique=True)
     name = models.CharField(_('name'), max_length=100, unique=True)
     name_en = models.CharField(_('name (English)'), max_length=100, blank=True)
-    slug = models.SlugField(_('slug'), max_length=100, unique=True)
+    website = models.URLField(_('website'), blank=True)
+    attribution = models.CharField(
+        _('attribution'), max_length=255, blank=True,
+        help_text=_('Copyright line for the catalogue data, shown wherever it is shown.'),
+    )
+    is_default = models.BooleanField(
+        _('default'), default=False,
+        help_text=_('The manufacturer a bare profile number refers to.'),
+    )
+    is_active = models.BooleanField(_('active'), default=True)
+    position = models.PositiveSmallIntegerField(_('position'), default=0)
+
+    class Meta:
+        verbose_name = _('manufacturer')
+        verbose_name_plural = _('manufacturers')
+        ordering = ['position', 'name']
+
+    def __str__(self):
+        return self.name
+
+    @classmethod
+    def get_default(cls):
+        """The default manufacturer, created as Klil if nothing is flagged yet."""
+        found = cls.objects.filter(is_default=True).first()
+        if found is None:
+            found, _ = cls.objects.get_or_create(
+                slug='klil',
+                defaults={'name': 'קליל', 'name_en': 'Klil', 'is_default': True,
+                          'website': 'https://www.klil.co.il', 'position': 1},
+            )
+        return found
+
+
+def default_manufacturer_pk():
+    """FK default, so code written for the one-manufacturer catalogue still works."""
+    return Manufacturer.get_default().pk
+
+
+class Family(models.Model):
+    """A product line within one manufacturer: קלאסי, אופיס, בלגי, מנהטן, נוף."""
+
+    manufacturer = models.ForeignKey(
+        Manufacturer, verbose_name=_('manufacturer'), on_delete=models.PROTECT,
+        related_name='families', default=default_manufacturer_pk,
+    )
+    name = models.CharField(_('name'), max_length=100)
+    name_en = models.CharField(_('name (English)'), max_length=100, blank=True)
+    slug = models.SlugField(_('slug'), max_length=100, allow_unicode=True)
     description = models.TextField(_('description'), blank=True)
 
     class Meta:
         verbose_name = _('family')
         verbose_name_plural = _('families')
         ordering = ['name']
+        constraints = [
+            models.UniqueConstraint(fields=['manufacturer', 'name'],
+                                    name='unique_family_name_per_manufacturer'),
+            models.UniqueConstraint(fields=['manufacturer', 'slug'],
+                                    name='unique_family_slug_per_manufacturer'),
+        ]
 
     def __str__(self):
         return self.name
 
 
 class Series(models.Model):
-    """A numbered system such as 7000, or an unnumbered one such as תריס גלילה."""
+    """A numbered system such as 7000, or an unnumbered one such as תריס גלילה.
 
-    code = models.CharField(_('code'), max_length=20, unique=True)
+    Codes repeat across manufacturers (Klil 7000, Schremer's 7000-compatible
+    line), so a series is named by manufacturer and code together -- see `key`.
+    """
+
+    code = models.CharField(_('code'), max_length=20, db_index=True)
     name = models.CharField(_('name'), max_length=150)
     name_en = models.CharField(_('name (English)'), max_length=150, blank=True)
     family = models.ForeignKey(
@@ -416,7 +481,10 @@ class Series(models.Model):
         blank=True,
         related_name='series',
     )
-    manufacturer = models.CharField(_('manufacturer'), max_length=100, default='Klil')
+    manufacturer = models.ForeignKey(
+        Manufacturer, verbose_name=_('manufacturer'), on_delete=models.PROTECT,
+        related_name='series', default=default_manufacturer_pk,
+    )
     catalog_page = models.PositiveSmallIntegerField(_('catalog page'), null=True, blank=True)
     # Aluminium is sold by weight, so a profile's price is its weight times the
     # metal price for its series. Kept per series rather than one global number
@@ -432,9 +500,18 @@ class Series(models.Model):
         verbose_name = _('series')
         verbose_name_plural = _('series')
         ordering = ['code']
+        constraints = [
+            models.UniqueConstraint(fields=['manufacturer', 'code'],
+                                    name='unique_series_code_per_manufacturer'),
+        ]
 
     def __str__(self):
         return f'{self.name} {self.code}'.strip()
+
+    @property
+    def key(self):
+        """`klil:7000` -- the code with its manufacturer, unique across catalogues."""
+        return f'{self.manufacturer.slug}:{self.code}'
 
 
 class Profile(models.Model):
@@ -447,7 +524,11 @@ class Profile(models.Model):
     the membership.
     """
 
-    number = models.CharField(_('profile number'), max_length=20, unique=True, db_index=True)
+    manufacturer = models.ForeignKey(
+        Manufacturer, verbose_name=_('manufacturer'), on_delete=models.PROTECT,
+        related_name='profiles', default=default_manufacturer_pk,
+    )
+    number = models.CharField(_('profile number'), max_length=20, db_index=True)
     description = models.CharField(_('description'), max_length=255, blank=True)
     description_en = models.CharField(_('description (English)'), max_length=255, blank=True)
 
@@ -471,6 +552,13 @@ class Profile(models.Model):
         through='SeriesProfile',
         related_name='profiles',
     )
+    # Another maker's extrusion this one is interchangeable with: Schremer
+    # prints the matching Klil number beside each of its own, so a fitter who
+    # asks for the Klil part can be offered the compatible bar on the shelf.
+    equivalent_of = models.ForeignKey(
+        'self', verbose_name=_('equivalent of'), on_delete=models.SET_NULL,
+        null=True, blank=True, related_name='equivalents',
+    )
 
     is_active = models.BooleanField(_('active'), default=True)
     created_at = models.DateTimeField(_('created at'), auto_now_add=True)
@@ -480,9 +568,18 @@ class Profile(models.Model):
         verbose_name = _('profile')
         verbose_name_plural = _('profiles')
         ordering = ['number']
+        constraints = [
+            models.UniqueConstraint(fields=['manufacturer', 'number'],
+                                    name='unique_profile_number_per_manufacturer'),
+        ]
 
     def __str__(self):
         return f'{self.number} — {self.description}' if self.description else self.number
+
+    @property
+    def key(self):
+        """`extal:060093` -- the number with its manufacturer, unique across catalogues."""
+        return f'{self.manufacturer.slug}:{self.number}'
 
     @property
     def weight_kg_per_m(self):

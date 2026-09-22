@@ -1,0 +1,89 @@
+[
+  {
+    "slug": "klil",
+    "name": "קליל",
+    "name_en": "Klil",
+    "website": "https://www.klil.co.il",
+    "attribution": "© קליל תעשיות בע\"מ — הנתונים להכוונה בלבד",
+    "is_default": true,
+    "position": 1,
+    "file": "klil_catalog_rows.json",
+    "default_url": "https://res.cloudinary.com/dvhuyctib/raw/upload/catalog/klil_catalog_rows.json",
+    "family_en": {
+      "קלאסי": "Classic",
+      "אופיס": "Office",
+      "בלגי": "Belgian",
+      "מנהטן": "Manhattan",
+      "נוף": "Nof",
+      "כללי": "General"
+    }
+  },
+  {
+    "slug": "extal",
+    "name": "אקסטל",
+    "name_en": "Extal",
+    "website": "https://extal.com",
+    "attribution": "© אקסטל בע\"מ — אינדקס פרופילים 12.2020 וקטלוג פרופילים סטנדרטיים 2024",
+    "position": 2,
+    "file": "extal_catalog_rows.json",
+    "family_en": {
+      "קלאסי": "Classic",
+      "בלגי": "Belgian",
+      "אורבן": "Urban",
+      "מינימל": "Minimal",
+      "קירות מסך": "Curtain walls",
+      "משלימים": "Complementary",
+      "סטנדרט": "Standard",
+      "כללי": "General"
+    }
+  },
+  {
+    "slug": "alubin",
+    "name": "אלובין",
+    "name_en": "Alubin",
+    "website": "https://alubin.com",
+    "attribution": "© Alubin Industries Ltd. — ריכוזי פרופילים",
+    "position": 3,
+    "file": "alubin_catalog_rows.json",
+    "family_en": {
+      "חלונות": "Windows",
+      "דלתות": "Doors",
+      "הזזה": "Sliding",
+      "קירות מסך": "Curtain walls",
+      "בלגי": "Belgian",
+      "תריסים": "Shutters",
+      "כללי": "General"
+    }
+  },
+  {
+    "slug": "schremer",
+    "name": "שרמר",
+    "name_en": "Schremer",
+    "website": "http://schremer.com",
+    "attribution": "© שרמר תעשיות אלומיניום (1993) — פרופילים תואמי קליל",
+    "position": 4,
+    "file": "schremer_catalog_rows.json",
+    "family_en": {
+      "תואם קליל": "Klil-compatible",
+      "תריסים": "Shutters",
+      "סטנדרט": "Standard",
+      "פרגולות": "Pergolas",
+      "כללי": "General"
+    }
+  },
+  {
+    "slug": "profal",
+    "name": "פרופאל",
+    "name_en": "Profal",
+    "website": "https://www.profal.co.il",
+    "attribution": "© Profal — קטלוג פרופילים מקוון",
+    "position": 5,
+    "file": "profal_catalog_rows.json",
+    "family_en": {
+      "פרופילי בנייה": "Construction profiles",
+      "פרופילי תעשייה": "Industrial profiles",
+      "פרופילים מקצועיים": "Professional profiles",
+      "כללי": "General"
+    }
+  }
+]

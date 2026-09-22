@@ -11,6 +11,7 @@ Sections:
 
 from datetime import timedelta
 import logging
+import uuid
 from decimal import Decimal, InvalidOperation
 
 from django.contrib.auth import get_user_model
@@ -20,7 +21,7 @@ from django.db.models.functions import Coalesce
 from django.utils import timezone
 from django.utils.dateparse import parse_date
 from django.utils.translation import gettext_lazy as _
-from rest_framework import generics, permissions, renderers, status, viewsets
+from rest_framework import exceptions, generics, permissions, renderers, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.parsers import FormParser, JSONParser, MultiPartParser
 from rest_framework.response import Response
@@ -30,9 +31,12 @@ from rest_framework_simplejwt.views import TokenObtainPairView
 
 from core import notify, push
 from core.permissions import PasswordChangeRequired
+from core.catalog_keys import (Ambiguous, code_q, label_for, manufacturer_q,
+                               resolve_profile, resolve_series)
 from core.models import (
     Client,
     Family,
+    Manufacturer,
     Invoice,
     Location,
     MovementType,
@@ -52,6 +56,7 @@ from core.models import (
     Warehouse,
 )
 from core.serializers import (
+    ManufacturerSerializer,
     ChangePasswordSerializer,
     ClientAdminSerializer,
     ClientContactCreateSerializer,
@@ -471,30 +476,81 @@ class ClientViewSet(viewsets.ModelViewSet):
 # ---------------------------------------------------------------------------
 
 
+def _ambiguous(exc):
+    """A bare code several manufacturers use: say which, rather than 404."""
+    return exceptions.ValidationError({
+        'detail': str(exc),
+        'candidates': [m.key for m in exc.matches],
+    })
+
+
+class ManufacturerViewSet(viewsets.ReadOnlyModelViewSet):
+    """GET /api/catalog/manufacturers/ — the catalogues on offer, in order.
+
+    Inactive ones are kept out unless ?active=all, so a maker the yard has
+    stopped selling disappears from the pickers but its old orders still read.
+    """
+
+    serializer_class = ManufacturerSerializer
+    permission_classes = BASE
+    pagination_class = None
+    lookup_field = 'slug'
+
+    def get_queryset(self):
+        qs = Manufacturer.objects.annotate(
+            series_count=Count('series', distinct=True),
+            profile_count=Count('profiles', distinct=True),
+        ).order_by('position', 'name')
+        if self.request.query_params.get('active') != 'all':
+            qs = qs.filter(is_active=True)
+        return qs
+
+
 class FamilyViewSet(viewsets.ReadOnlyModelViewSet):
-    """GET /api/catalog/families/"""
+    """GET /api/catalog/families/  — optional ?manufacturer=<slug|id>"""
 
     serializer_class = FamilySerializer
     permission_classes = BASE
     pagination_class = None
-    queryset = Family.objects.annotate(series_count=Count('series')).order_by('name')
+
+    def get_queryset(self):
+        qs = (Family.objects.select_related('manufacturer')
+              .annotate(series_count=Count('series'))
+              .order_by('manufacturer__position', 'name'))
+        return qs.filter(manufacturer_q(self.request.query_params.get('manufacturer')))
 
 
 class SeriesViewSet(viewsets.ReadOnlyModelViewSet):
-    """GET /api/catalog/series/  — optional ?family=<id>&search=<text>"""
+    """GET /api/catalog/series/  — optional ?manufacturer=<slug|id>&family=<id>&search=<text>
+
+    A series is addressed by key (`klil:7000`) or bare code; a bare code that
+    several manufacturers use falls to the default manufacturer, or to
+    ?manufacturer= when given.
+    """
 
     serializer_class = SeriesSerializer
     permission_classes = BASE
     pagination_class = None
     lookup_field = 'code'
 
+    def get_object(self):
+        try:
+            obj = resolve_series(self.kwargs[self.lookup_field],
+                                 self.request.query_params.get('manufacturer'),
+                                 queryset=self.get_queryset())
+        except Ambiguous as exc:
+            raise _ambiguous(exc)
+        self.check_object_permissions(self.request, obj)
+        return obj
+
     def get_queryset(self):
         qs = (
-            Series.objects.select_related('family')
+            Series.objects.select_related('family', 'manufacturer')
             .annotate(profile_count=Count('series_profiles', distinct=True))
-            .order_by('code')
+            .order_by('manufacturer__position', 'code')
         )
         params = self.request.query_params
+        qs = qs.filter(manufacturer_q(params.get('manufacturer')))
         if family := params.get('family'):
             qs = qs.filter(family_id=family)
         if search := params.get('search'):
@@ -542,6 +598,16 @@ class ProfileViewSet(viewsets.ReadOnlyModelViewSet):
     permission_classes = BASE
     lookup_field = 'number'
 
+    def get_object(self):
+        try:
+            obj = resolve_profile(self.kwargs[self.lookup_field],
+                                  self.request.query_params.get('manufacturer'),
+                                  queryset=self.get_queryset())
+        except Ambiguous as exc:
+            raise _ambiguous(exc)
+        self.check_object_permissions(self.request, obj)
+        return obj
+
     def get_queryset(self):
         # On hand, summed across every holding of this profile -- all lengths,
         # all finishes, all warehouses. Zero for a profile nothing has been
@@ -551,19 +617,22 @@ class ProfileViewSet(viewsets.ReadOnlyModelViewSet):
         # entirely, so somebody looking up a profile the shop can order but
         # does not stock is told it does not exist.
         qs = (Profile.objects
+              .select_related('manufacturer', 'equivalent_of__manufacturer')
               .prefetch_related('series')
               .annotate(on_hand=Coalesce(
                   Sum('stock_items__movements__quantity'),
                   Value(Decimal('0')),
                   output_field=DecimalField(max_digits=12, decimal_places=2)))
-              .order_by('number'))
+              .order_by('manufacturer__position', 'number'))
         params = self.request.query_params
+        manufacturer = params.get('manufacturer')
+        qs = qs.filter(manufacturer_q(manufacturer))
         if search := params.get('search'):
             qs = qs.filter(
                 Q(number__icontains=search) | Q(description__icontains=search)
             )
         if series := params.get('series'):
-            qs = qs.filter(series__code=series)
+            qs = qs.filter(code_q(series, 'code', manufacturer, prefix='series__'))
         # What the profile does in an assembled window -- frame, sash, track.
         # It lives on the series listing rather than on the extrusion, because
         # the same section can be a mullion in one series and a post in
@@ -613,7 +682,8 @@ class CatalogListingViewSet(viewsets.ReadOnlyModelViewSet):
     """GET /api/catalog/listings/ — the catalog rows the browser renders.
 
     Filters:
-        ?series=7000        profiles listed under that series
+        ?manufacturer=<slug|id>  one maker's catalogue
+        ?series=7000        profiles listed under that series (key or bare code)
         ?family=<id>        everything in a product line
         ?role=sash          frame / sash / track / mullion / glazing_bead / ...
         ?tracks=3           rails by track count
@@ -626,12 +696,15 @@ class CatalogListingViewSet(viewsets.ReadOnlyModelViewSet):
 
     def get_queryset(self):
         qs = SeriesProfile.objects.select_related(
-            'profile', 'series', 'series__family'
-        ).order_by('series__code', 'position')
+            'profile', 'profile__manufacturer', 'series', 'series__family',
+            'series__manufacturer',
+        ).order_by('series__manufacturer__position', 'series__code', 'position')
 
         params = self.request.query_params
+        manufacturer = params.get('manufacturer')
+        qs = qs.filter(manufacturer_q(manufacturer, prefix='series__'))
         if series := params.get('series'):
-            qs = qs.filter(series__code=series)
+            qs = qs.filter(code_q(series, 'code', manufacturer, prefix='series__'))
         if family := params.get('family'):
             qs = qs.filter(series__family_id=family)
         if role := params.get('role'):
@@ -664,8 +737,10 @@ class CatalogListingViewSet(viewsets.ReadOnlyModelViewSet):
         an option rather than a query that silently returns nothing.
         """
         rows = SeriesProfile.objects.all()
+        manufacturer = request.query_params.get('manufacturer')
+        rows = rows.filter(manufacturer_q(manufacturer, prefix='series__'))
         if series := request.query_params.get('series'):
-            rows = rows.filter(series__code=series)
+            rows = rows.filter(code_q(series, 'code', manufacturer, prefix='series__'))
         counts = {
             row['role']: row['n']
             for row in rows.values('role').annotate(n=Count('id'))
@@ -689,10 +764,12 @@ class CatalogListingViewSet(viewsets.ReadOnlyModelViewSet):
         from django.http import HttpResponse
         from core.qr_labels import render_qr_labels
 
-        # Unique profiles in the current filter, in catalog order.
+        # Unique profiles in the current filter, in catalog order. The label
+        # carries the bare number for the default manufacturer -- what the
+        # racks already wear -- and the full key for any other maker.
         seen, rows = set(), []
         for sp in self.get_queryset():
-            number = sp.profile.number
+            number = label_for(sp.profile)
             if number in seen:
                 continue
             seen.add(number)
@@ -891,12 +968,20 @@ class ConfigView(APIView):
         # value saved in Settings. Reading settings.MAPBOX_TOKEN directly, as
         # this used to, saw only the environment -- so a token typed into
         # Settings was stored and then ignored, and the map stayed blank.
+        from decouple import config as env
+
         cfg = AppConfig.get()
         return Response({
             'mapbox_token': cfg.setting('mapbox_token'),
             # Whether the apps should offer the manager option on the sign-up
             # form. The code itself is never sent; only whether one exists.
             'manager_registration': bool(cfg.setting('register_code')),
+            # Where the desktop and phone apps report their crashes. A Sentry
+            # DSN is a public key by design; keeping it here means one Railway
+            # variable turns reporting on for every installed copy, with no
+            # rebuild. Empty means the apps report nothing.
+            'sentry_dsn': env('SENTRY_DSN_CLIENTS', default=''),
+            'sentry_environment': env('RAILWAY_ENVIRONMENT_NAME', default='local'),
         })
 
 
@@ -1199,14 +1284,18 @@ class StockItemViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         qs = (
             StockItem.objects
-            .select_related('profile', 'location', 'location__warehouse')
+            .select_related('profile', 'profile__manufacturer', 'location',
+                            'location__warehouse')
             .prefetch_related('profile__series', 'profile__series_profiles')
             .annotate(qty=Coalesce(Sum('movements__quantity'), 0))
             .order_by('profile__number', 'finish', 'length_mm')
         )
         params = self.request.query_params
+        manufacturer = params.get('manufacturer')
+        qs = qs.filter(manufacturer_q(manufacturer, prefix='profile__'))
         if series := params.get('series'):
-            qs = qs.filter(profile__series__code=series)
+            qs = qs.filter(code_q(series, 'code', manufacturer,
+                                  prefix='profile__series__'))
         if role := params.get('role'):
             qs = qs.filter(profile__series_profiles__role=role)
         if finish := params.get('finish'):
@@ -1233,25 +1322,34 @@ class StockItemViewSet(viewsets.ModelViewSet):
         series and profile types, limited to what actually appears in stock."""
         from core.models import ProfileRole, Series
 
+        # ?manufacturer=<slug|id> narrows every choice to that maker's shelves.
+        items = StockItem.objects.filter(
+            manufacturer_q(request.query_params.get('manufacturer'), prefix='profile__'))
         finishes = sorted(
-            f for f in StockItem.objects.values_list('finish', flat=True).distinct()
+            f for f in items.values_list('finish', flat=True).distinct()
             if f
         )
         warehouses = [
             {'id': w.id, 'name': w.name}
             for w in Warehouse.objects.filter(is_active=True).order_by('name')
         ]
-        # Series present in stock, labelled with their family.
-        codes = {c for c in StockItem.objects.values_list(
-            'profile__series__code', flat=True).distinct() if c}
-        series = [
-            {'code': s.code,
-             'name': f'{s.code} · {s.family.name}' if s.family_id else s.code}
-            for s in Series.objects.filter(code__in=codes)
-            .select_related('family').order_by('code')
-        ]
+        # Series present in stock, labelled with their family, and with the
+        # maker's name once more than one maker is on the shelves.
+        ids = {i for i in items.values_list(
+            'profile__series', flat=True).distinct() if i}
+        present = list(Series.objects.filter(id__in=ids)
+                       .select_related('family', 'manufacturer')
+                       .order_by('manufacturer__position', 'code'))
+        makers = {s.manufacturer_id for s in present}
+        series = []
+        for s in present:
+            name = f'{s.code} · {s.family.name}' if s.family_id else s.code
+            if len(makers) > 1:
+                name = f'{s.manufacturer.name} {name}'
+            series.append({'code': s.code, 'key': s.key, 'name': name,
+                           'manufacturer_slug': s.manufacturer.slug})
         # Profile types (roles) present in stock.
-        role_values = {v for v in StockItem.objects.values_list(
+        role_values = {v for v in items.values_list(
             'profile__series_profiles__role', flat=True).distinct() if v}
         roles = [
             {'value': v, 'label': str(label)}
@@ -1534,11 +1632,16 @@ class OrderViewSet(viewsets.ModelViewSet):
     def _pricing_payload(self, order):
         last_prices = _last_prices(order)
         rows = []
-        for line in order.lines.select_related('profile', 'series'):
+        for line in order.lines.select_related('profile', 'profile__manufacturer',
+                                               'series'):
             weight = line.effective_weight_kg or Decimal('0')
+            maker = line.profile.manufacturer if line.profile_id else None
             rows.append({
                 'id': line.id,
                 'profile': line.profile.number if line.profile_id else '',
+                'profile_key': line.profile.key if line.profile_id else '',
+                'manufacturer_slug': maker.slug if maker else '',
+                'manufacturer_name': maker.name if maker else '',
                 'name': (line.profile.description if line.profile_id else ''),
                 # The number the workshop knows it by, and the family name.
                 'series_code': line.series.code if line.series_id else '',
@@ -1782,6 +1885,63 @@ class OrderViewSet(viewsets.ModelViewSet):
         response['Content-Disposition'] = (
             f'inline; filename="{order.number}_quote.pdf"')
         return response
+
+    @action(detail=True, methods=['get'], permission_classes=BASE + [IsOffice])
+    def share(self, request, pk=None):
+        """GET /api/orders/<id>/share/?kind=quote|delivery_note — a WhatsApp link.
+
+        The trade runs on WhatsApp, and a phone can carry a PDF only through
+        a link. So the order gets a login-free public link (the same token the
+        signed delivery note already uses) and this returns a ready wa.me URL
+        with a message around it, addressed to the client's number when there
+        is one. Nothing is sent from here: the office's own WhatsApp opens
+        with the text filled in, and they press send.
+        """
+        order = self.get_object()
+        kind = request.query_params.get('kind', 'quote')
+        if kind == 'quote':
+            if order.status not in (OrderStatus.QUOTE, OrderStatus.DRAFT):
+                return Response({'detail': _('This is no longer a quote.')},
+                                status=status.HTTP_400_BAD_REQUEST)
+            if not order.lines.exists() or any(
+                    line.needs_a_price for line in order.lines.all()):
+                return Response(
+                    {'detail': _('Price every line before sending the quote.')},
+                    status=status.HTTP_400_BAD_REQUEST)
+        elif kind == 'delivery_note':
+            if order.status not in (OrderStatus.READY, OrderStatus.OUT_FOR_DELIVERY,
+                                    OrderStatus.DELIVERED):
+                return Response(
+                    {'detail': _('There is no delivery note for this order yet.')},
+                    status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response({'kind': [_('Unknown document.')]},
+                            status=status.HTTP_400_BAD_REQUEST)
+
+        if not order.public_token:
+            order.public_token = uuid.uuid4()
+            order.save(update_fields=['public_token'])
+
+        shop = Shop.get()
+        client = order.client
+        if kind == 'quote':
+            link = request.build_absolute_uri(f'/q/{order.public_token}/')
+            message = str(_('Price quote {number} from {shop}: {link}')).format(
+                number=order.number, shop=shop.name, link=link)
+        else:
+            link = request.build_absolute_uri(f'/d/{order.public_token}/')
+            message = str(_('Delivery note {number} for {client}. '
+                            'View & download: {link}')).format(
+                number=order.number, client=client.name if client else '',
+                link=link)
+        phone = whatsapp_number(client.phone if client else '')
+        return Response({
+            'kind': kind,
+            'public_url': link,
+            'message': message,
+            'phone': phone,
+            'whatsapp_url': whatsapp_url(phone, message),
+        })
 
     @action(detail=True, methods=['get'], renderer_classes=[BinaryFileRenderer])
     def delivery_note(self, request, pk=None):
@@ -2678,6 +2838,26 @@ class PayslipViewSet(viewsets.ModelViewSet):
 # Public, login-free signed delivery-note page (the WhatsApp link target)
 # ---------------------------------------------------------------------------
 
+def whatsapp_number(raw):
+    """An Israeli number in wa.me form: digits only, leading 0 becomes 972.
+
+    A number that already carries a country code is left alone; anything that
+    is not a phone number at all becomes '' and WhatsApp opens without a
+    recipient, so the office picks the chat by hand rather than hitting a
+    dead end.
+    """
+    digits = ''.join(ch for ch in str(raw or '') if ch.isdigit())
+    if digits.startswith('0'):
+        digits = '972' + digits[1:]
+    return digits if len(digits) >= 9 else ''
+
+
+def whatsapp_url(phone, message):
+    from urllib.parse import quote
+    base = f'https://wa.me/{phone}' if phone else 'https://wa.me/'
+    return f'{base}?text={quote(message)}'
+
+
 def _public_order(token):
     from django.http import Http404
     order = (Order.objects.filter(public_token=token)
@@ -2743,6 +2923,32 @@ padding:14px;border-radius:12px;font-weight:700;font-size:16px;margin-top:8px}}
 <a class="btn ghost" href="/d/{token}/pdf/" target="_blank">צפייה במסמך</a>
 </div></body></html>"""
     return HttpResponse(html)
+
+
+def public_quote(request, token):
+    """GET /q/<token>/ — the price quote PDF for the customer, no login.
+
+    Once the customer has accepted, the same link serves the order note: the
+    prices are the ones agreed, and a link that went dead the moment the
+    customer said yes would be the wrong lesson to teach them.
+    """
+    from django.http import Http404, HttpResponse
+    from core import order_pdf
+
+    order = _public_order(token)
+    company = order_pdf.company_from_shop()
+    if order.status in (OrderStatus.QUOTE, OrderStatus.DRAFT):
+        try:
+            data = order_pdf.render_quote(order, company)
+        except ValueError:
+            raise Http404('This quote is not ready yet.')
+        filename = f'{order.number}_quote.pdf'
+    else:
+        data = order_pdf.render_order_note(order, company)
+        filename = f'{order.number}_order.pdf'
+    response = HttpResponse(data, content_type='application/pdf')
+    response['Content-Disposition'] = f'inline; filename="{filename}"'
+    return response
 
 
 def public_delivery_pdf(request, token):

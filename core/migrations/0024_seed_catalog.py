@@ -6,18 +6,13 @@ the whole catalog automatically — no manual import step. It only runs when the
 Profile table is empty, so existing databases and re-deploys are untouched.
 """
 
-from django.core.management import call_command
 from django.db import migrations
 
 
 def seed_catalog(apps, schema_editor):
-    Profile = apps.get_model('core', 'Profile')
-    if Profile.objects.exists():
-        return  # already populated — nothing to do
-    try:
-        call_command('import_catalog', verbosity=0)
-    except Exception as exc:  # noqa: BLE001 — never let seeding break a deploy
-        print(f'[seed_catalog] catalog import skipped: {exc}')
+    """Superseded: 0040_seed_catalogues seeds every manufacturer once the
+    catalogue tables have their final shape. Importing here, with the current
+    models against the 0024 schema, can no longer work, so this is a no-op."""
 
 
 def noop(apps, schema_editor):

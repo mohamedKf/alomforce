@@ -18,6 +18,7 @@ from core.views import (
     ChangePasswordView,
     ClientViewSet,
     FamilyViewSet,
+    ManufacturerViewSet,
     InvoiceViewSet,
     LocationViewSet,
     LoginView,
@@ -34,6 +35,7 @@ from core.views import (
     ShopView,
     public_delivery,
     public_delivery_pdf,
+    public_quote,
     StaffViewSet,
     StockItemViewSet,
     WarehouseViewSet,
@@ -53,6 +55,7 @@ router.register('payslips', PayslipViewSet, basename='payslip')
 router.register('notifications', NotificationViewSet, basename='notification')
 
 catalog_router = DefaultRouter()
+catalog_router.register('manufacturers', ManufacturerViewSet, basename='manufacturer')
 catalog_router.register('families', FamilyViewSet, basename='family')
 catalog_router.register('series', SeriesViewSet, basename='series')
 catalog_router.register('profiles', ProfileViewSet, basename='profile')
@@ -83,6 +86,9 @@ urlpatterns = [
     # Public, login-free signed delivery note (the WhatsApp link target).
     path('d/<uuid:token>/', public_delivery, name='public-delivery'),
     path('d/<uuid:token>/pdf/', public_delivery_pdf, name='public-delivery-pdf'),
+    path('q/<uuid:token>/', public_quote, name='public-quote'),
+    # green invoice: /api/orders/<id>/issue_invoice/ and /api/invoicing/status/
+    path('', include('core.views_invoicing')),
 ]
 
 # In DEBUG the dev server serves uploaded media (profile section images) off

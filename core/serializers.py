@@ -15,17 +15,20 @@ from django.contrib.auth.password_validation import (
 )
 from django.core.exceptions import ValidationError as DjangoValidationError
 from django.db import transaction
+from django.http import Http404
 from django.utils.crypto import constant_time_compare
 from django.utils.translation import gettext_lazy as _
 from rest_framework import serializers
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
 from core import maplinks
+from core.catalog_keys import Ambiguous, resolve_profile, resolve_series
 from core.models import (
     AppConfig,
     Client,
     DeviceToken,
     Family,
+    Manufacturer,
     Invoice,
     OrderAttachment,
     Payment,
@@ -375,31 +378,103 @@ class StaffAdminSerializer(serializers.ModelSerializer):
 # ---------------------------------------------------------------------------
 
 
-class FamilySerializer(serializers.ModelSerializer):
+class ManufacturerSerializer(serializers.ModelSerializer):
+    series_count = serializers.IntegerField(read_only=True, default=0)
+    profile_count = serializers.IntegerField(read_only=True, default=0)
+
+    class Meta:
+        model = Manufacturer
+        fields = [
+            'id', 'slug', 'name', 'name_en', 'website', 'attribution',
+            'is_default', 'is_active', 'position', 'series_count', 'profile_count',
+        ]
+
+
+class ManufacturerFields(serializers.Serializer):
+    """The manufacturer, named three ways, on anything that belongs to one.
+
+    Screens group by the id, address the API by the slug and print the name;
+    sending all three saves every client a lookup table.
+    """
+
+    manufacturer = serializers.PrimaryKeyRelatedField(read_only=True)
+    manufacturer_slug = serializers.CharField(source='manufacturer.slug', read_only=True)
+    manufacturer_name = serializers.CharField(source='manufacturer.name', read_only=True)
+
+
+class CatalogKeyField(serializers.RelatedField):
+    """A profile or series given by key (`extal:060093`) or bare code.
+
+    Reads back as the bare code, which is what every screen already prints;
+    the key is exposed alongside as a read-only field where a client needs it.
+    """
+
+    default_error_messages = {
+        'not_found': _('No catalogue entry {value}.'),
+        'ambiguous': _('{value} exists for several manufacturers: {keys}.'),
+    }
+
+    def __init__(self, resolver, attr, **kwargs):
+        self.resolver = resolver
+        self.attr = attr
+        super().__init__(**kwargs)
+
+    def to_internal_value(self, data):
+        value = str(data).strip()
+        try:
+            return self.resolver(value, queryset=self.get_queryset())
+        except Ambiguous as exc:
+            self.fail('ambiguous', value=value,
+                      keys=', '.join(m.key for m in exc.matches))
+        except Http404:
+            self.fail('not_found', value=value)
+
+    def to_representation(self, value):
+        return getattr(value, self.attr)
+
+
+def profile_key_field(**kwargs):
+    return CatalogKeyField(resolve_profile, 'number',
+                           queryset=Profile.objects.all(), **kwargs)
+
+
+def series_key_field(**kwargs):
+    return CatalogKeyField(resolve_series, 'code',
+                           queryset=Series.objects.all(), **kwargs)
+
+
+class FamilySerializer(ManufacturerFields, serializers.ModelSerializer):
     series_count = serializers.IntegerField(read_only=True)
 
     class Meta:
         model = Family
-        fields = ['id', 'name', 'name_en', 'slug', 'description', 'series_count']
+        fields = [
+            'id', 'name', 'name_en', 'slug', 'description', 'series_count',
+            'manufacturer', 'manufacturer_slug', 'manufacturer_name',
+        ]
 
 
-class SeriesSerializer(serializers.ModelSerializer):
+class SeriesSerializer(ManufacturerFields, serializers.ModelSerializer):
     family_name = serializers.CharField(source='family.name', read_only=True, default=None)
     profile_count = serializers.IntegerField(read_only=True)
+    key = serializers.CharField(read_only=True)
 
     class Meta:
         model = Series
         fields = [
-            'id', 'code', 'name', 'name_en', 'family', 'family_name',
-            'manufacturer', 'catalog_page', 'price_per_kg', 'is_active',
-            'profile_count',
+            'id', 'key', 'code', 'name', 'name_en', 'family', 'family_name',
+            'manufacturer', 'manufacturer_slug', 'manufacturer_name',
+            'catalog_page', 'price_per_kg', 'is_active', 'profile_count',
         ]
 
 
-class ProfileSerializer(serializers.ModelSerializer):
+class ProfileSerializer(ManufacturerFields, serializers.ModelSerializer):
     """A physical extrusion, with the series it appears in."""
 
+    key = serializers.CharField(read_only=True)
     series_codes = serializers.SerializerMethodField()
+    # The interchangeable part from another catalogue, as a key, or null.
+    equivalent_of = serializers.SerializerMethodField()
     weight_kg_per_m = serializers.FloatField(read_only=True)
     # Metres on hand across every length, finish and warehouse. Present as a
     # plain 0 rather than absent when nothing is stocked, so a screen can show
@@ -409,10 +484,15 @@ class ProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = Profile
         fields = [
-            'id', 'number', 'description', 'description_en',
+            'id', 'key', 'number', 'description', 'description_en',
+            'manufacturer', 'manufacturer_slug', 'manufacturer_name',
             'weight_g_per_m', 'weight_kg_per_m', 'section_image',
-            'series_codes', 'is_active', 'on_hand',
+            'series_codes', 'equivalent_of', 'is_active', 'on_hand',
         ]
+
+    def get_equivalent_of(self, profile):
+        other = profile.equivalent_of
+        return other.key if other is not None else None
 
     def get_on_hand(self, profile):
         # Annotated by the list view; a profile fetched on its own has to be
@@ -437,6 +517,14 @@ class SeriesProfileSerializer(serializers.ModelSerializer):
     """
 
     number = serializers.CharField(source='profile.number', read_only=True)
+    key = serializers.CharField(source='profile.key', read_only=True)
+    series_key = serializers.CharField(source='series.key', read_only=True)
+    manufacturer = serializers.PrimaryKeyRelatedField(
+        source='series.manufacturer', read_only=True)
+    manufacturer_slug = serializers.CharField(
+        source='series.manufacturer.slug', read_only=True)
+    manufacturer_name = serializers.CharField(
+        source='series.manufacturer.name', read_only=True)
     description = serializers.CharField(source='display_description', read_only=True)
     weight_g_per_m = serializers.IntegerField(
         source='effective_weight_g_per_m', read_only=True
@@ -461,8 +549,9 @@ class SeriesProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = SeriesProfile
         fields = [
-            'id', 'number', 'description', 'weight_g_per_m', 'section_image',
-            'series', 'series_code', 'series_name', 'family_name',
+            'id', 'key', 'number', 'description', 'weight_g_per_m', 'section_image',
+            'series', 'series_key', 'series_code', 'series_name', 'family_name',
+            'manufacturer', 'manufacturer_slug', 'manufacturer_name',
             'group_header', 'role', 'role_display',
             'glass_min_mm', 'glass_max_mm', 'track_count', 'catalog_page',
             'price_per_kg', 'price_per_m',
@@ -1067,8 +1156,7 @@ class StockItemCreateSerializer(serializers.ModelSerializer):
     The profile is given by its number (what the warehouse types), not its id.
     """
 
-    profile = serializers.SlugRelatedField(
-        slug_field='number', queryset=Profile.objects.all())
+    profile = profile_key_field()
     initial_quantity = serializers.IntegerField(
         write_only=True, required=False, default=0, min_value=0)
 
@@ -1137,6 +1225,11 @@ class StockItemSerializer(serializers.ModelSerializer):
     """
 
     number = serializers.CharField(source='profile.number', read_only=True)
+    key = serializers.CharField(source='profile.key', read_only=True)
+    manufacturer_slug = serializers.CharField(
+        source='profile.manufacturer.slug', read_only=True)
+    manufacturer_name = serializers.CharField(
+        source='profile.manufacturer.name', read_only=True)
     description = serializers.CharField(source='profile.description', read_only=True)
     section_image = serializers.ImageField(source='profile.section_image', read_only=True)
     weight_g_per_m = serializers.IntegerField(
@@ -1152,7 +1245,8 @@ class StockItemSerializer(serializers.ModelSerializer):
     class Meta:
         model = StockItem
         fields = [
-            'id', 'number', 'description', 'section_image', 'weight_g_per_m',
+            'id', 'key', 'number', 'manufacturer_slug', 'manufacturer_name',
+            'description', 'section_image', 'weight_g_per_m',
             'series_codes', 'types', 'finish', 'length_mm', 'quantity',
             'minimum_quantity', 'needs_reorder',
             'warehouse', 'warehouse_id', 'location_code',
@@ -1185,10 +1279,9 @@ class OrderLineSerializer(serializers.ModelSerializer):
     read-only figures the table and PDF show.
     """
 
-    profile = serializers.SlugRelatedField(
-        slug_field='number', queryset=Profile.objects.all())
-    series = serializers.SlugRelatedField(
-        slug_field='code', queryset=Series.objects.all(), required=False, allow_null=True)
+    profile = profile_key_field()
+    series = series_key_field(required=False, allow_null=True)
+    profile_key = serializers.CharField(source='profile.key', read_only=True)
     # What the workshop calls it. A fitter asks for "1700 צד" -- the series
     # number and what the part does -- not for catalogue code 05980, which is
     # what is printed on the rack label and nowhere else. Both are sent: the
@@ -1218,7 +1311,7 @@ class OrderLineSerializer(serializers.ModelSerializer):
     class Meta:
         model = OrderLine
         fields = [
-            'id', 'profile', 'number', 'description', 'section_image',
+            'id', 'profile', 'profile_key', 'number', 'description', 'section_image',
             'series', 'series_code', 'series_name',
             'weight_g_per_m', 'length_mm', 'quantity', 'total_length_m',
             'weight_kg_override', 'computed_weight_kg', 'effective_weight_kg',
