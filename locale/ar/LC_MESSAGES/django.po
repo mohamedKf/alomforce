@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-20 20:19+0300\n"
+"POT-Creation-Date: 2026-09-22 15:10+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -15,17 +15,18 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=6; plural=n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 && n%100<=10 ? 3 : n%100>=11 && n%100<=99 ? 4 : 5;\n"
+"Plural-Forms: nplurals=6; plural=n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 "
+"&& n%100<=10 ? 3 : n%100>=11 && n%100<=99 ? 4 : 5;\n"
 
-#: backend/settings.py:213 core/models.py:230
+#: backend/settings.py:213 core/models.py:231
 msgid "English"
 msgstr "الإنجليزية"
 
-#: backend/settings.py:214 core/models.py:230
+#: backend/settings.py:214 core/models.py:231
 msgid "Hebrew"
 msgstr "العبرية"
 
-#: backend/settings.py:215 core/models.py:230
+#: backend/settings.py:215 core/models.py:231
 msgid "Arabic"
 msgstr "العربية"
 
@@ -45,1492 +46,1867 @@ msgstr "وصول العميل"
 msgid "Permissions"
 msgstr "الصلاحيات"
 
-#: core/models.py:54
-msgid "ID number must contain digits only."
-msgstr "يجب أن يحتوي رقم الهوية على أرقام فقط."
-
-#: core/models.py:56
-msgid "ID number cannot be longer than 9 digits."
-msgstr "لا يمكن أن يزيد رقم الهوية عن 9 أرقام."
-
-#: core/models.py:68
+#: core/attendance_auto_close.py:60
 #, python-format
-msgid "%(value)s is not a valid ID number."
-msgstr "%(value)s ليس رقم هوية صالحاً."
-
-#: core/models.py:86
-msgid "Office"
-msgstr "المكتب"
-
-#: core/models.py:87
-msgid "Warehouse worker"
-msgstr "عامل مخزن"
-
-#: core/models.py:88
-msgid "Delivery driver"
-msgstr "سائق توصيل"
-
-#: core/models.py:89
-msgid "Client"
-msgstr "عميل"
-
-#: core/models.py:90
-msgid "Manager"
-msgstr "مدير"
-
-#: core/models.py:96
-msgid "By hour"
-msgstr "بالساعة"
-
-#: core/models.py:97
-msgid "By day"
-msgstr "باليوم"
-
-#: core/models.py:98
-msgid "Monthly salary"
-msgstr "راتب شهري"
-
-#: core/models.py:130
-msgid "An ID number is required for staff accounts."
-msgstr "رقم الهوية مطلوب لحسابات الموظفين."
-
-#: core/models.py:136
-msgid "A phone number is required for client accounts."
-msgstr "رقم الهاتف مطلوب لحسابات العملاء."
-
-#: core/models.py:168
-msgid "Superuser must have is_staff=True."
-msgstr "المستخدم الخارق يجب أن يكون is_staff=True."
-
-#: core/models.py:170
-msgid "Superuser must have is_superuser=True."
-msgstr "المستخدم الخارق يجب أن يكون is_superuser=True."
-
-#: core/models.py:187
-msgid "ID number"
-msgstr "رقم الهوية"
-
-#: core/models.py:194
-msgid "9-digit ID number (תעודת זהות). Staff sign in with this."
-msgstr "رقم هوية من 9 أرقام (تعودات زهوت). يسجّل الموظفون الدخول به."
-
-#: core/models.py:197
-msgid "first name"
-msgstr "الاسم الأول"
-
-#: core/models.py:198
-msgid "last name"
-msgstr "اسم العائلة"
-
-#: core/models.py:199 core/models.py:634 core/models.py:1068
-msgid "email"
-msgstr "البريد الإلكتروني"
-
-#: core/models.py:201 core/models.py:633 core/models.py:1067
-msgid "phone"
-msgstr "الهاتف"
-
-#: core/models.py:206 core/serializers.py:168
-msgid "Enter a valid phone number."
-msgstr "أدخل رقم هاتف صالحاً."
-
-#: core/models.py:213
-msgid "phone (normalised)"
-msgstr "الهاتف (موحّد)"
-
-#: core/models.py:221
-msgid "date of birth"
-msgstr "تاريخ الميلاد"
-
-#: core/models.py:222 core/models.py:631 core/models.py:788
-msgid "address"
-msgstr "العنوان"
-
-#: core/models.py:225 core/models.py:539
-msgid "role"
-msgstr "الدور"
-
-#: core/models.py:228
-msgid "language"
-msgstr "اللغة"
-
-#: core/models.py:235
-msgid "hired on"
-msgstr "تاريخ التوظيف"
-
-#: core/models.py:236
-msgid "emergency contact"
-msgstr "جهة اتصال للطوارئ"
-
-#: core/models.py:237
-msgid "emergency phone"
-msgstr "هاتف الطوارئ"
-
-#: core/models.py:243 core/models.py:1682
-msgid "pay basis"
-msgstr "أساس الأجر"
-
-#: core/models.py:246 core/models.py:1695
-msgid "hourly rate"
-msgstr "الأجر بالساعة"
-
-#: core/models.py:248
-msgid "daily rate"
-msgstr "الأجر اليومي"
-
-#: core/models.py:250
-msgid "monthly salary"
-msgstr "الراتب الشهري"
-
-#: core/models.py:251
-msgid "pay overtime"
-msgstr "دفع الساعات الإضافية"
-
-#: core/models.py:253
-msgid "regular hours per day"
-msgstr "ساعات عادية في اليوم"
-
-#: core/models.py:255
-msgid "Hours before overtime starts; 8 for a 6-day week, 8.6 for 5-day."
-msgstr "الساعات قبل بدء الوقت الإضافي؛ 8 لأسبوع من 6 أيام، 8.6 لأسبوع من 5 أيام."
-
-#: core/models.py:260 core/models.py:1110 core/models.py:1134
-#: core/models.py:1382 core/models.py:1441
-msgid "client"
-msgstr "عميل"
-
-#: core/models.py:267 core/models.py:428 core/models.py:474 core/models.py:796
-#: core/models.py:1106
-msgid "active"
-msgstr "نشط"
-
-#: core/models.py:269
-msgid "admin access"
-msgstr "وصول إداري"
-
-#: core/models.py:269
-msgid "Can sign into Django admin."
-msgstr "يمكنه تسجيل الدخول إلى لوحة الإدارة."
-
-#: core/models.py:271
-msgid "date joined"
-msgstr "تاريخ الانضمام"
-
-#: core/models.py:276 core/models.py:909
-msgid "last seen"
-msgstr "آخر ظهور"
-
-#: core/models.py:282
-msgid "must change password"
-msgstr "يجب تغيير كلمة المرور"
-
-#: core/models.py:283
-msgid "Blocks all other API access until the password is changed."
-msgstr "يمنع أي وصول آخر حتى تغيير كلمة المرور."
-
-#: core/models.py:286 core/models.py:1152 core/models.py:1481
-#: core/models.py:1704
-msgid "created by"
-msgstr "أنشأه"
-
-#: core/models.py:296 core/models.py:898 core/models.py:931
-msgid "user"
-msgstr "المستخدم"
-
-#: core/models.py:297
-msgid "users"
-msgstr "مستخدمين"
-
-#: core/models.py:313
-msgid "Client users must be linked to a client."
-msgstr "يجب ربط مستخدمي العملاء بعميل."
-
-#: core/models.py:315
-msgid "Only client users can be linked to a client."
-msgstr "يمكن ربط مستخدمي العملاء فقط بعميل."
-
-#: core/models.py:320
-msgid "Client users sign in with their phone number."
-msgstr "يسجّل العملاء الدخول برقم هاتفهم."
-
-#: core/models.py:322
-msgid "Staff users sign in with their ID number."
-msgstr "يسجّل الموظفون الدخول برقم الهوية."
-
-#: core/models.py:366
-msgid "Frame"
-msgstr "إطار"
-
-#: core/models.py:367
-msgid "Sash"
-msgstr "ضلفة"
-
-#: core/models.py:368
-msgid "Track"
-msgstr "مسار"
-
-#: core/models.py:369
-msgid "Mullion"
-msgstr "فاصل"
-
-#: core/models.py:370
-msgid "Glazing bead"
-msgstr "مسطرة زجاج"
-
-#: core/models.py:371
-msgid "Shutter"
-msgstr "شيش"
-
-#: core/models.py:372
-msgid "Trim"
-msgstr "كسوة"
-
-#: core/models.py:373
-msgid "Adapter"
-msgstr "محول"
-
-#: core/models.py:374
-msgid "Accessory"
-msgstr "مقطع مساعد"
-
-#: core/models.py:378
-msgid "Post"
-msgstr "عمود"
-
-#: core/models.py:379
-msgid "Beam"
-msgstr "جسر"
-
-#: core/models.py:380
-msgid "Seal / gasket"
-msgstr "حشوة"
-
-#: core/models.py:381
-msgid "Railing"
-msgstr "درابزين"
-
-#: core/models.py:382
-msgid "Insect screen"
-msgstr "شبك"
-
-#: core/models.py:383
-msgid "Panel"
-msgstr "لوح"
-
-#: core/models.py:384 core/models.py:1039
-msgid "Other"
-msgstr "أخرى"
-
-#: core/models.py:390 core/models.py:408 core/models.py:623 core/models.py:787
-#: core/models.py:1018
-msgid "name"
-msgstr "الاسم"
-
-#: core/models.py:391 core/models.py:409
-msgid "name (English)"
-msgstr "الاسم (بالإنجليزية)"
-
-#: core/models.py:392
-msgid "slug"
-msgstr "المعرّف"
-
-#: core/models.py:393 core/models.py:450 core/models.py:815
-msgid "description"
-msgstr "الوصف"
-
-#: core/models.py:396 core/models.py:412
-msgid "family"
-msgstr "العائلة"
-
-#: core/models.py:397
-msgid "families"
-msgstr "العائلات"
-
-#: core/models.py:407 core/models.py:813
-msgid "code"
-msgstr "الرمز"
-
-#: core/models.py:418
-msgid "manufacturer"
-msgstr "الشركة المصنّعة"
-
-#: core/models.py:419 core/models.py:555
-msgid "catalog page"
-msgstr "صفحة الكتالوج"
-
-#: core/models.py:425 core/models.py:1312
-msgid "price per kg"
-msgstr "السعر لكل كغ"
-
-#: core/models.py:426
-msgid "Metal price per kilogram for this series. Drives catalog pricing."
-msgstr "سعر المعدن لكل كيلوغرام لهذه السلسلة. يحدّد تسعير الكتالوج."
-
-#: core/models.py:431 core/models.py:432 core/models.py:469 core/models.py:508
-#: core/models.py:1287
-msgid "series"
-msgstr "السلسلة"
-
-#: core/models.py:449
-msgid "profile number"
-msgstr "رقم المقطع"
-
-#: core/models.py:451
-msgid "description (English)"
-msgstr "الوصف (بالإنجليزية)"
-
-#: core/models.py:454
-msgid "weight (g/m)"
-msgstr "الوزن (غ/م)"
-
-#: core/models.py:458
-msgid "Grams per metre, as printed in the catalog."
-msgstr "غرامات لكل متر، كما في الكتالوج."
-
-#: core/models.py:464
-msgid "cross-section drawing"
-msgstr "رسم المقطع العرضي"
-
-#: core/models.py:475 core/models.py:910 core/models.py:943 core/models.py:998
-#: core/models.py:1107 core/models.py:1483 core/models.py:1577
-#: core/models.py:1637 core/models.py:1706
-msgid "created at"
-msgstr "أُنشئ في"
-
-#: core/models.py:476
-msgid "updated at"
-msgstr "حُدّث في"
-
-#: core/models.py:479 core/models.py:512 core/models.py:839 core/models.py:1283
-msgid "profile"
-msgstr "المقطع"
-
-#: core/models.py:480
-msgid "profiles"
-msgstr "مقاطع"
-
-#: core/models.py:517
-msgid "catalog group"
-msgstr "مجموعة الكتالوج"
-
-#: core/models.py:518
-msgid "Sub-heading this row sits under, e.g. כנפיים – זיגוג עד 8 מ\"מ"
-msgstr "العنوان الفرعي الذي يندرج تحته هذا الصف، مثال: أجنحة – زجاج حتى 8 ملم"
-
-#: core/models.py:525
-msgid "description as listed"
-msgstr "الوصف كما هو مدرج"
-
-#: core/models.py:526
-msgid "Only set when it differs from the profile description."
-msgstr "يُملأ فقط عندما يختلف عن وصف المقطع."
-
-#: core/models.py:534
-msgid "weight as listed (g/m)"
-msgstr "الوزن كما هو مدرج (غ/م)"
-
-#: core/models.py:545
-msgid "glass min (mm)"
-msgstr "الحد الأدنى للزجاج (ملم)"
-
-#: core/models.py:548
-msgid "glass max (mm)"
-msgstr "الحد الأقصى للزجاج (ملم)"
-
-#: core/models.py:551
-msgid "tracks"
-msgstr "المسارات"
-
-#: core/models.py:552
-msgid "For rails: 1–5 נתיבים."
-msgstr "للقضبان: 1–5 مسارات."
-
-#: core/models.py:556
-msgid "position"
-msgstr "الترتيب"
-
-#: core/models.py:559
-msgid "series profile"
-msgstr "مقطع السلسلة"
-
-#: core/models.py:560
-msgid "series profiles"
-msgstr "مقاطع السلسلة"
-
-#: core/models.py:624 core/models.py:1051
-msgid "registered legal name"
-msgstr "الاسم القانوني المسجّل"
-
-#: core/models.py:626 core/models.py:1059
-msgid "tax ID"
-msgstr "الرقم الضريبي"
-
-#: core/models.py:627
-msgid "ח.פ. / ע.מ. — appears on order and delivery documents."
-msgstr "الرقم الضريبي — يظهر على مستندات الطلب والتسليم."
-
-#: core/models.py:630
-msgid "logo"
-msgstr "الشعار"
-
-#: core/models.py:632 core/models.py:789 core/models.py:1072
-msgid "city"
-msgstr "المدينة"
-
-#: core/models.py:636 core/models.py:791 core/models.py:1092
-msgid "latitude"
-msgstr "خط العرض"
-
-#: core/models.py:639 core/models.py:794 core/models.py:1095
-msgid "longitude"
-msgstr "خط الطول"
-
-#: core/models.py:643 core/models.py:644
-msgid "shop"
-msgstr "المتجر"
-
-#: core/models.py:664
-msgid "Cloudinary cloud name"
-msgstr "اسم سحابة Cloudinary"
-
-#: core/models.py:666
-msgid "Cloudinary API key"
-msgstr "مفتاح API لـ Cloudinary"
-
-#: core/models.py:668
-msgid "Cloudinary API secret"
-msgstr "سر API لـ Cloudinary"
-
-#: core/models.py:672
-msgid "OpenAI API key"
-msgstr "مفتاح OpenAI"
-
-#: core/models.py:675
-msgid "SMTP host"
-msgstr "خادم SMTP"
-
-#: core/models.py:676
-msgid "SMTP port"
-msgstr "منفذ SMTP"
-
-#: core/models.py:677
-msgid "SMTP username"
-msgstr "اسم مستخدم SMTP"
-
-#: core/models.py:678
-msgid "SMTP password"
-msgstr "كلمة مرور SMTP"
-
-#: core/models.py:679
-msgid "SMTP from address"
-msgstr "عنوان المرسل SMTP"
-
-#: core/models.py:680
-msgid "SMTP use TLS"
-msgstr "استخدام TLS لـ SMTP"
-
-#: core/models.py:683
-msgid "accountant name"
-msgstr "اسم المحاسب"
-
-#: core/models.py:684
-msgid "accountant email"
-msgstr "بريد المحاسب"
-
-#: core/models.py:685
-msgid "accountant phone"
-msgstr "هاتف المحاسب"
-
-#: core/models.py:689
-msgid "Green Invoice API key"
-msgstr "مفتاح Green Invoice"
-
-#: core/models.py:691
-msgid "Green Invoice API secret"
-msgstr "سر Green Invoice"
-
-#: core/models.py:698
-msgid "Mapbox token"
-msgstr "رمز Mapbox"
-
-#: core/models.py:699
-msgid "Public token (pk.…) for the map. A MAPBOX_TOKEN environment variable overrides this."
-msgstr "رمز عام (pk.…) للخريطة. متغيّر البيئة MAPBOX_TOKEN يتجاوز هذه القيمة."
-
-#: core/models.py:710
-msgid "manager register code"
-msgstr "رمز تسجيل المدير"
-
-#: core/models.py:711
-msgid "Anyone with this code can create a manager account. Leave empty to switch manager registration off. A REGISTER_CODE environment variable overrides this."
-msgstr "يستطيع أي شخص لديه هذا الرمز إنشاء حساب مدير. اتركه فارغًا لإيقاف تسجيل المديرين. متغيّر البيئة REGISTER_CODE يتجاوز هذه القيمة."
-
-#: core/models.py:717 core/models.py:718
-msgid "app configuration"
-msgstr "إعدادات التطبيق"
-
-#: core/models.py:799 core/models.py:810
-msgid "warehouse"
-msgstr "المستودع"
-
-#: core/models.py:800
-msgid "warehouses"
-msgstr "مستودعات"
-
-#: core/models.py:814
-msgid "barcode"
-msgstr "الباركود"
-
-#: core/models.py:818 core/models.py:843
-msgid "location"
-msgstr "الموقع"
-
-#: core/models.py:819
-msgid "locations"
-msgstr "المواقع"
-
-#: core/models.py:847 core/models.py:1295
-msgid "bar length (mm)"
-msgstr "طول القضيب (ملم)"
-
-#: core/models.py:850
-msgid "finish"
-msgstr "التشطيب"
-
-#: core/models.py:851
-msgid "Anodised, powder-coated RAL code, mill finish, etc."
-msgstr "أنودة، طلاء بودرة بكود RAL، تشطيب خام، إلخ."
-
-#: core/models.py:855
-msgid "reorder level"
-msgstr "حد إعادة الطلب"
-
-#: core/models.py:856
-msgid "Alert the office when quantity on hand drops below this."
-msgstr "تنبيه المكتب عندما تنخفض الكمية المتوفرة عن هذا الحد."
-
-#: core/models.py:860 core/models.py:979
-msgid "stock item"
-msgstr "صنف مخزون"
-
-#: core/models.py:861
-msgid "stock items"
-msgstr "أصناف المخزون"
-
-#: core/models.py:893
-msgid "Android"
-msgstr "أندرويد"
-
-#: core/models.py:894
-msgid "iOS"
-msgstr "iOS"
-
-#: core/models.py:895
-msgid "Web"
-msgstr "الويب"
-
-#: core/models.py:901
-msgid "push token"
-msgstr "رمز الإشعارات"
-
-#: core/models.py:903
-msgid "platform"
-msgstr "المنصة"
-
-#: core/models.py:913
-msgid "device token"
-msgstr "رمز الجهاز"
-
-#: core/models.py:914
-msgid "device tokens"
-msgstr "رموز الأجهزة"
-
-#: core/models.py:934
-msgid "title"
-msgstr "العنوان"
-
-#: core/models.py:935
-msgid "body"
-msgstr "النص"
-
-#: core/models.py:938 core/models.py:1379
-msgid "kind"
-msgstr "النوع"
-
-#: core/models.py:941
-msgid "data"
-msgstr "البيانات"
-
-#: core/models.py:942
-msgid "read at"
-msgstr "قُرئ في"
-
-#: core/models.py:946
-msgid "notification"
-msgstr "إشعار"
-
-#: core/models.py:947
-msgid "notifications"
-msgstr "الإشعارات"
-
-#: core/models.py:960
-msgid "Goods received"
-msgstr "استلام بضاعة"
-
-#: core/models.py:961
-msgid "Picked for order"
-msgstr "انتُقي لطلب"
-
-#: core/models.py:962
-msgid "Returned"
-msgstr "مُرجع"
-
-#: core/models.py:964
-msgid "Stock count adjustment"
-msgstr "تعديل جرد المخزون"
-
-#: core/models.py:965
-msgid "Transferred in"
-msgstr "نُقل إلى"
-
-#: core/models.py:966
-msgid "Transferred out"
-msgstr "نُقل من"
-
-#: core/models.py:967
-msgid "Scrapped"
-msgstr "مُتلف"
-
-#: core/models.py:983
-msgid "type"
-msgstr "النوع"
-
-#: core/models.py:986 core/models.py:1298
-msgid "bars"
-msgstr "قضبان"
-
-#: core/models.py:986
-msgid "Negative for outgoing movements."
-msgstr "قيمة سالبة للحركات الصادرة."
-
-#: core/models.py:990 core/models.py:1326
-msgid "order line"
-msgstr "بند الطلب"
-
-#: core/models.py:994
-msgid "performed by"
-msgstr "نفّذه"
-
-#: core/models.py:997 core/models.py:1576 core/models.py:1701
-msgid "note"
-msgstr "ملاحظة"
-
-#: core/models.py:1001
-msgid "stock movement"
-msgstr "حركة مخزون"
-
-#: core/models.py:1002
-msgid "stock movements"
-msgstr "حركات المخزون"
-
-#: core/models.py:1020 core/models.py:1147
-msgid "discount %"
-msgstr "الخصم %"
-
-#: core/models.py:1024 core/models.py:1100
-msgid "price tier"
-msgstr "فئة السعر"
-
-#: core/models.py:1025
-msgid "price tiers"
-msgstr "فئات الأسعار"
-
-#: core/models.py:1034
-msgid "Osek Patur (עוסק פטור)"
-msgstr "عمل معفى (عوسك باتور)"
-
-#: core/models.py:1035
-msgid "Osek Murshe (עוסק מורשה)"
-msgstr "عمل مرخّص (عوسك مورشيه)"
-
-#: core/models.py:1036
-msgid "Company (חברה בע\"מ)"
-msgstr "شركة محدودة"
-
-#: core/models.py:1037
-msgid "Partnership (שותפות)"
-msgstr "شراكة"
-
-#: core/models.py:1038
-msgid "Non-profit (עמותה)"
-msgstr "جمعية غير ربحية"
-
-#: core/models.py:1049
-msgid "business name"
-msgstr "اسم النشاط التجاري"
-
-#: core/models.py:1052
-msgid "If it differs from the trading name."
-msgstr "إذا اختلف عن الاسم التجاري."
-
-#: core/models.py:1055
-msgid "business type"
-msgstr "نوع النشاط التجاري"
-
-#: core/models.py:1060
-msgid "ח.פ. / ע.מ. — appears on every invoice."
-msgstr "الرقم الضريبي — يظهر على كل فاتورة."
-
-#: core/models.py:1063
-msgid "company registration number"
-msgstr "رقم تسجيل الشركة"
-
-#: core/models.py:1066
-msgid "contact name"
-msgstr "اسم جهة الاتصال"
-
-#: core/models.py:1069
-msgid "website"
-msgstr "الموقع الإلكتروني"
-
-#: core/models.py:1071
-msgid "billing address"
-msgstr "عنوان الفوترة"
-
-#: core/models.py:1073
-msgid "postal code"
-msgstr "الرمز البريدي"
-
-#: core/models.py:1075 core/models.py:1530
-msgid "delivery address"
-msgstr "عنوان التسليم"
-
-#: core/models.py:1076
-msgid "Only if deliveries go somewhere other than the billing address."
-msgstr "فقط إذا كانت التسليمات تذهب إلى عنوان غير عنوان الفوترة."
-
-#: core/models.py:1084
-msgid "map link"
-msgstr "رابط الخريطة"
-
-#: core/models.py:1085
-msgid "Paste a link from Google Maps, Waze or Apple Maps. The delivery point is taken from it."
-msgstr "الصق رابطًا من خرائط Google أو Waze أو خرائط Apple. تُؤخذ نقطة التسليم منه."
-
-#: core/models.py:1097 core/models.py:1141 core/models.py:1478
-#: core/models.py:1546
-msgid "notes"
-msgstr "ملاحظات"
-
-#: core/models.py:1104
-msgid "credit limit"
-msgstr "حد الائتمان"
-
-#: core/models.py:1111
-msgid "clients"
-msgstr "عملاء"
-
-#: core/models.py:1119 core/models.py:1662
-msgid "Draft"
-msgstr "مسودة"
-
-#: core/models.py:1120
-msgid "Submitted"
-msgstr "مُقدَّم"
-
-#: core/models.py:1121
-msgid "Confirmed"
-msgstr "مؤكَّد"
-
-#: core/models.py:1122
-msgid "Picking"
-msgstr "قيد التجهيز"
-
-#: core/models.py:1123
-msgid "Ready for delivery"
-msgstr "جاهز للتسليم"
-
-#: core/models.py:1124
-msgid "Out for delivery"
-msgstr "في الطريق"
-
-#: core/models.py:1125 core/models.py:1514
-msgid "Delivered"
-msgstr "تم التسليم"
-
-#: core/models.py:1126
-msgid "Cancelled"
-msgstr "ملغى"
-
-#: core/models.py:1132
-msgid "order number"
+msgid ""
+"Auto-closed: shift stayed open more than %(h)dh with no clock-out. Enter "
+"your real clock-out time."
+msgstr ""
+
+#: core/greeninvoice.py:224
+#, python-format
+msgid "%(bars)d bars x %(length)s m"
+msgstr "%(bars)d قضبان × %(length)s م"
+
+#: core/greeninvoice.py:230
+#, python-format
+msgid "%(metres)s m"
+msgstr "%(metres)s م"
+
+#: core/greeninvoice.py:233
+#, python-format
+msgid "%(weight)s kg at %(price)s/kg"
+msgstr "%(weight)s كغ بسعر %(price)s للكغ"
+
+#: core/greeninvoice.py:240
+#, python-format
+msgid "(%(pct)s%% off)"
+msgstr "(خصم %(pct)s%%)"
+
+#: core/greeninvoice.py:269
+#, python-format
+msgid "Unknown payment type \"%(type)s\"."
+msgstr "نوع دفع غير معروف \"%(type)s\"."
+
+#: core/greeninvoice.py:293
+#, python-format
+msgid "Unknown invoice kind \"%(kind)s\"."
+msgstr "نوع فاتورة غير معروف \"%(kind)s\"."
+
+#: core/greeninvoice.py:309
+#, fuzzy, python-format
+#| msgid "order number"
+msgid "Order %(number)s"
 msgstr "رقم الطلب"
 
-#: core/models.py:1137 core/models.py:1468 core/models.py:1525
-#: core/models.py:1630 core/models.py:1676
-msgid "status"
-msgstr "الحالة"
-
-#: core/models.py:1139
-msgid "ordered at"
-msgstr "طُلب في"
-
-#: core/models.py:1140
-msgid "required by"
-msgstr "مطلوب بحلول"
-
-#: core/models.py:1149
-msgid "VAT %"
-msgstr "ض.ق.م %"
-
-#: core/models.py:1160
-msgid "order note PDF"
-msgstr "ملف PDF لمستند الطلب"
-
-#: core/models.py:1162
-msgid "delivery note PDF"
-msgstr "ملف PDF لمستند التسليم"
-
-#: core/models.py:1166
-msgid "delivery signed at"
-msgstr "وُقّع التسليم في"
-
-#: core/models.py:1170
-msgid "public token"
-msgstr "الرمز العام"
-
-#: core/models.py:1173 core/models.py:1280 core/models.py:1385
-#: core/models.py:1446 core/models.py:1518
-msgid "order"
-msgstr "الطلب"
-
-#: core/models.py:1174
-msgid "orders"
-msgstr "طلبات"
-
-#: core/models.py:1289
-msgid "Which series this line was ordered for; a profile can serve several."
-msgstr "لأي سلسلة طُلب هذا البند؛ يمكن للمقطع الواحد أن يخدم عدة سلاسل."
-
-#: core/models.py:1300
-msgid "total length (m)"
-msgstr "الطول الإجمالي (م)"
-
-#: core/models.py:1307
-msgid "weight override (kg)"
-msgstr "تجاوز الوزن (كغ)"
-
-#: core/models.py:1317
-msgid "prepared"
-msgstr "مُحضّر"
-
-#: core/models.py:1318
-msgid "shortage note"
-msgstr "ملاحظة نقص"
-
-#: core/models.py:1322
-msgid "delivered length (m)"
-msgstr "الطول المُسلّم (م)"
-
-#: core/models.py:1327
-msgid "order lines"
-msgstr "بنود الطلب"
-
-#: core/models.py:1374
-msgid "Invoice"
-msgstr "فاتورة"
-
-#: core/models.py:1375 core/views.py:368
-msgid "Delivery note"
-msgstr "سند تسليم"
-
-#: core/models.py:1376
-msgid "Quote"
-msgstr "عرض سعر"
-
-#: core/models.py:1377
-msgid "Credit note"
-msgstr "إشعار دائن"
-
-#: core/models.py:1380
-msgid "document number"
-msgstr "رقم المستند"
-
-#: core/models.py:1389 core/models.py:1451
-msgid "issued at"
-msgstr "صدر في"
-
-#: core/models.py:1390
-msgid "due at"
-msgstr "مستحق في"
-
-#: core/models.py:1391 core/models.py:1459
-msgid "total"
-msgstr "الإجمالي"
-
-#: core/models.py:1393 core/models.py:1457
-msgid "VAT"
-msgstr "ض.ق.م"
-
-#: core/models.py:1395
-msgid "paid"
-msgstr "مدفوع"
-
-#: core/models.py:1397 core/models.py:1702
-msgid "PDF"
-msgstr "PDF"
-
-#: core/models.py:1400
-msgid "document"
-msgstr "مستند"
-
-#: core/models.py:1401
-msgid "documents"
-msgstr "المستندات"
-
-#: core/models.py:1422
-msgid "Income"
-msgstr "الإيرادات"
-
-#: core/models.py:1423
-msgid "Expense"
-msgstr "المصروفات"
-
-#: core/models.py:1426 core/models.py:1667
-msgid "Manual"
-msgstr "يدوي"
-
-#: core/models.py:1427 core/models.py:1666
-msgid "Generated"
-msgstr "مُنشأ"
-
-#: core/models.py:1428
-msgid "Scanned"
-msgstr "ممسوح"
-
-#: core/models.py:1431
-msgid "Unpaid"
-msgstr "غير مدفوع"
-
-#: core/models.py:1432
-msgid "Paid"
-msgstr "مدفوع"
-
-#: core/models.py:1435
-msgid "direction"
-msgstr "الاتجاه"
-
-#: core/models.py:1436
-msgid "invoice number"
-msgstr "رقم الفاتورة"
-
-#: core/models.py:1448
-msgid "party name"
-msgstr "اسم الطرف"
-
-#: core/models.py:1449
-msgid "party tax ID"
-msgstr "الرقم الضريبي للطرف"
-
-#: core/models.py:1452
-msgid "category"
-msgstr "الفئة"
-
-#: core/models.py:1455
-msgid "subtotal"
-msgstr "المجموع الفرعي"
-
-#: core/models.py:1463
-msgid "amount paid"
-msgstr "المبلغ المدفوع"
-
-#: core/models.py:1466 core/models.py:1678
-msgid "source"
-msgstr "المصدر"
-
-#: core/models.py:1473
-msgid "allocation number"
-msgstr "رقم التخصيص"
-
-#: core/models.py:1474
-msgid "external id"
-msgstr "المعرّف الخارجي"
-
-#: core/models.py:1477
-msgid "file"
-msgstr "ملف"
-
-#: core/models.py:1486
-msgid "invoice"
-msgstr "فاتورة"
-
-#: core/models.py:1487
-msgid "invoices"
-msgstr "فواتير"
-
-#: core/models.py:1511 core/models.py:1613
-msgid "Pending"
-msgstr "قيد الانتظار"
-
-#: core/models.py:1512
-msgid "Loaded"
-msgstr "مُحمّل"
-
-#: core/models.py:1513
-msgid "En route"
-msgstr "في الطريق"
-
-#: core/models.py:1515
-msgid "Failed"
-msgstr "فشل"
-
-#: core/models.py:1521
-msgid "driver"
-msgstr "السائق"
-
-#: core/models.py:1527
-msgid "scheduled for"
-msgstr "مجدول لـ"
-
-#: core/models.py:1528
-msgid "delivered at"
-msgstr "سُلّم في"
-
-#: core/models.py:1531
-msgid "received by"
-msgstr "استلمه"
-
-#: core/models.py:1537
-msgid "recipient's phone"
-msgstr "هاتف المستلم"
-
-#: core/models.py:1538
-msgid "The person who signed, for sending them the delivery note."
-msgstr "الشخص الذي وقّع، لإرسال مستند التسليم إليه."
-
-#: core/models.py:1541
-msgid "signature"
-msgstr "التوقيع"
-
-#: core/models.py:1544
-msgid "proof photo"
-msgstr "صورة إثبات"
-
-#: core/models.py:1549
-msgid "delivery"
-msgstr "تسليم"
-
-#: core/models.py:1550
-msgid "deliveries"
-msgstr "التسليمات"
-
-#: core/models.py:1571 core/models.py:1618 core/models.py:1670
-msgid "worker"
-msgstr "العامل"
-
-#: core/models.py:1574
-msgid "clock in"
-msgstr "تسجيل دخول"
-
-#: core/models.py:1575
-msgid "clock out"
-msgstr "تسجيل خروج"
-
-#: core/models.py:1580 core/models.py:1621
-msgid "shift"
-msgstr "وردية"
-
-#: core/models.py:1581
-msgid "shifts"
-msgstr "الورديات"
-
-#: core/models.py:1614
-msgid "Approved"
-msgstr "مقبول"
-
-#: core/models.py:1615
-msgid "Rejected"
-msgstr "مرفوض"
-
-#: core/models.py:1624
-msgid "work date"
-msgstr "تاريخ العمل"
-
-#: core/models.py:1625
-msgid "requested clock in"
-msgstr "دخول مطلوب"
-
-#: core/models.py:1626
-msgid "requested clock out"
-msgstr "خروج مطلوب"
-
-#: core/models.py:1627
-msgid "reason"
-msgstr "السبب"
-
-#: core/models.py:1632
-msgid "reviewed by"
-msgstr "راجعه"
-
-#: core/models.py:1634
-msgid "reviewed at"
-msgstr "روجع في"
-
-#: core/models.py:1635
-msgid "review note"
-msgstr "ملاحظة المراجعة"
-
-#: core/models.py:1640
-msgid "shift correction request"
-msgstr "طلب تصحيح وردية"
-
-#: core/models.py:1641
-msgid "shift correction requests"
-msgstr "طلبات تصحيح الورديات"
-
-#: core/models.py:1663
-msgid "Finalised"
-msgstr "نهائي"
-
-#: core/models.py:1672
-msgid "year"
-msgstr "السنة"
-
-#: core/models.py:1673
-msgid "month"
-msgstr "الشهر"
-
-#: core/models.py:1683
-msgid "overtime paid"
-msgstr "دُفعت الساعات الإضافية"
-
-#: core/models.py:1686
-msgid "days worked"
-msgstr "أيام العمل"
-
-#: core/models.py:1688
-msgid "regular hours"
-msgstr "ساعات عادية"
-
-#: core/models.py:1690
-msgid "overtime 125% hours"
-msgstr "ساعات إضافية 125%"
-
-#: core/models.py:1692
-msgid "overtime 150% hours"
-msgstr "ساعات إضافية 150%"
-
-#: core/models.py:1697
-msgid "base pay"
-msgstr "الأجر الأساسي"
-
-#: core/models.py:1699
-msgid "overtime pay"
-msgstr "أجر الساعات الإضافية"
-
-#: core/models.py:1707
-msgid "finalised at"
-msgstr "أُنهي في"
-
-#: core/models.py:1710 core/models.py:1744
-msgid "payslip"
-msgstr "قسيمة الراتب"
-
-#: core/models.py:1711
-msgid "payslips"
-msgstr "قسائم الرواتب"
-
-#: core/models.py:1746
-msgid "label"
-msgstr "التسمية"
-
-#: core/models.py:1748
-msgid "amount"
-msgstr "المبلغ"
-
-#: core/models.py:1749
-msgid "Positive to add (bonus, travel), negative to deduct (advance)."
-msgstr "موجب للإضافة (مكافأة، مواصلات)، سالب للخصم (سلفة)."
-
-#: core/models.py:1752
-msgid "payslip adjustment"
-msgstr "تعديل القسيمة"
-
-#: core/models.py:1753
-msgid "payslip adjustments"
-msgstr "تعديلات القسيمة"
-
-#: core/notify.py:28
-msgid "a client"
-msgstr "عميل"
-
-#: core/notify.py:37
-msgid "Clocked in"
-msgstr "تسجيل دخول"
-
-#: core/notify.py:38
+#: core/greeninvoice.py:314
+#, fuzzy, python-format
+#| msgid "order number"
+msgid "Quote %(number)s"
+msgstr "رقم الطلب"
+
+#: core/greeninvoice.py:336 core/views_invoicing.py:84
+msgid "Green Invoice is not set up: add the API key and secret in Settings."
+msgstr "لم يتم إعداد Green Invoice: أضِف مفتاح API والسرّ في الإعدادات."
+
+#: core/greeninvoice.py:374
 #, python-format
-msgid "%(worker)s started work."
-msgstr "بدأ %(worker)s العمل."
+msgid "Green Invoice refused the request (%(status)s): %(message)s"
+msgstr "رفض Green Invoice الطلب (%(status)s): %(message)s"
 
-#: core/notify.py:45
-#, python-format
-msgid "%(worker)s finished work (%(hours)s h)."
-msgstr "أنهى %(worker)s العمل (%(hours)s س)."
+#: core/greeninvoice.py:378
+msgid "Could not reach Green Invoice."
+msgstr "تعذّر الاتصال بـ Green Invoice."
 
-#: core/notify.py:48
-#, python-format
-msgid "%(worker)s finished work."
-msgstr "أنهى %(worker)s العمل."
+#: core/greeninvoice.py:385
+msgid "Green Invoice sent something unreadable."
+msgstr "أرسل Green Invoice ردًّا غير مقروء."
 
-#: core/notify.py:51
-msgid "Clocked out"
-msgstr "تسجيل خروج"
+#: core/greeninvoice.py:400
+msgid "Green Invoice did not return a token."
+msgstr "لم يُعِد Green Invoice رمز وصول."
 
-#: core/notify.py:64
+#: core/greeninvoice.py:433
+#, fuzzy
+#| msgid "Green Invoice API secret"
+msgid "Green Invoice did not return a PDF."
+msgstr "سر Green Invoice"
+
+#: core/greeninvoice.py:462
+msgid "Green Invoice did not return a document number."
+msgstr "لم يُعِد Green Invoice رقم مستند."
+
+#: core/management/commands/retranslate_notifications.py:71 core/notify.py:81
 msgid "New order"
 msgstr "طلب جديد"
 
-#: core/notify.py:65
+#: core/management/commands/retranslate_notifications.py:72 core/notify.py:82
 #, python-format
 msgid "%(number)s for %(client)s."
 msgstr "%(number)s لـ %(client)s."
 
-#: core/notify.py:77
+#: core/management/commands/retranslate_notifications.py:87 core/notify.py:54
+msgid "Clocked in"
+msgstr "تسجيل دخول"
+
+#: core/management/commands/retranslate_notifications.py:88 core/notify.py:55
+#, python-format
+msgid "%(worker)s started work."
+msgstr "بدأ %(worker)s العمل."
+
+#: core/models.py:55
+msgid "ID number must contain digits only."
+msgstr "يجب أن يحتوي رقم الهوية على أرقام فقط."
+
+#: core/models.py:57
+msgid "ID number cannot be longer than 9 digits."
+msgstr "لا يمكن أن يزيد رقم الهوية عن 9 أرقام."
+
+#: core/models.py:69
+#, python-format
+msgid "%(value)s is not a valid ID number."
+msgstr "%(value)s ليس رقم هوية صالحاً."
+
+#: core/models.py:87
+msgid "Office"
+msgstr "المكتب"
+
+#: core/models.py:88
+msgid "Warehouse worker"
+msgstr "عامل مخزن"
+
+#: core/models.py:89
+msgid "Delivery driver"
+msgstr "سائق توصيل"
+
+#: core/models.py:90
+msgid "Client"
+msgstr "عميل"
+
+#: core/models.py:91
+msgid "Manager"
+msgstr "مدير"
+
+#: core/models.py:97
+msgid "By hour"
+msgstr "بالساعة"
+
+#: core/models.py:98
+msgid "By day"
+msgstr "باليوم"
+
+#: core/models.py:99
+msgid "Monthly salary"
+msgstr "راتب شهري"
+
+#: core/models.py:131
+msgid "An ID number is required for staff accounts."
+msgstr "رقم الهوية مطلوب لحسابات الموظفين."
+
+#: core/models.py:137
+msgid "A phone number is required for client accounts."
+msgstr "رقم الهاتف مطلوب لحسابات العملاء."
+
+#: core/models.py:169
+msgid "Superuser must have is_staff=True."
+msgstr "المستخدم الخارق يجب أن يكون is_staff=True."
+
+#: core/models.py:171
+msgid "Superuser must have is_superuser=True."
+msgstr "المستخدم الخارق يجب أن يكون is_superuser=True."
+
+#: core/models.py:188
+msgid "ID number"
+msgstr "رقم الهوية"
+
+#: core/models.py:195
+msgid "9-digit ID number (תעודת זהות). Staff sign in with this."
+msgstr "رقم هوية من 9 أرقام (تعودات زهوت). يسجّل الموظفون الدخول به."
+
+#: core/models.py:198
+msgid "first name"
+msgstr "الاسم الأول"
+
+#: core/models.py:199
+msgid "last name"
+msgstr "اسم العائلة"
+
+#: core/models.py:200 core/models.py:732 core/models.py:1170
+msgid "email"
+msgstr "البريد الإلكتروني"
+
+#: core/models.py:202 core/models.py:731 core/models.py:1169
+msgid "phone"
+msgstr "الهاتف"
+
+#: core/models.py:207 core/serializers.py:173
+msgid "Enter a valid phone number."
+msgstr "أدخل رقم هاتف صالحاً."
+
+#: core/models.py:214
+msgid "phone (normalised)"
+msgstr "الهاتف (موحّد)"
+
+#: core/models.py:222
+msgid "date of birth"
+msgstr "تاريخ الميلاد"
+
+#: core/models.py:223 core/models.py:729 core/models.py:890
+msgid "address"
+msgstr "العنوان"
+
+#: core/models.py:226 core/models.py:637
+msgid "role"
+msgstr "الدور"
+
+#: core/models.py:229
+msgid "language"
+msgstr "اللغة"
+
+#: core/models.py:236
+msgid "hired on"
+msgstr "تاريخ التوظيف"
+
+#: core/models.py:237
+msgid "emergency contact"
+msgstr "جهة اتصال للطوارئ"
+
+#: core/models.py:238
+msgid "emergency phone"
+msgstr "هاتف الطوارئ"
+
+#: core/models.py:244 core/models.py:2016
+msgid "pay basis"
+msgstr "أساس الأجر"
+
+#: core/models.py:247 core/models.py:2029
+msgid "hourly rate"
+msgstr "الأجر بالساعة"
+
+#: core/models.py:249
+msgid "daily rate"
+msgstr "الأجر اليومي"
+
+#: core/models.py:251
+msgid "monthly salary"
+msgstr "الراتب الشهري"
+
+#: core/models.py:252
+msgid "pay overtime"
+msgstr "دفع الساعات الإضافية"
+
+#: core/models.py:254
+msgid "regular hours per day"
+msgstr "ساعات عادية في اليوم"
+
+#: core/models.py:256
+msgid "Hours before overtime starts; 8 for a 6-day week, 8.6 for 5-day."
+msgstr "عدد الساعات قبل بدء الساعات الإضافية؛ 8 لأسبوع من 6 أيام و8.6 لأسبوع من 5 أيام."
+"الساعات قبل بدء الوقت الإضافي؛ 8 لأسبوع من 6 أيام، 8.6 لأسبوع من 5 أيام."
+
+#: core/models.py:261 core/models.py:1212 core/models.py:1246
+#: core/models.py:1578 core/models.py:1637
+msgid "client"
+msgstr "عميل"
+
+#: core/models.py:268 core/models.py:410 core/models.py:497 core/models.py:563
+#: core/models.py:898 core/models.py:1208
+msgid "active"
+msgstr "نشط"
+
+#: core/models.py:270
+msgid "admin access"
+msgstr "وصول إداري"
+
+#: core/models.py:270
+msgid "Can sign into Django admin."
+msgstr "يمكنه تسجيل الدخول إلى لوحة الإدارة."
+
+#: core/models.py:272
+msgid "date joined"
+msgstr "تاريخ الانضمام"
+
+#: core/models.py:277 core/models.py:1011
+msgid "last seen"
+msgstr "آخر ظهور"
+
+#: core/models.py:283
+msgid "must change password"
+msgstr "يجب تغيير كلمة المرور"
+
+#: core/models.py:284
+msgid "Blocks all other API access until the password is changed."
+msgstr "يمنع أي وصول آخر حتى تغيير كلمة المرور."
+
+#: core/models.py:287 core/models.py:1264 core/models.py:1677
+#: core/models.py:2038
+msgid "created by"
+msgstr "أنشأه"
+
+#: core/models.py:297 core/models.py:1000 core/models.py:1033
+msgid "user"
+msgstr "المستخدم"
+
+#: core/models.py:298
+msgid "users"
+msgstr "مستخدمين"
+
+#: core/models.py:314
+msgid "Client users must be linked to a client."
+msgstr "يجب ربط مستخدمي العملاء بعميل."
+
+#: core/models.py:316
+msgid "Only client users can be linked to a client."
+msgstr "يمكن ربط مستخدمي العملاء فقط بعميل."
+
+#: core/models.py:321
+msgid "Client users sign in with their phone number."
+msgstr "يسجّل العملاء الدخول برقم هاتفهم."
+
+#: core/models.py:323
+msgid "Staff users sign in with their ID number."
+msgstr "يسجّل الموظفون الدخول برقم الهوية."
+
+#: core/models.py:367
+msgid "Frame"
+msgstr "إطار"
+
+#: core/models.py:368
+msgid "Sash"
+msgstr "ضلفة"
+
+#: core/models.py:369
+msgid "Track"
+msgstr "مسار"
+
+#: core/models.py:370
+msgid "Mullion"
+msgstr "فاصل"
+
+#: core/models.py:371
+msgid "Glazing bead"
+msgstr "مسطرة زجاج"
+
+#: core/models.py:372
+msgid "Shutter"
+msgstr "شيش"
+
+#: core/models.py:373
+msgid "Trim"
+msgstr "كسوة"
+
+#: core/models.py:374
+msgid "Adapter"
+msgstr "محول"
+
+#: core/models.py:375
+msgid "Accessory"
+msgstr "مقطع مساعد"
+
+#: core/models.py:379
+msgid "Post"
+msgstr "عمود"
+
+#: core/models.py:380
+msgid "Beam"
+msgstr "جسر"
+
+#: core/models.py:381
+msgid "Seal / gasket"
+msgstr "حشوة"
+
+#: core/models.py:382
+msgid "Railing"
+msgstr "درابزين"
+
+#: core/models.py:383
+msgid "Insect screen"
+msgstr "شبك"
+
+#: core/models.py:384
+msgid "Panel"
+msgstr "لوح"
+
+#: core/models.py:385 core/models.py:1141 core/models.py:1381
+#: core/models.py:1719 core/models.py:1783
+msgid "Other"
+msgstr "أخرى"
+
+#: core/models.py:398 core/models.py:448
+msgid "slug"
+msgstr "المعرّف"
+
+#: core/models.py:399 core/models.py:446 core/models.py:474 core/models.py:721
+#: core/models.py:889 core/models.py:1120
+msgid "name"
+msgstr "الاسم"
+
+#: core/models.py:400 core/models.py:447 core/models.py:475
+msgid "name (English)"
+msgstr "الاسم (بالإنجليزية)"
+
+#: core/models.py:401 core/models.py:1171
+msgid "website"
+msgstr "الموقع الإلكتروني"
+
+#: core/models.py:403
+msgid "attribution"
+msgstr "نسب المصدر"
+
+#: core/models.py:404
+msgid "Copyright line for the catalogue data, shown wherever it is shown."
+msgstr "سطر حقوق النشر لبيانات الكتالوج، يظهر أينما عُرض الكتالوج."
+
+#: core/models.py:407
+msgid "default"
+msgstr "افتراضي"
+
+#: core/models.py:408
+msgid "The manufacturer a bare profile number refers to."
+msgstr "الشركة المصنّعة التي يشير إليها رقم البروفيل المجرّد."
+
+#: core/models.py:411 core/models.py:654
+msgid "position"
+msgstr "الترتيب"
+
+#: core/models.py:414 core/models.py:443 core/models.py:485 core/models.py:528
+msgid "manufacturer"
+msgstr "الشركة المصنّعة"
+
+#: core/models.py:415
+#, fuzzy
+#| msgid "manufacturer"
+msgid "manufacturers"
+msgstr "الشركة المصنّعة"
+
+#: core/models.py:449 core/models.py:532 core/models.py:917
+msgid "description"
+msgstr "الوصف"
+
+#: core/models.py:452 core/models.py:478
+msgid "family"
+msgstr "العائلة"
+
+#: core/models.py:453
+msgid "families"
+msgstr "العائلات"
+
+#: core/models.py:473 core/models.py:915
+msgid "code"
+msgstr "الرمز"
+
+#: core/models.py:488 core/models.py:653
+msgid "catalog page"
+msgstr "صفحة الكتالوج"
+
+#: core/models.py:494 core/models.py:1482
+msgid "price per kg"
+msgstr "السعر لكل كغ"
+
+#: core/models.py:495
+msgid "Metal price per kilogram for this series. Drives catalog pricing."
+msgstr "سعر المعدن لكل كيلوغرام لهذه السلسلة. يحدّد تسعير الكتالوج."
+
+#: core/models.py:500 core/models.py:501 core/models.py:551 core/models.py:606
+#: core/models.py:1452
+msgid "series"
+msgstr "السلسلة"
+
+#: core/models.py:531
+msgid "profile number"
+msgstr "رقم المقطع"
+
+#: core/models.py:533
+msgid "description (English)"
+msgstr "الوصف (بالإنجليزية)"
+
+#: core/models.py:536
+msgid "weight (g/m)"
+msgstr "الوزن (غ/م)"
+
+#: core/models.py:540
+msgid "Grams per metre, as printed in the catalog."
+msgstr "غرامات لكل متر، كما في الكتالوج."
+
+#: core/models.py:546
+msgid "cross-section drawing"
+msgstr "رسم المقطع العرضي"
+
+#: core/models.py:559
+msgid "equivalent of"
+msgstr "مكافئ لـ"
+
+#: core/models.py:564 core/models.py:1012 core/models.py:1045
+#: core/models.py:1100 core/models.py:1209 core/models.py:1679
+#: core/models.py:1911 core/models.py:1971 core/models.py:2040
+msgid "created at"
+msgstr "أُنشئ في"
+
+#: core/models.py:565
+msgid "updated at"
+msgstr "حُدّث في"
+
+#: core/models.py:568 core/models.py:610 core/models.py:941 core/models.py:1448
+msgid "profile"
+msgstr "المقطع"
+
+#: core/models.py:569
+msgid "profiles"
+msgstr "مقاطع"
+
+#: core/models.py:615
+msgid "catalog group"
+msgstr "مجموعة الكتالوج"
+
+#: core/models.py:616
+msgid "Sub-heading this row sits under, e.g. כנפיים – זיגוג עד 8 מ\"מ"
+msgstr "العنوان الفرعي الذي يندرج تحته هذا الصف، مثال: أجنحة – زجاج حتى 8 ملم"
+
+#: core/models.py:623
+msgid "description as listed"
+msgstr "الوصف كما هو مدرج"
+
+#: core/models.py:624
+msgid "Only set when it differs from the profile description."
+msgstr "يُملأ فقط عندما يختلف عن وصف المقطع."
+
+#: core/models.py:632
+msgid "weight as listed (g/m)"
+msgstr "الوزن كما هو مدرج (غ/م)"
+
+#: core/models.py:643
+msgid "glass min (mm)"
+msgstr "الحد الأدنى للزجاج (ملم)"
+
+#: core/models.py:646
+msgid "glass max (mm)"
+msgstr "الحد الأقصى للزجاج (ملم)"
+
+#: core/models.py:649
+msgid "tracks"
+msgstr "المسارات"
+
+#: core/models.py:650
+msgid "For rails: 1–5 נתיבים."
+msgstr "للقضبان: 1–5 مسارات."
+
+#: core/models.py:657
+msgid "series profile"
+msgstr "مقطع السلسلة"
+
+#: core/models.py:658
+msgid "series profiles"
+msgstr "مقاطع السلسلة"
+
+#: core/models.py:722 core/models.py:1153
+msgid "registered legal name"
+msgstr "الاسم القانوني المسجّل"
+
+#: core/models.py:724 core/models.py:1161
+msgid "tax ID"
+msgstr "الرقم الضريبي"
+
+#: core/models.py:725
+msgid "ח.פ. / ע.מ. — appears on order and delivery documents."
+msgstr "الرقم الضريبي — يظهر على مستندات الطلب والتسليم."
+
+#: core/models.py:728
+msgid "logo"
+msgstr "الشعار"
+
+#: core/models.py:730 core/models.py:891 core/models.py:1174
+msgid "city"
+msgstr "المدينة"
+
+#: core/models.py:734 core/models.py:893 core/models.py:1194
+msgid "latitude"
+msgstr "خط العرض"
+
+#: core/models.py:737 core/models.py:896 core/models.py:1197
+msgid "longitude"
+msgstr "خط الطول"
+
+#: core/models.py:741
+msgid "quote valid for (days)"
+msgstr "صلاحية عرض السعر (أيام)"
+
+#: core/models.py:742
+msgid "Aluminium moves. A quote says how long the price holds."
+msgstr "سعر الألمنيوم متغيّر، وعرض السعر يحدّد مدّة ثبات السعر."
+
+#: core/models.py:745 core/models.py:746
+msgid "shop"
+msgstr "المتجر"
+
+#: core/models.py:766
+msgid "Cloudinary cloud name"
+msgstr "اسم سحابة Cloudinary"
+
+#: core/models.py:768
+msgid "Cloudinary API key"
+msgstr "مفتاح API لـ Cloudinary"
+
+#: core/models.py:770
+msgid "Cloudinary API secret"
+msgstr "سر API لـ Cloudinary"
+
+#: core/models.py:774
+msgid "OpenAI API key"
+msgstr "مفتاح OpenAI"
+
+#: core/models.py:777
+msgid "SMTP host"
+msgstr "خادم SMTP"
+
+#: core/models.py:778
+msgid "SMTP port"
+msgstr "منفذ SMTP"
+
+#: core/models.py:779
+msgid "SMTP username"
+msgstr "اسم مستخدم SMTP"
+
+#: core/models.py:780
+msgid "SMTP password"
+msgstr "كلمة مرور SMTP"
+
+#: core/models.py:781
+msgid "SMTP from address"
+msgstr "عنوان المرسل SMTP"
+
+#: core/models.py:782
+msgid "SMTP use TLS"
+msgstr "استخدام TLS لـ SMTP"
+
+#: core/models.py:785
+msgid "accountant name"
+msgstr "اسم المحاسب"
+
+#: core/models.py:786
+msgid "accountant email"
+msgstr "بريد المحاسب"
+
+#: core/models.py:787
+msgid "accountant phone"
+msgstr "هاتف المحاسب"
+
+#: core/models.py:791
+msgid "Green Invoice API key"
+msgstr "مفتاح Green Invoice"
+
+#: core/models.py:793
+msgid "Green Invoice API secret"
+msgstr "سر Green Invoice"
+
+#: core/models.py:800
+msgid "Mapbox token"
+msgstr "رمز Mapbox"
+
+#: core/models.py:801
+msgid ""
+"Public token (pk.…) for the map. A MAPBOX_TOKEN environment variable "
+"overrides this."
+msgstr "رمز عام (pk.…) للخريطة. متغيّر البيئة MAPBOX_TOKEN يتجاوز هذه القيمة."
+
+#: core/models.py:812
+msgid "manager register code"
+msgstr "رمز تسجيل المدير"
+
+#: core/models.py:813
+msgid ""
+"Anyone with this code can create a manager account. Leave empty to switch "
+"manager registration off. A REGISTER_CODE environment variable overrides "
+"this."
+msgstr ""
+"يستطيع أي شخص لديه هذا الرمز إنشاء حساب مدير. اتركه فارغًا لإيقاف تسجيل "
+"المديرين. متغيّر البيئة REGISTER_CODE يتجاوز هذه القيمة."
+
+#: core/models.py:819 core/models.py:820
+msgid "app configuration"
+msgstr "إعدادات التطبيق"
+
+#: core/models.py:901 core/models.py:912
+msgid "warehouse"
+msgstr "المستودع"
+
+#: core/models.py:902
+msgid "warehouses"
+msgstr "مستودعات"
+
+#: core/models.py:916
+msgid "barcode"
+msgstr "الباركود"
+
+#: core/models.py:920 core/models.py:945
+msgid "location"
+msgstr "الموقع"
+
+#: core/models.py:921
+msgid "locations"
+msgstr "المواقع"
+
+#: core/models.py:949 core/models.py:1460
+msgid "bar length (mm)"
+msgstr "طول القضيب (ملم)"
+
+#: core/models.py:952
+msgid "finish"
+msgstr "التشطيب"
+
+#: core/models.py:953
+msgid "Anodised, powder-coated RAL code, mill finish, etc."
+msgstr "أنودة، طلاء بودرة بكود RAL، تشطيب خام، إلخ."
+
+#: core/models.py:957
+msgid "reorder level"
+msgstr "حد إعادة الطلب"
+
+#: core/models.py:958
+msgid "Alert the office when quantity on hand drops below this."
+msgstr "تنبيه المكتب عندما تنخفض الكمية المتوفرة عن هذا الحد."
+
+#: core/models.py:962 core/models.py:1081
+msgid "stock item"
+msgstr "صنف مخزون"
+
+#: core/models.py:963
+msgid "stock items"
+msgstr "أصناف المخزون"
+
+#: core/models.py:995
+msgid "Android"
+msgstr "أندرويد"
+
+#: core/models.py:996
+msgid "iOS"
+msgstr "iOS"
+
+#: core/models.py:997
+msgid "Web"
+msgstr "الويب"
+
+#: core/models.py:1003
+msgid "push token"
+msgstr "رمز الإشعارات"
+
+#: core/models.py:1005
+msgid "platform"
+msgstr "المنصة"
+
+#: core/models.py:1015
+msgid "device token"
+msgstr "رمز الجهاز"
+
+#: core/models.py:1016
+msgid "device tokens"
+msgstr "رموز الأجهزة"
+
+#: core/models.py:1036
+msgid "title"
+msgstr "العنوان"
+
+#: core/models.py:1037
+msgid "body"
+msgstr "النص"
+
+#: core/models.py:1040 core/models.py:1575 core/models.py:1725
+msgid "kind"
+msgstr "النوع"
+
+#: core/models.py:1043
+msgid "data"
+msgstr "البيانات"
+
+#: core/models.py:1044
+msgid "read at"
+msgstr "قُرئ في"
+
+#: core/models.py:1048
+msgid "notification"
+msgstr "إشعار"
+
+#: core/models.py:1049
+msgid "notifications"
+msgstr "الإشعارات"
+
+#: core/models.py:1062
+msgid "Goods received"
+msgstr "استلام بضاعة"
+
+#: core/models.py:1063
+msgid "Picked for order"
+msgstr "انتُقي لطلب"
+
+#: core/models.py:1064
+msgid "Returned"
+msgstr "مُرجع"
+
+#: core/models.py:1066
+msgid "Stock count adjustment"
+msgstr "تعديل جرد المخزون"
+
+#: core/models.py:1067
+msgid "Transferred in"
+msgstr "نُقل إلى"
+
+#: core/models.py:1068
+msgid "Transferred out"
+msgstr "نُقل من"
+
+#: core/models.py:1069
+msgid "Scrapped"
+msgstr "مُتلف"
+
+#: core/models.py:1085
+msgid "type"
+msgstr "النوع"
+
+#: core/models.py:1088 core/models.py:1463
+msgid "bars"
+msgstr "قضبان"
+
+#: core/models.py:1088
+msgid "Negative for outgoing movements."
+msgstr "قيمة سالبة للحركات الصادرة."
+
+#: core/models.py:1092 core/models.py:1496
+msgid "order line"
+msgstr "بند الطلب"
+
+#: core/models.py:1096
+msgid "performed by"
+msgstr "نفّذه"
+
+#: core/models.py:1099 core/models.py:1732 core/models.py:1809
+#: core/models.py:1903 core/models.py:2035
+msgid "note"
+msgstr "ملاحظة"
+
+#: core/models.py:1103
+msgid "stock movement"
+msgstr "حركة مخزون"
+
+#: core/models.py:1104
+msgid "stock movements"
+msgstr "حركات المخزون"
+
+#: core/models.py:1122 core/models.py:1259 core/models.py:1477
+msgid "discount %"
+msgstr "الخصم %"
+
+#: core/models.py:1126 core/models.py:1202
+msgid "price tier"
+msgstr "فئة السعر"
+
+#: core/models.py:1127
+msgid "price tiers"
+msgstr "فئات الأسعار"
+
+#: core/models.py:1136
+msgid "Osek Patur (עוסק פטור)"
+msgstr "عمل معفى (عوسك باتور)"
+
+#: core/models.py:1137
+msgid "Osek Murshe (עוסק מורשה)"
+msgstr "عمل مرخّص (عوسك مورشيه)"
+
+#: core/models.py:1138
+msgid "Company (חברה בע\"מ)"
+msgstr "شركة محدودة"
+
+#: core/models.py:1139
+msgid "Partnership (שותפות)"
+msgstr "شراكة"
+
+#: core/models.py:1140
+msgid "Non-profit (עמותה)"
+msgstr "جمعية غير ربحية"
+
+#: core/models.py:1151
+msgid "business name"
+msgstr "اسم النشاط التجاري"
+
+#: core/models.py:1154
+msgid "If it differs from the trading name."
+msgstr "إذا اختلف عن الاسم التجاري."
+
+#: core/models.py:1157
+msgid "business type"
+msgstr "نوع النشاط التجاري"
+
+#: core/models.py:1162
+msgid "ח.פ. / ע.מ. — appears on every invoice."
+msgstr "الرقم الضريبي — يظهر على كل فاتورة."
+
+#: core/models.py:1165
+msgid "company registration number"
+msgstr "رقم تسجيل الشركة"
+
+#: core/models.py:1168
+msgid "contact name"
+msgstr "اسم جهة الاتصال"
+
+#: core/models.py:1173
+msgid "billing address"
+msgstr "عنوان الفوترة"
+
+#: core/models.py:1175
+msgid "postal code"
+msgstr "الرمز البريدي"
+
+#: core/models.py:1177 core/models.py:1857
+msgid "delivery address"
+msgstr "عنوان التسليم"
+
+#: core/models.py:1178
+msgid "Only if deliveries go somewhere other than the billing address."
+msgstr "فقط إذا كانت التسليمات تذهب إلى عنوان غير عنوان الفوترة."
+
+#: core/models.py:1186
+msgid "map link"
+msgstr "رابط الخريطة"
+
+#: core/models.py:1187
+msgid ""
+"Paste a link from Google Maps, Waze or Apple Maps. The delivery point is "
+"taken from it."
+msgstr ""
+"الصق رابطًا من خرائط Google أو Waze أو خرائط Apple. تُؤخذ نقطة التسليم منه."
+
+#: core/models.py:1199 core/models.py:1253 core/models.py:1674
+#: core/models.py:1873
+msgid "notes"
+msgstr "ملاحظات"
+
+#: core/models.py:1206
+msgid "credit limit"
+msgstr "حد الائتمان"
+
+#: core/models.py:1213
+msgid "clients"
+msgstr "عملاء"
+
+#: core/models.py:1225 core/models.py:1572
+msgid "Quote"
+msgstr "عرض سعر"
+
+#: core/models.py:1226 core/models.py:1996
+msgid "Draft"
+msgstr "مسودة"
+
+#: core/models.py:1227
+msgid "Submitted"
+msgstr "مُقدَّم"
+
+#: core/models.py:1228
+msgid "Confirmed"
+msgstr "مؤكَّد"
+
+#: core/models.py:1229
+msgid "Picking"
+msgstr "قيد التجهيز"
+
+#: core/models.py:1230
+msgid "Ready for delivery"
+msgstr "جاهز للتسليم"
+
+#: core/models.py:1231
+msgid "Out for delivery"
+msgstr "في الطريق"
+
+#: core/models.py:1232 core/models.py:1841
+msgid "Delivered"
+msgstr "تم التسليم"
+
+#: core/models.py:1233
+msgid "Cancelled"
+msgstr "ملغى"
+
+#: core/models.py:1239
+msgid "order number"
+msgstr "رقم الطلب"
+
+#: core/models.py:1243
+#, fuzzy
+#| msgid "updated at"
+msgid "quoted as"
+msgstr "حُدّث في"
+
+#: core/models.py:1244
+#, fuzzy
+#| msgid "created at"
+msgid "accepted at"
+msgstr "أُنشئ في"
+
+#: core/models.py:1249 core/models.py:1664 core/models.py:1852
+#: core/models.py:1964 core/models.py:2010
+msgid "status"
+msgstr "الحالة"
+
+#: core/models.py:1251
+msgid "ordered at"
+msgstr "طُلب في"
+
+#: core/models.py:1252
+msgid "required by"
+msgstr "مطلوب بحلول"
+
+#: core/models.py:1261
+msgid "VAT %"
+msgstr "ض.ق.م %"
+
+#: core/models.py:1272
+msgid "order note PDF"
+msgstr "ملف PDF لمستند الطلب"
+
+#: core/models.py:1274
+msgid "delivery note PDF"
+msgstr "ملف PDF لمستند التسليم"
+
+#: core/models.py:1278
+msgid "delivery signed at"
+msgstr "وُقّع التسليم في"
+
+#: core/models.py:1282
+msgid "public token"
+msgstr "الرمز العام"
+
+#: core/models.py:1285 core/models.py:1445 core/models.py:1581
+#: core/models.py:1642 core/models.py:1722 core/models.py:1786
+#: core/models.py:1845
+msgid "order"
+msgstr "الطلب"
+
+#: core/models.py:1286
+msgid "orders"
+msgstr "طلبات"
+
+#: core/models.py:1454
+msgid "Which series this line was ordered for; a profile can serve several."
+msgstr "لأي سلسلة طُلب هذا البند؛ يمكن للمقطع الواحد أن يخدم عدة سلاسل."
+
+#: core/models.py:1465
+msgid "total length (m)"
+msgstr "الطول الإجمالي (م)"
+
+#: core/models.py:1472
+msgid "weight override (kg)"
+msgstr "تجاوز الوزن (كغ)"
+
+#: core/models.py:1480
+msgid "Off this line, before any discount on the order."
+msgstr "من هذا السطر، قبل أي خصم على الطلب."
+
+#: core/models.py:1487
+msgid "prepared"
+msgstr "مُحضّر"
+
+#: core/models.py:1488
+msgid "shortage note"
+msgstr "ملاحظة نقص"
+
+#: core/models.py:1492
+msgid "delivered length (m)"
+msgstr "الطول المُسلّم (م)"
+
+#: core/models.py:1497
+msgid "order lines"
+msgstr "بنود الطلب"
+
+#: core/models.py:1570
+msgid "Invoice"
+msgstr "فاتورة"
+
+#: core/models.py:1571 core/views.py:453 core/views.py:1430
+msgid "Delivery note"
+msgstr "سند تسليم"
+
+#: core/models.py:1573
+msgid "Credit note"
+msgstr "إشعار دائن"
+
+#: core/models.py:1576
+msgid "document number"
+msgstr "رقم المستند"
+
+#: core/models.py:1585 core/models.py:1647
+msgid "issued at"
+msgstr "صدر في"
+
+#: core/models.py:1586
+msgid "due at"
+msgstr "مستحق في"
+
+#: core/models.py:1587 core/models.py:1655
+msgid "total"
+msgstr "الإجمالي"
+
+#: core/models.py:1589 core/models.py:1653
+msgid "VAT"
+msgstr "ض.ق.م"
+
+#: core/models.py:1591
+msgid "paid"
+msgstr "مدفوع"
+
+#: core/models.py:1593 core/models.py:2036
+msgid "PDF"
+msgstr "PDF"
+
+#: core/models.py:1596
+msgid "document"
+msgstr "مستند"
+
+#: core/models.py:1597
+msgid "documents"
+msgstr "المستندات"
+
+#: core/models.py:1618
+msgid "Income"
+msgstr "الإيرادات"
+
+#: core/models.py:1619
+msgid "Expense"
+msgstr "المصروفات"
+
+#: core/models.py:1622 core/models.py:2001
+msgid "Manual"
+msgstr "يدوي"
+
+#: core/models.py:1623 core/models.py:2000
+msgid "Generated"
+msgstr "مُنشأ"
+
+#: core/models.py:1624
+msgid "Scanned"
+msgstr "ممسوح"
+
+#: core/models.py:1627
+msgid "Unpaid"
+msgstr "غير مدفوع"
+
+#: core/models.py:1628
+msgid "Paid"
+msgstr "مدفوع"
+
+#: core/models.py:1631
+msgid "direction"
+msgstr "الاتجاه"
+
+#: core/models.py:1632
+msgid "invoice number"
+msgstr "رقم الفاتورة"
+
+#: core/models.py:1644
+msgid "party name"
+msgstr "اسم الطرف"
+
+#: core/models.py:1645
+msgid "party tax ID"
+msgstr "الرقم الضريبي للطرف"
+
+#: core/models.py:1648
+msgid "category"
+msgstr "الفئة"
+
+#: core/models.py:1651
+msgid "subtotal"
+msgstr "المجموع الفرعي"
+
+#: core/models.py:1659
+msgid "amount paid"
+msgstr "المبلغ المدفوع"
+
+#: core/models.py:1662 core/models.py:2012
+msgid "source"
+msgstr "المصدر"
+
+#: core/models.py:1669
+msgid "allocation number"
+msgstr "رقم التخصيص"
+
+#: core/models.py:1670
+msgid "external id"
+msgstr "المعرّف الخارجي"
+
+#: core/models.py:1673 core/models.py:1726
+msgid "file"
+msgstr "ملف"
+
+#: core/models.py:1682 core/models.py:1792
+msgid "invoice"
+msgstr "فاتورة"
+
+#: core/models.py:1683
+msgid "invoices"
+msgstr "فواتير"
+
+#: core/models.py:1718
+msgid "Drawing"
+msgstr "رسم"
+
+#: core/models.py:1730
+#, fuzzy
+#| msgid "contact name"
+msgid "original name"
+msgstr "اسم جهة الاتصال"
+
+#: core/models.py:1733
+msgid "Which drawing or elevation this sheet covers."
+msgstr "أي رسم أو واجهة تغطيها هذه الورقة."
+
+#: core/models.py:1735
+#, fuzzy
+#| msgid "performed by"
+msgid "uploaded by"
+msgstr "نفّذه"
+
+#: core/models.py:1737
+#, fuzzy
+#| msgid "updated at"
+msgid "uploaded at"
+msgstr "حُدّث في"
+
+#: core/models.py:1740
+#, fuzzy
+#| msgid "ordered at"
+msgid "order attachment"
+msgstr "طُلب في"
+
+#: core/models.py:1741
+msgid "order attachments"
+msgstr "مرفقات الطلب"
+
+#: core/models.py:1779
+msgid "Cash"
+msgstr "نقدًا"
+
+#: core/models.py:1780
+msgid "Cheque"
+msgstr "شيك"
+
+#: core/models.py:1781
+msgid "Bank transfer"
+msgstr "حوالة بنكية"
+
+#: core/models.py:1782
+msgid "Card"
+msgstr "بطاقة"
+
+#: core/models.py:1795 core/models.py:2082
+msgid "amount"
+msgstr "المبلغ"
+
+#: core/models.py:1798
+msgid "method"
+msgstr "طريقة الدفع"
+
+#: core/models.py:1800
+#, fuzzy
+#| msgid "paid"
+msgid "paid on"
+msgstr "مدفوع"
+
+#: core/models.py:1804
+#, fuzzy
+#| msgid "due at"
+msgid "due on"
+msgstr "مستحق في"
+
+#: core/models.py:1805
+msgid "For a post-dated cheque: when it can be banked."
+msgstr "للشيك المؤجّل: متى يمكن إيداعه."
+
+#: core/models.py:1807
+msgid "reference"
+msgstr "مرجع"
+
+#: core/models.py:1808
+msgid "Cheque number, transfer reference, receipt number."
+msgstr "رقم الشيك، مرجع الحوالة، رقم الإيصال."
+
+#: core/models.py:1811
+#, fuzzy
+#| msgid "required by"
+msgid "recorded by"
+msgstr "مطلوب بحلول"
+
+#: core/models.py:1813
+#, fuzzy
+#| msgid "ordered at"
+msgid "recorded at"
+msgstr "طُلب في"
+
+#: core/models.py:1816
+#, fuzzy
+#| msgid "Employment"
+msgid "payment"
+msgstr "التوظيف"
+
+#: core/models.py:1817
+#, fuzzy
+#| msgid "Employment"
+msgid "payments"
+msgstr "التوظيف"
+
+#: core/models.py:1838 core/models.py:1947
+msgid "Pending"
+msgstr "قيد الانتظار"
+
+#: core/models.py:1839
+msgid "Loaded"
+msgstr "مُحمّل"
+
+#: core/models.py:1840
+msgid "En route"
+msgstr "في الطريق"
+
+#: core/models.py:1842
+msgid "Failed"
+msgstr "فشل"
+
+#: core/models.py:1848
+msgid "driver"
+msgstr "السائق"
+
+#: core/models.py:1854
+msgid "scheduled for"
+msgstr "مجدول لـ"
+
+#: core/models.py:1855
+msgid "delivered at"
+msgstr "سُلّم في"
+
+#: core/models.py:1858
+msgid "received by"
+msgstr "استلمه"
+
+#: core/models.py:1864
+msgid "recipient's phone"
+msgstr "هاتف المستلم"
+
+#: core/models.py:1865
+msgid "The person who signed, for sending them the delivery note."
+msgstr "الشخص الذي وقّع، لإرسال مستند التسليم إليه."
+
+#: core/models.py:1868
+msgid "signature"
+msgstr "التوقيع"
+
+#: core/models.py:1871
+msgid "proof photo"
+msgstr "صورة إثبات"
+
+#: core/models.py:1876
+msgid "delivery"
+msgstr "تسليم"
+
+#: core/models.py:1877
+msgid "deliveries"
+msgstr "التسليمات"
+
+#: core/models.py:1898 core/models.py:1952 core/models.py:2004
+msgid "worker"
+msgstr "العامل"
+
+#: core/models.py:1901
+msgid "clock in"
+msgstr "تسجيل دخول"
+
+#: core/models.py:1902
+msgid "clock out"
+msgstr "تسجيل خروج"
+
+#: core/models.py:1909
+msgid "auto-closed"
+msgstr "أُغلقت تلقائيًا"
+
+#: core/models.py:1910
+msgid "System closed a shift the worker forgot to clock out of."
+msgstr "أغلق النظام وردية نسي العامل تسجيل الخروج منها."
+
+#: core/models.py:1914 core/models.py:1955
+msgid "shift"
+msgstr "وردية"
+
+#: core/models.py:1915
+msgid "shifts"
+msgstr "الورديات"
+
+#: core/models.py:1948
+msgid "Approved"
+msgstr "مقبول"
+
+#: core/models.py:1949
+msgid "Rejected"
+msgstr "مرفوض"
+
+#: core/models.py:1958
+msgid "work date"
+msgstr "تاريخ العمل"
+
+#: core/models.py:1959
+msgid "requested clock in"
+msgstr "دخول مطلوب"
+
+#: core/models.py:1960
+msgid "requested clock out"
+msgstr "خروج مطلوب"
+
+#: core/models.py:1961
+msgid "reason"
+msgstr "السبب"
+
+#: core/models.py:1966
+msgid "reviewed by"
+msgstr "راجعه"
+
+#: core/models.py:1968
+msgid "reviewed at"
+msgstr "روجع في"
+
+#: core/models.py:1969
+msgid "review note"
+msgstr "ملاحظة المراجعة"
+
+#: core/models.py:1974
+msgid "shift correction request"
+msgstr "طلب تصحيح وردية"
+
+#: core/models.py:1975
+msgid "shift correction requests"
+msgstr "طلبات تصحيح الورديات"
+
+#: core/models.py:1997
+msgid "Finalised"
+msgstr "نهائي"
+
+#: core/models.py:2006
+msgid "year"
+msgstr "السنة"
+
+#: core/models.py:2007
+msgid "month"
+msgstr "الشهر"
+
+#: core/models.py:2017
+msgid "overtime paid"
+msgstr "دُفعت الساعات الإضافية"
+
+#: core/models.py:2020
+msgid "days worked"
+msgstr "أيام العمل"
+
+#: core/models.py:2022
+msgid "regular hours"
+msgstr "ساعات عادية"
+
+#: core/models.py:2024
+msgid "overtime 125% hours"
+msgstr "ساعات إضافية 125%"
+
+#: core/models.py:2026
+msgid "overtime 150% hours"
+msgstr "ساعات إضافية 150%"
+
+#: core/models.py:2031
+msgid "base pay"
+msgstr "الأجر الأساسي"
+
+#: core/models.py:2033
+msgid "overtime pay"
+msgstr "أجر الساعات الإضافية"
+
+#: core/models.py:2041
+msgid "finalised at"
+msgstr "أُنهي في"
+
+#: core/models.py:2044 core/models.py:2078
+msgid "payslip"
+msgstr "قسيمة الراتب"
+
+#: core/models.py:2045
+msgid "payslips"
+msgstr "قسائم الرواتب"
+
+#: core/models.py:2080
+msgid "label"
+msgstr "التسمية"
+
+#: core/models.py:2083
+msgid "Positive to add (bonus, travel), negative to deduct (advance)."
+msgstr "موجب للإضافة (مكافأة، مواصلات)، سالب للخصم (سلفة)."
+
+#: core/models.py:2086
+msgid "payslip adjustment"
+msgstr "تعديل القسيمة"
+
+#: core/models.py:2087
+msgid "payslip adjustments"
+msgstr "تعديلات القسيمة"
+
+#: core/notify.py:45
+msgid "a client"
+msgstr "عميل"
+
+#: core/notify.py:62
+#, python-format
+msgid "%(worker)s finished work (%(hours)s h)."
+msgstr "أنهى %(worker)s العمل (%(hours)s س)."
+
+#: core/notify.py:65
+#, python-format
+msgid "%(worker)s finished work."
+msgstr "أنهى %(worker)s العمل."
+
+#: core/notify.py:68
+msgid "Clocked out"
+msgstr "تسجيل خروج"
+
+#: core/notify.py:94
 msgid "Order being loaded"
 msgstr "يجري تحضير الطلب"
 
-#: core/notify.py:78
+#: core/notify.py:95
 #, python-format
 msgid "%(number)s for %(client)s is being picked."
 msgstr "يجري تحضير %(number)s لـ %(client)s."
 
-#: core/notify.py:83
+#: core/notify.py:100
 msgid "Order loaded"
 msgstr "الطلب جاهز"
 
-#: core/notify.py:84
+#: core/notify.py:101
 #, python-format
 msgid "%(number)s for %(client)s is ready to load."
 msgstr "%(number)s لـ %(client)s جاهز للتحميل."
 
-#: core/notify.py:89
+#: core/notify.py:106
 msgid "On the way"
 msgstr "في الطريق"
 
-#: core/notify.py:90
+#: core/notify.py:107
 #, python-format
 msgid "%(number)s is on its way to %(client)s."
 msgstr "%(number)s في طريقه إلى %(client)s."
 
-#: core/notify.py:95
+#: core/notify.py:112
 msgid "Arrived"
 msgstr "وصل"
 
-#: core/notify.py:96
+#: core/notify.py:113
 #, python-format
 msgid "%(number)s was delivered to %(client)s."
 msgstr "سُلّم %(number)s إلى %(client)s."
 
-#: core/notify.py:101
+#: core/notify.py:118
 msgid "Order cancelled"
 msgstr "أُلغي الطلب"
 
-#: core/notify.py:102
+#: core/notify.py:119
 #, python-format
 msgid "%(number)s for %(client)s was cancelled."
 msgstr "أُلغي %(number)s لـ %(client)s."
 
-#: core/notify.py:136
+#: core/notify.py:153
 msgid "Delivery signed"
 msgstr "تم توقيع التسليم"
 
-#: core/notify.py:137
+#: core/notify.py:154
 #, python-format
 msgid "%(number)s was received by %(person)s."
 msgstr "استلم %(person)s الطلب %(number)s."
 
-#: core/notify.py:139
+#: core/notify.py:156
 msgid "the client"
 msgstr "العميل"
 
-#: core/serializers.py:70 core/serializers.py:171 core/serializers.py:524
+#: core/serializers.py:75 core/serializers.py:176 core/serializers.py:630
 msgid "An account already exists for this phone number."
 msgstr "يوجد حساب بهذا الرقم بالفعل."
 
-#: core/serializers.py:216
+#: core/serializers.py:221
 msgid "Manager registration is not enabled."
 msgstr "تسجيل المديرين غير مفعّل."
 
-#: core/serializers.py:219
+#: core/serializers.py:224
 msgid "That code is not correct."
 msgstr "الرمز غير صحيح."
 
-#: core/serializers.py:306
+#: core/serializers.py:311
 msgid "Enter your ID number or phone number."
 msgstr "أدخل رقم الهوية أو رقم الهاتف."
 
-#: core/serializers.py:336
+#: core/serializers.py:341
 msgid "Current password is incorrect."
 msgstr "كلمة المرور الحالية غير صحيحة."
 
-#: core/serializers.py:598
-msgid "That link does not contain a location. Open the place in Google Maps, Waze or Apple Maps, share it, and paste the link that gives you."
-msgstr "الرابط لا يحتوي على موقع. افتح المكان في خرائط Google أو Waze أو خرائط Apple، وشاركه، ثم الصق الرابط الناتج."
+#: core/serializers.py:413
+#, python-brace-format
+msgid "No catalogue entry {value}."
+msgstr "لا يوجد بند {value} في الكتالوج."
 
-#: core/serializers.py:837
+#: core/serializers.py:414
+#, python-brace-format
+msgid "{value} exists for several manufacturers: {keys}."
+msgstr "{value} موجود لدى عدّة شركات مصنّعة: {keys}."
+
+#: core/serializers.py:704
+msgid ""
+"That link does not contain a location. Open the place in Google Maps, Waze "
+"or Apple Maps, share it, and paste the link that gives you."
+msgstr ""
+"الرابط لا يحتوي على موقع. افتح المكان في خرائط Google أو Waze أو خرائط "
+"Apple، وشاركه، ثم الصق الرابط الناتج."
+
+#: core/serializers.py:906
+msgid "Attach a PDF or a photo."
+msgstr "أرفِق ملف PDF أو صورة."
+
+#: core/serializers.py:909
 #, python-format
-msgid "Invoice %(number)s from %(party)s is already recorded (%(date)s, %(total)s)."
+msgid "That file is too large (limit %(mb)d MB)."
+msgstr "الملف كبير جدًا (الحد %(mb)d ميغابايت)."
+
+#: core/serializers.py:963
+msgid "Only a cheque has a date it can be banked."
+msgstr "الشيك وحده له تاريخ إيداع."
+
+#: core/serializers.py:967
+msgid "A cheque cannot clear before it was written."
+msgstr "لا يمكن صرف شيك قبل تاريخ تحريره."
+
+#: core/serializers.py:1101
+#, python-format
+msgid ""
+"Invoice %(number)s from %(party)s is already recorded (%(date)s, %(total)s)."
 msgstr "الفاتورة %(number)s من %(party)s مسجّلة بالفعل (%(date)s، %(total)s)."
 
-#: core/serializers.py:937
+#: core/serializers.py:1200
 msgid "Enter a quantity greater than zero."
 msgstr "أدخل كمية أكبر من صفر."
 
-#: core/serializers.py:950
+#: core/serializers.py:1213
 #, python-format
 msgid "Only %(available)s in stock at this location."
 msgstr "يتوفر %(available)s فقط في هذا الموقع."
 
-#: core/serializers.py:1051
+#: core/serializers.py:1333
 msgid "Enter a total length, or bars and a bar length."
 msgstr "أدخل الطول الإجمالي، أو عدد القضبان وطول القضيب."
 
-#: core/serializers.py:1195
+#: core/serializers.py:1485
 msgid "Give a new clock-in or clock-out time."
 msgstr "حدّد وقت دخول أو خروج جديدًا."
 
-#: core/serializers.py:1250
+#: core/serializers.py:1540
 msgid "This payslip is finalised. Reopen it to edit."
 msgstr "قسيمة الراتب نهائية. أعد فتحها للتعديل."
 
-#: core/views.py:364
+#: core/views.py:449 core/views.py:1412
 msgid "Order note"
 msgstr "مذكرة طلب"
 
-#: core/views.py:440
+#: core/views.py:576
 msgid "Enter a valid price."
 msgstr "أدخل سعراً صالحاً."
 
-#: core/views.py:445
+#: core/views.py:581
 msgid "Price cannot be negative."
 msgstr "لا يمكن أن يكون السعر سالبًا."
 
-#: core/views.py:500
+#: core/views.py:671
 msgid "No image file was provided."
 msgstr "لم يتم توفير ملف صورة."
 
-#: core/views.py:601
+#: core/views.py:780
 msgid "No profiles match these filters."
 msgstr "لا توجد مقاطع تطابق هذه الفلاتر."
 
-#: core/views.py:831
+#: core/views.py:1018
 msgid "Choose client or manager."
 msgstr "اختر عميلًا أو مديرًا."
 
-#: core/views.py:922
+#: core/views.py:1109
 msgid "Which device?"
 msgstr "أي جهاز؟"
 
-#: core/views.py:943 core/views.py:954 core/views.py:969
+#: core/views.py:1130 core/views.py:1141 core/views.py:1156
 msgid "Office access only."
 msgstr "الوصول للمكتب فقط."
 
-#: core/views.py:958
+#: core/views.py:1145
 msgid "No image was uploaded."
 msgstr "لم يتم رفع صورة."
 
-#: core/views.py:1401
+#: core/views.py:1425
+#, fuzzy
+#| msgid "price tier"
+msgid "Price quote"
+msgstr "فئة السعر"
+
+#: core/views.py:1794
+msgid ""
+"The file could not be stored. Check that it is a valid PDF or photo and try "
+"again."
+msgstr ""
+
+#: core/views.py:1844
+msgid "This is already an order."
+msgstr "هذا طلب بالفعل."
+
+#: core/views.py:1849
+msgid "Some lines have no price yet."
+msgstr "بعض السطور بلا سعر بعد."
+
+#: core/views.py:1852
+msgid "There is nothing on this quote."
+msgstr "لا توجد سطور في عرض السعر."
+
+#: core/views.py:1904
+msgid "This is no longer a quote."
+msgstr "لم يعد هذا عرض سعر."
+
+#: core/views.py:1909
+msgid "Price every line before sending the quote."
+msgstr "سعِّر كل سطر قبل إرسال عرض السعر."
+
+#: core/views.py:1915
+msgid "There is no delivery note for this order yet."
+msgstr "لا توجد بعد مذكرة تسليم لهذا الطلب."
+
+#: core/views.py:1918
+#, fuzzy
+#| msgid "Unknown worker."
+msgid "Unknown document."
+msgstr "موظف غير معروف."
+
+#: core/views.py:1929
+#, python-brace-format
+msgid "Price quote {number} from {shop}: {link}"
+msgstr "عرض سعر {number} من {shop}: {link}"
+
+#: core/views.py:1933
+#, python-brace-format
+msgid "Delivery note {number} for {client}. View & download: {link}"
+msgstr "مذكرة تسليم {number} لـ {client}. للعرض والتنزيل: {link}"
+
+#: core/views.py:2104
 msgid "Unknown line."
 msgstr "سطر غير معروف."
 
-#: core/views.py:1412
+#: core/views.py:2115
 msgid "Enter a valid weight."
 msgstr "أدخل وزناً صالحاً."
 
-#: core/views.py:1426
+#: core/views.py:2129
 msgid "Enter a valid length."
 msgstr "أدخل طولاً صالحاً."
 
-#: core/views.py:1453
+#: core/views.py:2156
 msgid "Unknown status."
 msgstr "حالة غير معروفة."
 
-#: core/views.py:1534
+#: core/views.py:2237
 msgid "Attach a photo of the invoice."
 msgstr "أرفق صورة للفاتورة."
 
-#: core/views.py:1541 core/views.py:1551
+#: core/views.py:2244 core/views.py:2254
 msgid "Invoice scanning is not switched on. Enter the invoice by hand."
 msgstr "مسح الفواتير غير مفعّل. أدخل الفاتورة يدويًا."
 
-#: core/views.py:1577
+#: core/views.py:2280
 msgid "No recipient email address."
 msgstr "لا يوجد عنوان بريد للمستلم."
 
-#: core/views.py:1582 core/views.py:1647
+#: core/views.py:2285 core/views.py:2350
 msgid "Email is not configured in Settings."
 msgstr "البريد الإلكتروني غير مضبوط في الإعدادات."
 
-#: core/views.py:1594
+#: core/views.py:2297
 #, python-format
 msgid "Please find the attached invoice %(label)s."
 msgstr "مرفق الفاتورة %(label)s."
 
-#: core/views.py:1621
+#: core/views.py:2324
 msgid "Use ?year=&month=."
 msgstr "استخدم ?year=&month=."
 
-#: core/views.py:1639
+#: core/views.py:2342
 msgid "Give a year and month."
 msgstr "حدّد السنة والشهر."
 
-#: core/views.py:1644
+#: core/views.py:2347
 msgid "No accountant email in Settings."
 msgstr "لا يوجد بريد المحاسب في الإعدادات."
 
-#: core/views.py:1656
+#: core/views.py:2359
 #, python-format
 msgid "Invoices & salary %(m)s"
 msgstr "الفواتير والرواتب %(m)s"
 
-#: core/views.py:1657
+#: core/views.py:2360
 #, python-format
-msgid "Attached: %(inc)d income and %(exp)d expense invoices plus the salary sheet for %(m)s."
-msgstr "مرفق: %(inc)d فاتورة دخل و%(exp)d فاتورة مصروفات بالإضافة إلى كشف الرواتب لـ %(m)s."
+msgid ""
+"Attached: %(inc)d income and %(exp)d expense invoices plus the salary sheet "
+"for %(m)s."
+msgstr ""
+"مرفق: %(inc)d فاتورة دخل و%(exp)d فاتورة مصروفات بالإضافة إلى كشف الرواتب لـ "
+"%(m)s."
 
-#: core/views.py:1757
+#: core/views.py:2469
 msgid "You are already clocked in."
 msgstr "أنت مسجّل الدخول بالفعل."
 
-#: core/views.py:1763
+#: core/views.py:2475
 msgid "You have already clocked in today."
 msgstr "سجّلت الدخول اليوم بالفعل."
 
-#: core/views.py:1777
+#: core/views.py:2489
 msgid "You are not clocked in."
 msgstr "أنت غير مسجّل الدخول."
 
-#: core/views.py:1803 core/views.py:1869 core/views.py:2045
+#: core/views.py:2515 core/views.py:2581 core/views.py:2763
 msgid "Unknown worker."
 msgstr "موظف غير معروف."
 
-#: core/views.py:1812 core/views.py:1879
+#: core/views.py:2524 core/views.py:2591
 msgid "Use the format YYYY-MM."
 msgstr "استخدم الصيغة YYYY-MM."
 
-#: core/views.py:1961 core/views.py:1983
+#: core/views.py:2673 core/views.py:2701
 msgid "Already reviewed."
 msgstr "تمت المراجعة بالفعل."
 
-#: core/views.py:2041
+#: core/views.py:2759
 msgid "year and month are required."
 msgstr "السنة والشهر مطلوبان."
 
-#: core/views.py:2049
+#: core/views.py:2767
 msgid "A payslip for that month already exists."
 msgstr "توجد قسيمة راتب لهذا الشهر بالفعل."
 
-#: core/views.py:2090
+#: core/views.py:2808
 msgid "Only managers can reopen a payslip."
 msgstr "يمكن للمديرين فقط إعادة فتح قسيمة الراتب."
+
+#: core/views_invoicing.py:72
+#, fuzzy
+#| msgid "Order note"
+msgid "Order not found."
+msgstr "مذكرة طلب"
+
+#: core/views_invoicing.py:76
+msgid "Choose \"invoice\" or \"invoice_receipt\"."
+msgstr "اختر \"invoice\" أو \"invoice_receipt\"."
+
+#: core/views_invoicing.py:79
+msgid "Payment must be an object."
+msgstr "يجب أن تكون بيانات الدفع كائنًا."
+
+#: core/views_invoicing.py:88
+msgid "The order has no lines to invoice."
+msgstr "لا توجد سطور في الطلب لإصدار فاتورة لها."
+
+#: core/views_invoicing.py:92
+#, python-format
+msgid "Price every line before issuing an invoice (missing: %(lines)s)."
+msgstr "سعِّر كل سطر قبل إصدار الفاتورة (الناقص: %(lines)s)."
+
+#: core/views_invoicing.py:98
+#, fuzzy, python-format
+#| msgid ""
+#| "Invoice %(number)s from %(party)s is already recorded (%(date)s, "
+#| "%(total)s)."
+msgid "Invoice %(number)s was already issued for this order."
+msgstr "الفاتورة %(number)s من %(party)s مسجّلة بالفعل (%(date)s، %(total)s)."
